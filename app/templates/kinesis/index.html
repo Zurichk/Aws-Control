@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Kinesis{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-stream text-info me-2"></i>
+                        Kinesis Data Streams
+                    </h1>
+                    <p class="text-muted mt-1">Manage your Amazon Kinesis real-time data streaming</p>
+                </div>
+                <div>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('kinesis.create_stream') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Crear Stream
+                        </a>
+                        <a href="{{ url_for('kinesis.put_record') }}" class="btn btn-success">
+                            <i class="fas fa-paper-plane me-2"></i>Enviar Registro
+                        </a>
+                        <a href="{{ url_for('kinesis.get_records') }}" class="btn btn-info">
+                            <i class="fas fa-list me-2"></i>Obtener Registros
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>About Amazon Kinesis
+                    </h5>
+                    <p class="card-text">
+                        Amazon Kinesis makes it easy to collect, process, and analyze real-time, streaming data so you can get timely insights and react quickly to new information.
+                        It provides three main services: Kinesis Data Streams, Kinesis Data Firehose, and Kinesis Data Analytics.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-bolt fa-2x text-warning mb-2"></i>
+                                <h6>Real-time</h6>
+                                <small class="text-muted">Process streaming data</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-expand-arrows-alt fa-2x text-success mb-2"></i>
+                                <h6>Scalable</h6>
+                                <small class="text-muted">Handles any amount of data</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                                <h6>Low Latency</h6>
+                                <small class="text-muted">Sub-second processing</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-plug fa-2x text-info mb-2"></i>
+                                <h6>Integration</h6>
+                                <small class="text-muted">Works with AWS services</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Streams List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Kinesis Streams ({{ streams|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if streams %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Stream Name</th>
+                                        <th>Status</th>
+                                        <th>Shards</th>
+                                        <th>Retention Period (hours)</th>
+                                        <th>Encryption</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stream in streams %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ stream.StreamName }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if stream.StreamStatus == 'ACTIVE' else 'warning' }}">
+                                                {{ stream.StreamStatus }}
+                                            </span>
+                                        </td>
+                                        <td>{{ stream.Shards|length }}</td>
+                                        <td>{{ stream.RetentionPeriodHours }}</td>
+                                        <td>
+                                            {% if stream.EncryptionType == 'KMS' %}
+                                                <i class="fas fa-lock text-success"></i> KMS
+                                            {% else %}
+                                                <i class="fas fa-unlock text-muted"></i> None
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('kinesis.put_record') }}" class="btn btn-sm btn-outline-success" title="Enviar Registro">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                                <a href="{{ url_for('kinesis.get_records') }}" class="btn btn-sm btn-outline-info" title="Obtener Registros">
+                                                    <i class="fas fa-list"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger" title="Eliminar Stream"
+                                                        onclick="deleteStream('{{ stream.StreamName }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-stream fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Kinesis Streams Found</h5>
+                            <p class="text-muted">Create your first data stream to start processing real-time data.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createStreamModal">
+                                <i class="fas fa-plus me-2"></i>Create Your First Stream
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Stream Modal -->
+<div class="modal fade" id="createStreamModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Create Kinesis Stream
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createStreamForm">
+                    <div class="mb-3">
+                        <label for="streamName" class="form-label">Stream Name *</label>
+                        <input type="text" class="form-control" id="streamName" required>
+                        <div class="form-text">Stream names must be unique within your AWS account.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="shardCount" class="form-label">Number of Shards *</label>
+                        <input type="number" class="form-control" id="shardCount" value="1" min="1" required>
+                        <div class="form-text">Each shard can support up to 1 MB/s write and 2 MB/s read capacity.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="retentionPeriod" class="form-label">Data Retention Period (hours)</label>
+                        <input type="number" class="form-control" id="retentionPeriod" value="24" min="24" max="168" required>
+                        <div class="form-text">How long to retain data (24-168 hours).</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enableEncryption" checked>
+                            <label class="form-check-label" for="enableEncryption">
+                                Enable server-side encryption
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createStream()">
+                    <i class="fas fa-plus me-2"></i>Create Stream
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteStream(streamName) {
+    if (confirm(`¿Estás seguro de que quieres eliminar el stream "${streamName}"? Esta acción no se puede deshacer.`)) {
+        // Crear un formulario temporal para enviar la solicitud POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/kinesis/delete-stream/${streamName}`;
+
+        // Agregar el nombre del stream como campo oculto
+        const streamInput = document.createElement('input');
+        streamInput.type = 'hidden';
+        streamInput.name = 'stream_name';
+        streamInput.value = streamName;
+        form.appendChild(streamInput);
+
+        // Agregar la región como campo oculto (usando us-east-1 por defecto)
+        const regionInput = document.createElement('input');
+        regionInput.type = 'hidden';
+        regionInput.name = 'region';
+        regionInput.value = 'us-east-1';
+        form.appendChild(regionInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

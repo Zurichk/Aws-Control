@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Internet Gateway - VPC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Crear Nuevo Internet Gateway</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Los Internet Gateways permiten que las instancias en subnets públicas accedan a internet.
+                        Después de crear el IGW, necesitarás adjuntarlo a una VPC.
+                    </div>
+
+                    <form method="post">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Internet Gateway
+                            </button>
+                            <a href="{{ url_for('vpc.internet_gateways') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

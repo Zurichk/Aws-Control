@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Roles IAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-user-shield text-success me-2"></i>
+                        Roles IAM
+                    </h1>
+                    <p class="text-muted mt-1">Gestionar roles de AWS Identity and Access Management</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('iam.create_role') }}" class="btn btn-success">
+                        <i class="fas fa-user-shield me-2"></i>Crear Rol
+                    </a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                <div class="card-body">
+                    {% if roles %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-user-shield me-2"></i>Rol</th>
+                                        <th><i class="fas fa-id-card me-2"></i>ARN</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Creado</th>
+                                        <th><i class="fas fa-file-signature me-2"></i>Política de Confianza</th>
+                                        <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for role in roles %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-success text-white me-3">
+                                                        <i class="fas fa-user-shield"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>{{ role.RoleName }}</strong>
+                                                        {% if role.Description %}
+                                                            <br><small class="text-muted">{{ role.Description }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <code class="small">{{ role.Arn }}</code>
+                                            </td>
+                                            <td>
+                                                {% if role.CreateDate %}
+                                                    <span title="{{ role.CreateDate.strftime('%Y-%m-%d %H:%M:%S UTC') }}">
+                                                        {{ role.CreateDate.strftime('%d/%m/%Y') }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if role.AssumeRolePolicyDocument %}
+                                                    <span class="badge bg-info" title="Política de confianza configurada">
+                                                        <i class="fas fa-check me-1"></i>Configurada
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning" title="Sin política de confianza">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>Sin configurar
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-info"
+                                                            onclick="viewRoleDetails('{{ role.RoleName }}')" title="Ver Detalles">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="confirmDeleteRole('{{ role.RoleName }}')" title="Eliminar Rol">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if roles|length >= 100 %}
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Mostrando los primeros 100 roles. Para ver más, implemente paginación.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-shield fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay roles IAM</h5>
+                            <p class="text-muted">Crea tu primer rol para comenzar a gestionar permisos en AWS.</p>
+                            <a href="{{ url_for('iam.create_role') }}" class="btn btn-success">
+                                <i class="fas fa-user-shield me-2"></i>Crear Primer Rol
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de detalles del rol -->
+<div class="modal fade" id="roleDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-shield text-success me-2"></i>
+                    Detalles del Rol: <span id="roleDetailsName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="roleDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-success" aria-live="polite">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar rol -->
+<div class="modal fade" id="deleteRoleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el rol <strong id="deleteRoleName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Advertencia:</strong> Esta acción no se puede deshacer. Asegúrate de que el rol no esté siendo usado por ningún servicio de AWS.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteRoleForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Eliminar Rol
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewRoleDetails(roleName) {
+    document.getElementById('roleDetailsName').textContent = roleName;
+    document.getElementById('roleDetailsContent').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    `;
+    new bootstrap.Modal(document.getElementById('roleDetailsModal')).show();
+
+    // Aquí podrías hacer una llamada AJAX para obtener los detalles completos del rol
+    // Por ahora, mostramos un mensaje de que la funcionalidad está pendiente
+    setTimeout(() => {
+        document.getElementById('roleDetailsContent').innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Funcionalidad pendiente:</strong> Los detalles completos del rol estarán disponibles próximamente.
+                <br><br>
+                <strong>Rol:</strong> ${roleName}
+                <br>
+                <strong>Próximamente:</strong> Políticas adjuntas, política de confianza completa, última vez usado, etc.
+            </div>
+        `;
+    }, 1000);
+}
+
+function confirmDeleteRole(roleName) {
+    document.getElementById('deleteRoleName').textContent = roleName;
+    document.getElementById('deleteRoleForm').action = '/iam/role/' + encodeURIComponent(roleName) + '/delete';
+    new bootstrap.Modal(document.getElementById('deleteRoleModal')).show();
+}
+</script>
+
+{% endblock %}

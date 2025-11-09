@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Editar CORS - {{ bucket_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}">{{ bucket_name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.get_bucket_cors', bucket_name=bucket_name) }}">CORS</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Editar</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar CORS del Bucket: {{ bucket_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Advertencia</h6>
+                        <p>La configuración CORS controla qué dominios pueden acceder a los recursos del bucket desde navegadores web. Una configuración demasiado permisiva puede ser un riesgo de seguridad.</p>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="cors" class="form-label">
+                                <i class="fas fa-code me-1"></i>
+                                Configuración JSON *
+                            </label>
+                            <textarea class="form-control" id="cors" name="cors" rows="20"
+                                      placeholder='Ejemplo de configuración básica:
+[
+  {
+    "AllowedOrigins": ["https://example.com", "https://www.example.com"],
+    "AllowedMethods": ["GET", "PUT", "POST"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]' required>{{ current_cors }}</textarea>
+                            <div class="form-text">
+                                Ingresa la configuración CORS en formato JSON válido.
+                                <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/cors.html"
+                                   target="_blank" rel="noopener noreferrer">
+                                    Documentación CORS S3
+                                    <i class="fas fa-external-link-alt ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('s3.get_bucket_cors', bucket_name=bucket_name) }}"
+                               class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Guardar CORS
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Validación básica de JSON
+document.querySelector('form').addEventListener('submit', function(e) {
+    const corsTextarea = document.getElementById('cors');
+    try {
+        JSON.parse(corsTextarea.value);
+    } catch (error) {
+        e.preventDefault();
+        alert('Error de sintaxis JSON: ' + error.message);
+        corsTextarea.focus();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}CORS del Bucket - {{ bucket_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}">{{ bucket_name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">CORS</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-globe me-2"></i>
+                        Configuración CORS: {{ bucket_name }}
+                    </h5>
+                    <a href="{{ url_for('s3.put_bucket_cors', bucket_name=bucket_name) }}"
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i>
+                        Editar CORS
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if cors %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Orígenes Permitidos</th>
+                                        <th>Métodos Permitidos</th>
+                                        <th>Headers Permitidos</th>
+                                        <th>Headers Expuestos</th>
+                                        <th>Cache (segundos)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rule in cors %}
+                                    <tr>
+                                        <td>
+                                            {% if rule.AllowedOrigins %}
+                                                <ul class="list-unstyled mb-0">
+                                                    {% for origin in rule.AllowedOrigins %}
+                                                    <li><code>{{ origin }}</code></li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.AllowedMethods %}
+                                                <div>
+                                                    {% for method in rule.AllowedMethods %}
+                                                    <span class="badge bg-primary me-1">{{ method }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.AllowedHeaders %}
+                                                <small>
+                                                    <ul class="list-unstyled mb-0">
+                                                        {% for header in rule.AllowedHeaders %}
+                                                        <li><code>{{ header }}</code></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </small>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.ExposeHeaders %}
+                                                <small>
+                                                    <ul class="list-unstyled mb-0">
+                                                        {% for header in rule.ExposeHeaders %}
+                                                        <li><code>{{ header }}</code></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </small>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.MaxAgeSeconds %}
+                                                {{ rule.MaxAgeSeconds }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>No hay configuración CORS</h6>
+                            <p>Este bucket no tiene reglas CORS configuradas. Los navegadores web bloquearán las solicitudes desde otros dominios.</p>
+                            <a href="{{ url_for('s3.put_bucket_cors', bucket_name=bucket_name) }}"
+                               class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Configurar CORS
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

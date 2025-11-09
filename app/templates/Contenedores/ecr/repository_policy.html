@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Política del Repositorio {{ repo_name }} - ECR{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-shield-alt text-info me-2"></i>
+                        Política del Repositorio: {{ repo_name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Las políticas de repositorio permiten controlar el acceso a las imágenes del repositorio.
+                        Puedes definir permisos para otros usuarios, roles de IAM, o cuentas AWS.
+                    </p>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="policy_text" class="form-label">
+                                <strong>Política en Formato JSON</strong>
+                            </label>
+                            <textarea class="form-control" id="policy_text" name="policy_text"
+                                      rows="15" placeholder='{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:user/username"
+      },
+      "Action": [
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability"
+      ]
+    }
+  ]
+}' style="font-family: monospace;">{{ current_policy }}</textarea>
+                            <div class="form-text">
+                                Ingresa la política en formato JSON válido. Deja vacío para eliminar la política actual.
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <a href="{{ url_for('ecr.repository_detail', repo_name=repo_name) }}"
+                                   class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-eye me-2"></i>Ver Repositorio
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{{ url_for('ecr.repositories') }}"
+                                   class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Volver a Repositorios
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-save me-2"></i>Guardar Política
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Policy Examples -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Ejemplos de Políticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="policyExamples">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#readOnly">
+                                    Acceso de Solo Lectura
+                                </button>
+                            </h2>
+                            <div id="readOnly" class="accordion-collapse collapse show" data-bs-parent="#policyExamples">
+                                <div class="accordion-body">
+                                    <pre><code>{% raw %}
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:user/username"
+      },
+      "Action": [
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability"
+      ]
+    }
+  ]
+}
+{% endraw %}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#fullAccess">
+                                    Acceso Completo
+                                </button>
+                            </h2>
+                            <div id="fullAccess" class="accordion-collapse collapse" data-bs-parent="#policyExamples">
+                                <div class="accordion-body">
+                                    <pre><code>{% raw %}
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:user/username"
+      },
+      "Action": [
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:PutImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload"
+      ]
+    }
+  ]
+}
+{% endraw %}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#crossAccount">
+                                    Acceso entre Cuentas
+                                </button>
+                            </h2>
+                            <div id="crossAccount" class="accordion-collapse collapse" data-bs-parent="#policyExamples">
+                                <div class="accordion-body">
+                                    <pre><code>{% raw %}
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:root"
+      },
+      "Action": "ecr:GetAuthorizationToken"
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:user/username"
+      },
+      "Action": [
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:PutImage"
+      ]
+    }
+  ]
+}
+{% endraw %}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

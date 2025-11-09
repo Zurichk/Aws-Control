@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Lifecycle del Bucket - {{ bucket_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}">{{ bucket_name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Lifecycle</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Configuración de Lifecycle: {{ bucket_name }}
+                    </h5>
+                    <a href="{{ url_for('s3.put_bucket_lifecycle', bucket_name=bucket_name) }}"
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i>
+                        Editar Lifecycle
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if lifecycle %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Estado</th>
+                                        <th>Prefijo</th>
+                                        <th>Transición a IA</th>
+                                        <th>Transición a Glacier</th>
+                                        <th>Expiración</th>
+                                        <th>Eliminar versiones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rule in lifecycle %}
+                                    <tr>
+                                        <td><code>{{ rule.ID }}</code></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if rule.Status == 'Enabled' else 'secondary' }}">
+                                                {{ 'Habilitada' if rule.Status == 'Enabled' else 'Deshabilitada' }}
+                                            </span>
+                                        </td>
+                                        <td><code>{{ rule.Filter.Prefix if rule.Filter.Prefix else 'Todo' }}</code></td>
+                                        <td>
+                                            {% if rule.Transitions %}
+                                                {% for transition in rule.Transitions %}
+                                                    {% if transition.StorageClass == 'STANDARD_IA' %}
+                                                        {{ transition.Days }} días
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.Transitions %}
+                                                {% for transition in rule.Transitions %}
+                                                    {% if transition.StorageClass == 'GLACIER' %}
+                                                        {{ transition.Days }} días
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.Expiration %}
+                                                {{ rule.Expiration.Days }} días
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.NoncurrentVersionExpiration %}
+                                                {{ rule.NoncurrentVersionExpiration.NoncurrentDays }} días
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>No hay configuración de lifecycle</h6>
+                            <p>Este bucket no tiene reglas de lifecycle configuradas.</p>
+                            <a href="{{ url_for('s3.put_bucket_lifecycle', bucket_name=bucket_name) }}"
+                               class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Crear Reglas de Lifecycle
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

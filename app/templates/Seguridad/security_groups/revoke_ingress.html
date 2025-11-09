@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Revocar Entrada - Security Groups{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Revocar Regla de Entrada</h3>
+                    <small class="text-muted">Security Group: {{ security_group.GroupName }} ({{ security_group.GroupId }})</small>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% if security_group.IpPermissions %}
+                    <p class="mb-3">Selecciona la regla de entrada que deseas revocar:</p>
+
+                    <form method="post">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Seleccionar</th>
+                                        <th>Protocolo</th>
+                                        <th>Puertos</th>
+                                        <th>Fuente</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in range(security_group.IpPermissions | length) %}
+                                    {% set rule = security_group.IpPermissions[i] %}
+                                    <tr>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="rule_index"
+                                                       id="rule_{{ i }}" value="{{ i }}" required>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if rule.IpProtocol == '-1' %}
+                                                Todos
+                                            {% else %}
+                                                {{ rule.IpProtocol | upper }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.IpProtocol == '-1' %}
+                                                N/A
+                                            {% elif rule.IpProtocol == 'icmp' %}
+                                                Tipo: {{ rule.FromPort or 'N/A' }}, Código: {{ rule.ToPort or 'N/A' }}
+                                            {% else %}
+                                                {% if rule.FromPort == rule.ToPort %}
+                                                    {{ rule.FromPort }}
+                                                {% else %}
+                                                    {{ rule.FromPort }}-{{ rule.ToPort }}
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.IpRanges %}
+                                                {% for ip_range in rule.IpRanges %}
+                                                    <code>{{ ip_range.CidrIp }}</code>
+                                                    {% if ip_range.Description %}
+                                                        <br><small class="text-muted">{{ ip_range.Description }}</small>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                            {% if rule.UserIdGroupPairs %}
+                                                {% for sg_pair in rule.UserIdGroupPairs %}
+                                                    <code>{{ sg_pair.GroupId }}</code>
+                                                    {% if sg_pair.GroupName %}
+                                                        ({{ sg_pair.GroupName }})
+                                                    {% endif %}
+                                                    {% if sg_pair.Description %}
+                                                        <br><small class="text-muted">{{ sg_pair.Description }}</small>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if rule.IpRanges and rule.IpRanges[0].Description %}
+                                                {{ rule.IpRanges[0].Description }}
+                                            {% elif rule.UserIdGroupPairs and rule.UserIdGroupPairs[0].Description %}
+                                                {{ rule.UserIdGroupPairs[0].Description }}
+                                            {% else %}
+                                                <em class="text-muted">Sin descripción</em>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                            <a href="{{ url_for('security_groups.list_security_groups') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-warning">Revocar Regla</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Este Security Group no tiene reglas de entrada configuradas.
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('security_groups.list_security_groups') }}" class="btn btn-secondary">Volver</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

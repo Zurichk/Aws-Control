@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EC2 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>Amazon Elastic Compute Cloud (EC2)</h2>
+        <p>EC2 es el servicio de computo en la nube de AWS que proporciona capacidad de computo escalable. Te permite lanzar instancias de servidor virtual en minutos, con una amplia variedad de tipos de instancia optimizados para diferentes casos de uso.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>¿Qué puedes hacer con EC2?</h4>
+        <ul>
+            <li><strong>Lanzar instancias:</strong> Crea servidores virtuales con diferentes configuraciones de CPU, memoria y almacenamiento.</li>
+            <li><strong>Escalado automático:</strong> Ajusta automáticamente el número de instancias según la demanda.</li>
+            <li><strong>Balanceo de carga:</strong> Distribuye el tráfico entre múltiples instancias para alta disponibilidad.</li>
+            <li><strong>Almacenamiento persistente:</strong> Usa EBS para almacenamiento de datos que persiste más allá del ciclo de vida de la instancia.</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Instancias EC2</h3>
+                <a href="{{ url_for('ec2.instances') }}" class="btn btn-aws">Ver Todas las Instancias</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <p>Accede rápidamente a las operaciones más comunes de EC2.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('ec2.instances') }}" class="btn btn-outline-primary">Listar Instancias</a>
+                        <a href="{{ url_for('ec2.create_instance') }}" class="btn btn-outline-success">Lanzar Nueva Instancia</a>
+                        <button class="btn btn-outline-secondary" disabled>Configurar Auto Scaling</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Información del Servicio</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Tipos de Instancia Principales:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>t2/t3:</strong> Uso general, balanceado</li>
+                        <li><strong>m5/m6:</strong> Uso general, última generación</li>
+                        <li><strong>c5/c6:</strong> Optimizadas para computo</li>
+                        <li><strong>r5/r6:</strong> Optimizadas para memoria</li>
+                        <li><strong>p3/p4:</strong> GPU para machine learning</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

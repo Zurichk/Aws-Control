@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}ECS - Registrar Definición de Tarea{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Registrar Definición de Tarea ECS</h2>
+                        <small class="text-muted">Crear una nueva definición de tarea para contenedores en Amazon ECS</small>
+                    </div>
+                    <a href="{{ url_for('ecs.task_definitions') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="family" class="form-label">
+                                        <i class="fas fa-tag text-primary me-2"></i>Familia
+                                    </label>
+                                    <input type="text" class="form-control" id="family" name="family" 
+                                           required placeholder="mi-aplicacion" pattern="[a-zA-Z0-9-_]{1,255}">
+                                    <div class="form-text">
+                                        Nombre de la familia de definiciones de tarea.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="task_role_arn" class="form-label">
+                                        <i class="fas fa-user-shield text-warning me-2"></i>Rol de Tarea (Opcional)
+                                    </label>
+                                    <input type="text" class="form-control" id="task_role_arn" name="task_role_arn" 
+                                           placeholder="arn:aws:iam::123456789012:role/ECSTaskRole">
+                                    <div class="form-text">
+                                        ARN del rol IAM para la tarea.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cpu" class="form-label">
+                                        <i class="fas fa-microchip text-success me-2"></i>CPU (unidades)
+                                    </label>
+                                    <select class="form-select" id="cpu" name="cpu">
+                                        <option value="">Seleccionar CPU...</option>
+                                        <option value="256">256 (0.25 vCPU)</option>
+                                        <option value="512">512 (0.5 vCPU)</option>
+                                        <option value="1024">1024 (1 vCPU)</option>
+                                        <option value="2048">2048 (2 vCPU)</option>
+                                        <option value="4096">4096 (4 vCPU)</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Unidades de CPU para FARGATE.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="memory" class="form-label">
+                                        <i class="fas fa-memory text-info me-2"></i>Memoria (MB)
+                                    </label>
+                                    <select class="form-select" id="memory" name="memory">
+                                        <option value="">Seleccionar memoria...</option>
+                                        <option value="512">512 MB</option>
+                                        <option value="1024">1024 MB (1 GB)</option>
+                                        <option value="2048">2048 MB (2 GB)</option>
+                                        <option value="3072">3072 MB (3 GB)</option>
+                                        <option value="4096">4096 MB (4 GB)</option>
+                                        <option value="5120">5120 MB (5 GB)</option>
+                                        <option value="6144">6144 MB (6 GB)</option>
+                                        <option value="7168">7168 MB (7 GB)</option>
+                                        <option value="8192">8192 MB (8 GB)</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Memoria en MB para FARGATE.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-box text-primary me-2"></i>Contenedor Principal
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="container_name" class="form-label">
+                                        <i class="fas fa-box text-success me-2"></i>Nombre del Contenedor
+                                    </label>
+                                    <input type="text" class="form-control" id="container_name" name="container_name" 
+                                           required placeholder="mi-contenedor" pattern="[a-zA-Z0-9-_]{1,255}">
+                                    <div class="form-text">
+                                        Nombre único para el contenedor.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">
+                                        <i class="fas fa-image text-info me-2"></i>Imagen Docker
+                                    </label>
+                                    <input type="text" class="form-control" id="image" name="image" 
+                                           required placeholder="nginx:latest" pattern=".+:.+">
+                                    <div class="form-text">
+                                        Imagen Docker con tag (ej: nginx:latest).
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Información sobre Definiciones de Tarea</h6>
+                            <ul class="mb-0">
+                                <li>Las definiciones de tarea describen cómo ejecutar contenedores Docker</li>
+                                <li>Cada definición puede tener múltiples contenedores</li>
+                                <li>Las revisiones permiten versionado y actualizaciones sin downtime</li>
+                                <li>Para FARGATE, CPU y memoria deben ser valores compatibles</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('ecs.task_definitions') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Registrar Definición
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const familyInput = document.getElementById('family');
+    const containerNameInput = document.getElementById('container_name');
+    const imageInput = document.getElementById('image');
+    
+    form.addEventListener('submit', function(e) {
+        const family = familyInput.value.trim();
+        const containerName = containerNameInput.value.trim();
+        const image = imageInput.value.trim();
+        
+        // Validar familia
+        if (!family) {
+            e.preventDefault();
+            alert('La familia es obligatoria');
+            familyInput.focus();
+            return;
+        }
+        
+        if (family.length > 255) {
+            e.preventDefault();
+            alert('La familia no puede exceder 255 caracteres');
+            familyInput.focus();
+            return;
+        }
+        
+        if (!/^[a-zA-Z0-9-_]+$/.test(family)) {
+            e.preventDefault();
+            alert('La familia solo puede contener letras, números, guiones y guiones bajos');
+            familyInput.focus();
+            return;
+        }
+        
+        // Validar nombre del contenedor
+        if (!containerName) {
+            e.preventDefault();
+            alert('El nombre del contenedor es obligatorio');
+            containerNameInput.focus();
+            return;
+        }
+        
+        if (containerName.length > 255) {
+            e.preventDefault();
+            alert('El nombre del contenedor no puede exceder 255 caracteres');
+            containerNameInput.focus();
+            return;
+        }
+        
+        if (!/^[a-zA-Z0-9-_]+$/.test(containerName)) {
+            e.preventDefault();
+            alert('El nombre del contenedor solo puede contener letras, números, guiones y guiones bajos');
+            containerNameInput.focus();
+            return;
+        }
+        
+        // Validar imagen
+        if (!image) {
+            e.preventDefault();
+            alert('La imagen Docker es obligatoria');
+            imageInput.focus();
+            return;
+        }
+        
+        if (!/.+:.+/.test(image)) {
+            e.preventDefault();
+            alert('La imagen Docker debe tener el formato nombre:tag');
+            imageInput.focus();
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

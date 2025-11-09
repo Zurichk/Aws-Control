@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Actualizar Grupo de Auto Scaling - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-edit"></i> Actualizar Grupo de Auto Scaling</h2>
+                        <p class="mb-0">Modificar configuración del grupo: {{ group_name }}</p>
+                    </div>
+                    <a href="{{ url_for('autoscaling_bp.groups') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="min_size" class="form-label">Tamaño Mínimo</label>
+                                    <input type="number" class="form-control" id="min_size" name="min_size"
+                                           value="{{ current_min }}" min="0" required>
+                                    <div class="form-text">Número mínimo de instancias en el grupo</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="max_size" class="form-label">Tamaño Máximo</label>
+                                    <input type="number" class="form-control" id="max_size" name="max_size"
+                                           value="{{ current_max }}" min="1" required>
+                                    <div class="form-text">Número máximo de instancias en el grupo</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="desired_capacity" class="form-label">Capacidad Deseada</label>
+                                    <input type="number" class="form-control" id="desired_capacity" name="desired_capacity"
+                                           value="{{ current_desired }}" min="0" required>
+                                    <div class="form-text">Número deseado de instancias activas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Consideraciones importantes:</h6>
+                            <ul class="mb-0">
+                                <li>El tamaño mínimo debe ser menor o igual al tamaño máximo</li>
+                                <li>La capacidad deseada debe estar entre el mínimo y máximo</li>
+                                <li>Cambiar estos valores puede activar el escalado automático</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('autoscaling_bp.groups') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Actualizar Grupo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const minSize = parseInt(document.getElementById('min_size').value);
+    const maxSize = parseInt(document.getElementById('max_size').value);
+    const desiredCapacity = parseInt(document.getElementById('desired_capacity').value);
+
+    if (minSize > maxSize) {
+        e.preventDefault();
+        alert('El tamaño mínimo no puede ser mayor que el tamaño máximo.');
+        return;
+    }
+
+    if (desiredCapacity < minSize || desiredCapacity > maxSize) {
+        e.preventDefault();
+        alert('La capacidad deseada debe estar entre el tamaño mínimo y máximo.');
+        return;
+    }
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Crear Política IAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-file-signature text-warning me-2"></i>
+                        Crear Política IAM
+                    </h1>
+                    <p class="text-muted mt-1">Crear una nueva política de permisos personalizada</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('iam.policies') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Políticas
+                    </a>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-body">
+                            <form action="{{ url_for('iam.create_policy') }}" method="POST">
+                                <div class="mb-3">
+                                    <label for="policy_name" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>Nombre de la Política *
+                                    </label>
+                                    <input type="text" class="form-control" id="policy_name" name="policy_name"
+                                           placeholder="mi-politica" required>
+                                    <div class="form-text">
+                                        El nombre debe ser único en la cuenta AWS. Solo puede contener letras, números y los siguientes caracteres: +=,.@-
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-comment me-2"></i>Descripción
+                                    </label>
+                                    <input type="text" class="form-control" id="description" name="description"
+                                           placeholder="Descripción de la política">
+                                    <div class="form-text">Opcional: Describe el propósito de esta política</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="policy_document" class="form-label">
+                                        <i class="fas fa-code me-2"></i>Documento de Política (JSON) *
+                                    </label>
+                                    <textarea class="form-control font-monospace" id="policy_document" name="policy_document"
+                                              rows="20" required placeholder='{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::mi-bucket/*"
+    }
+  ]
+}'></textarea>
+                                    <div class="form-text">
+                                        Define los permisos que concede esta política. Usa el <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html" target="_blank">formato JSON de AWS</a>.
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Nota:</strong> Esta política se creará como una política administrada por el cliente. Después de crearla, podrás adjuntarla a usuarios y roles.
+                                </div>
+
+                                <div class="d-flex gap-2 mt-4">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-file-signature me-2"></i>Crear Política
+                                    </button>
+                                    <a href="{{ url_for('iam.policies') }}" class="btn btn-outline-secondary">Cancelar</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del nombre de la política
+document.getElementById('policy_name').addEventListener('input', function(e) {
+    const policyName = e.target.value;
+    const regex = /^[a-zA-Z0-9+=,.@-]+$/;
+
+    if (!regex.test(policyName)) {
+        e.target.setCustomValidity('El nombre solo puede contener letras, números y +=,.@-');
+    } else {
+        e.target.setCustomValidity('');
+    }
+});
+
+// Formatear JSON automáticamente
+document.getElementById('policy_document').addEventListener('blur', function(e) {
+    try {
+        const json = JSON.parse(e.target.value);
+        e.target.value = JSON.stringify(json, null, 2);
+    } catch (error) {
+        // No hacer nada si no es JSON válido
+    }
+});
+
+// Ejemplos de políticas comunes
+function loadExample(example) {
+    const examples = {
+        's3-readonly': {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:GetObject",
+                        "s3:ListBucket"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        },
+        'ec2-describe': {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "ec2:DescribeInstances",
+                        "ec2:DescribeImages",
+                        "ec2:DescribeSnapshots"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        }
+    };
+
+    if (examples[example]) {
+        document.getElementById('policy_document').value = JSON.stringify(examples[example], null, 2);
+    }
+}
+</script>
+
+{% endblock %}

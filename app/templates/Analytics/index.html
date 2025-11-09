@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Athena{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-database text-info me-2"></i>
+                        Amazon Athena
+                    </h1>
+                    <p class="text-muted mt-1">Consultas SQL interactivas en datos de S3</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('athena.execute_query') }}" class="btn btn-primary">
+                        <i class="fas fa-play me-2"></i>Ejecutar Consulta
+                    </a>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>¿Qué es Amazon Athena?
+                    </h5>
+                    <p class="card-text">
+                        Amazon Athena es un servicio de consultas interactivo que facilita el análisis de datos en Amazon S3 mediante SQL estándar.
+                        No requiere servidores ni infraestructura, solo paga por las consultas que ejecuta.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-bolt fa-2x text-warning mb-2"></i>
+                                <h6>Serveless</h6>
+                                <small class="text-muted">Sin infraestructura</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                                <h6>Pay-per-query</h6>
+                                <small class="text-muted">Pago por consulta</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-code fa-2x text-primary mb-2"></i>
+                                <h6>SQL Estándar</h6>
+                                <small class="text-muted">Sintaxis familiar</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-cubes fa-2x text-info mb-2"></i>
+                                <h6>Múltiples Formatos</h6>
+                                <small class="text-muted">CSV, JSON, Parquet, etc.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Query Executions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Ejecuciones de Consultas ({{ executions|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if executions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID Ejecución</th>
+                                        <th>Estado</th>
+                                        <th>Base de Datos</th>
+                                        <th>WorkGroup</th>
+                                        <th>Fecha de Envío</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for execution in executions %}
+                                    <tr>
+                                        <td>
+                                            <code class="small">{{ execution.QueryExecutionId[:20] }}...</code>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if execution.Status == 'SUCCEEDED' else 'warning' if execution.Status == 'RUNNING' else 'danger' }}">
+                                                {{ execution.Status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ execution.Database or 'default' }}</td>
+                                        <td>{{ execution.WorkGroup or 'primary' }}</td>
+                                        <td>{{ execution.SubmissionDateTime or 'N/A' }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('athena.query_results', execution_id=execution.QueryExecutionId) }}"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if execution.Status == 'RUNNING' %}
+                                                <form method="POST" action="{{ url_for('athena.stop_query', execution_id=execution.QueryExecutionId) }}"
+                                                      style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            onclick="return confirm('¿Detener esta consulta?')">
+                                                        <i class="fas fa-stop"></i>
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay ejecuciones de consultas</h5>
+                            <p class="text-muted">Ejecuta tu primera consulta SQL en Athena.</p>
+                            <a href="{{ url_for('athena.execute_query') }}" class="btn btn-primary">
+                                <i class="fas fa-play me-2"></i>Ejecutar Primera Consulta
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

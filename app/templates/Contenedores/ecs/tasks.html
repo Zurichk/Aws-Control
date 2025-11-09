@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}ECS - Tareas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Tareas ECS</h2>
+                        <small class="text-muted">Gestionar tareas en ejecución en clusters de Amazon ECS</small>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{{ url_for('ecs.run_task') }}" class="btn btn-success">
+                            <i class="fas fa-play"></i> Ejecutar Tarea
+                        </a>
+                        <a href="{{ url_for('ecs.clusters') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Clusters
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if tasks %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-tasks text-primary"></i> Tarea</th>
+                                        <th><i class="fas fa-cube text-info"></i> Cluster</th>
+                                        <th><i class="fas fa-play-circle text-success"></i> Estado</th>
+                                        <th><i class="fas fa-file-code text-warning"></i> Definición</th>
+                                        <th><i class="fas fa-clock text-secondary"></i> Iniciada</th>
+                                        <th><i class="fas fa-cogs text-dark"></i> Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for task in tasks %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div>
+                                                    <strong>{{ task.taskArn.split('/')[-1] }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ task.taskDefinitionArn.split('/')[-1] }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ task.clusterArn.split('/')[-1] }}</span>
+                                        </td>
+                                        <td>
+                                            {% if task.lastStatus == 'RUNNING' %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-play-circle"></i> Ejecutándose
+                                                </span>
+                                            {% elif task.lastStatus == 'PENDING' %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock"></i> Pendiente
+                                                </span>
+                                            {% elif task.lastStatus == 'STOPPED' %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-stop-circle"></i> Detenida
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-light text-dark">{{ task.lastStatus }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ task.taskDefinitionArn.split('/')[-1] }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ task.createdAt.strftime('%Y-%m-%d %H:%M') if task.createdAt else 'N/A' }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                {% if task.lastStatus == 'RUNNING' %}
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="confirmStop('{{ task.taskArn }}', '{{ task.taskArn.split('/')[-1] }}')"
+                                                        title="Detener Tarea">
+                                                    <i class="fas fa-stop"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-outline-info" 
+                                                        onclick="showTaskDetails('{{ task.taskArn }}')"
+                                                        title="Ver Detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No hay tareas en ejecución</h4>
+                            <p class="text-muted">No se encontraron tareas ECS en ejecución en los clusters disponibles.</p>
+                            <a href="{{ url_for('ecs.run_task') }}" class="btn btn-success">
+                                <i class="fas fa-play"></i> Ejecutar Primera Tarea
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de detención -->
+<div class="modal fade" id="stopModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirmar Detención
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea detener la tarea <strong id="taskId"></strong>?</p>
+                <div class="alert alert-warning">
+                    <small>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        La tarea se detendrá inmediatamente y no se puede reiniciar.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="stopForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-stop"></i> Detener Tarea
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de detalles de tarea -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye text-info me-2"></i>Detalles de Tarea
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="taskDetails">Cargando...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmStop(taskArn, taskId) {
+    document.getElementById('taskId').textContent = taskId;
+    document.getElementById('stopForm').action = '{{ url_for("ecs.stop_task") }}?task_arn=' + encodeURIComponent(taskArn);
+    new bootstrap.Modal(document.getElementById('stopModal')).show();
+}
+
+function showTaskDetails(taskArn) {
+    // Aquí se podría hacer una llamada AJAX para obtener detalles completos
+    // Por ahora, mostramos información básica
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Información General</h6>
+                <p><strong>ARN:</strong> ${taskArn}</p>
+                <p><strong>ID:</strong> ${taskArn.split('/').pop()}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Estado</h6>
+                <p>Para ver detalles completos, use la AWS CLI o Console.</p>
+            </div>
+        </div>
+    `;
+    document.getElementById('taskDetails').innerHTML = detailsHtml;
+    new bootstrap.Modal(document.getElementById('detailsModal')).show();
+}
+</script>
+{% endblock %}

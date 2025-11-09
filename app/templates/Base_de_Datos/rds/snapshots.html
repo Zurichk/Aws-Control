@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - RDS Snapshots{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-save text-warning me-2"></i>
+                        Snapshots RDS
+                    </h1>
+                    <p class="text-muted mt-1">Lista de todas tus copias de seguridad y snapshots de bases de datos RDS</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('rds.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Snapshots Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Snapshots de Base de Datos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if snapshots %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID de Snapshot</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                    <th>ID de Instancia</th>
+                                    <th>Motor</th>
+                                    <th>Versión</th>
+                                    <th>Tamaño (GB)</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for snapshot in snapshots %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ snapshot.id }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if snapshot.type == 'automated' %}
+                                            <span class="badge bg-info">Automático</span>
+                                        {% elif snapshot.type == 'manual' %}
+                                            <span class="badge bg-primary">Manual</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ snapshot.type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if snapshot.status == 'available' %}
+                                            <span class="badge bg-success">Disponible</span>
+                                        {% elif snapshot.status == 'creating' %}
+                                            <span class="badge bg-warning">Creando</span>
+                                        {% elif snapshot.status == 'deleting' %}
+                                            <span class="badge bg-danger">Eliminando</span>
+                                        {% else %}
+                                            <span class="badge bg-info">{{ snapshot.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ snapshot.instance_id }}</td>
+                                    <td>{{ snapshot.engine|upper }}</td>
+                                    <td>{{ snapshot.engine_version }}</td>
+                                    <td>{{ snapshot.allocated_storage }}</td>
+                                    <td>{{ snapshot.created }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <form method="POST" action="{{ url_for('rds.delete_snapshot', snapshot_id=snapshot.id) }}" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar Snapshot" onclick="return confirm('¿Estás seguro de que quieres eliminar este snapshot? Esta acción no se puede deshacer.')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-save fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No hay snapshots RDS</h4>
+                        <p class="text-muted">No se encontraron snapshots de bases de datos RDS en tu cuenta.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

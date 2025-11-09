@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitar Certificado - Certificate Manager{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Solicitar Nuevo Certificado SSL/TLS</h2>
+                        <small class="text-muted">Obtén certificados gratuitos para tus dominios</small>
+                    </div>
+                    <a href="{{ url_for('acm.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Certificados
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="domain_name" class="form-label">
+                                        <strong>Nombre de Dominio Principal</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="domain_name" name="domain_name"
+                                           placeholder="ej: example.com" required
+                                           value="{{ request.form.domain_name if request.form else '' }}">
+                                    <div class="form-text">
+                                        El dominio principal para el certificado SSL/TLS.
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa un nombre de dominio válido.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="san-container" class="form-label">
+                                        <strong>Nombres Alternativos del Sujeto (SAN)</strong>
+                                    </label>
+                                    <div id="san-container">
+                                        <div class="input-group mb-2 san-entry">
+                                            <input type="text" class="form-control" name="subject_alternative_names[]"
+                                                   placeholder="ej: www.example.com">
+                                            <button type="button" class="btn btn-outline-danger remove-san" style="display: none;">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="add-san">
+                                        <i class="fas fa-plus"></i> Agregar Dominio Alternativo
+                                    </button>
+                                    <div class="form-text">
+                                        Agrega dominios adicionales que serán incluidos en el certificado.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="validation_method" class="form-label">
+                                        <strong>Método de Validación</strong>
+                                    </label>
+                                    <select class="form-select" id="validation_method" name="validation_method">
+                                        <option value="DNS" selected>DNS (Recomendado)</option>
+                                        <option value="EMAIL">Email</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Método para validar la propiedad del dominio.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="key_algorithm" class="form-label">
+                                        <strong>Algoritmo de Clave</strong>
+                                    </label>
+                                    <select class="form-select" id="key_algorithm" name="key_algorithm">
+                                        <option value="RSA_2048" selected>RSA 2048-bit</option>
+                                        <option value="RSA_3072">RSA 3072-bit</option>
+                                        <option value="RSA_4096">RSA 4096-bit</option>
+                                        <option value="EC_prime256v1">ECDSA P-256</option>
+                                        <option value="EC_secp384r1">ECDSA P-384</option>
+                                        <option value="EC_secp521r1">ECDSA P-521</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Algoritmo criptográfico para la clave privada.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Información Importante</h6>
+                            <ul class="mb-0">
+                                <li>Los certificados emitidos por AWS Certificate Manager son gratuitos.</li>
+                                <li>Debes validar la propiedad de todos los dominios antes de que el certificado sea emitido.</li>
+                                <li>Los certificados se renuevan automáticamente antes de expirar.</li>
+                                <li>Puedes usar estos certificados con servicios como CloudFront, ELB, API Gateway, etc.</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('acm.index') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-certificate"></i> Solicitar Certificado
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Agregar campos para nombres alternativos del sujeto
+document.getElementById('add-san').addEventListener('click', function() {
+    const container = document.getElementById('san-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'input-group mb-2 san-entry';
+    newEntry.innerHTML = `
+        <input type="text" class="form-control" name="subject_alternative_names[]" placeholder="ej: www.example.com">
+        <button type="button" class="btn btn-outline-danger remove-san">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    container.appendChild(newEntry);
+    updateRemoveButtons();
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-san') || e.target.closest('.remove-san')) {
+        e.target.closest('.san-entry').remove();
+        updateRemoveButtons();
+    }
+});
+
+function updateRemoveButtons() {
+    const entries = document.querySelectorAll('.san-entry');
+    entries.forEach(entry => {
+        const removeBtn = entry.querySelector('.remove-san');
+        removeBtn.style.display = entries.length > 1 ? 'block' : 'none';
+    });
+}
+
+// Validación del formulario
+(function () {
+    'use strict'
+    const forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %}

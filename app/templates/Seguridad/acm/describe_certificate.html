@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Detalles del Certificado - Certificate Manager{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-certificate text-success"></i> Detalles del Certificado
+                        </h2>
+                        <small class="text-muted">{{ certificate.domain_name }}</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('acm.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a Certificados
+                        </a>
+                        {% if certificate.status in ['PENDING_VALIDATION', 'ISSUED'] %}
+                        <button class="btn btn-outline-danger" onclick="confirmDelete()">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Información General</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold">ARN:</td>
+                                    <td><code>{{ certificate.certificate_arn }}</code></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Dominio Principal:</td>
+                                    <td><strong>{{ certificate.domain_name }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Estado:</td>
+                                    <td>
+                                        {% set status = certificate.status %}
+                                        {% if status == 'PENDING_VALIDATION' %}
+                                            <span class="badge bg-warning">Pendiente Validación</span>
+                                        {% elif status == 'ISSUED' %}
+                                            <span class="badge bg-success">Emitido</span>
+                                        {% elif status == 'INACTIVE' %}
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        {% elif status == 'EXPIRED' %}
+                                            <span class="badge bg-danger">Expirado</span>
+                                        {% elif status == 'VALIDATION_TIMED_OUT' %}
+                                            <span class="badge bg-danger">Validación Expirada</span>
+                                        {% elif status == 'REVOKED' %}
+                                            <span class="badge bg-danger">Revocado</span>
+                                        {% elif status == 'FAILED' %}
+                                            <span class="badge bg-danger">Fallido</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Tipo:</td>
+                                    <td>{{ certificate.type or 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Algoritmo de Clave:</td>
+                                    <td>{{ certificate.key_algorithm or 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Emisor:</td>
+                                    <td>{{ certificate.issuer or 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Fecha de Emisión:</td>
+                                    <td>
+                                        {% if certificate.not_before %}
+                                            {{ certificate.not_before.strftime('%Y-%m-%d %H:%M:%S') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Fecha de Expiración:</td>
+                                    <td>
+                                        {% if certificate.not_after %}
+                                            {{ certificate.not_after.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            {% if certificate.not_after < datetime.now() %}
+                                                <span class="text-danger">(Expirado)</span>
+                                            {% endif %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Nombres Alternativos del Sujeto</h5>
+                            {% if certificate.subject_alternative_names %}
+                                <ul class="list-group mb-3">
+                                    {% for san in certificate.subject_alternative_names %}
+                                    <li class="list-group-item">{{ san }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">No hay nombres alternativos configurados.</p>
+                            {% endif %}
+
+                            {% if certificate.status == 'PENDING_VALIDATION' %}
+                            <h5 class="mb-3">Validación del Dominio</h5>
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Validación Pendiente</h6>
+                                <p>Debes completar la validación del dominio antes de que el certificado sea emitido.</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showValidationDetails()">
+                                    <i class="fas fa-info-circle"></i> Ver Detalles de Validación
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if certificate.status == 'PENDING_VALIDATION' %}
+                    <div class="row mt-4" id="validation-details" style="display: none;">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Detalles de Validación</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if certificate.domain_validation_options %}
+                                        {% for validation in certificate.domain_validation_options %}
+                                        <div class="mb-3">
+                                            <h6>Dominio: {{ validation.domain_name }}</h6>
+                                            {% if validation.validation_method == 'DNS' %}
+                                                <p><strong>Método:</strong> DNS</p>
+                                                {% if validation.resource_record %}
+                                                <div class="alert alert-info">
+                                                    <p><strong>Registro DNS requerido:</strong></p>
+                                                    <p><strong>Nombre:</strong> {{ validation.resource_record.name }}</p>
+                                                    <p><strong>Tipo:</strong> {{ validation.resource_record.type }}</p>
+                                                    <p><strong>Valor:</strong> {{ validation.resource_record.value }}</p>
+                                                </div>
+                                                {% endif %}
+                                            {% elif validation.validation_method == 'EMAIL' %}
+                                                <p><strong>Método:</strong> Email</p>
+                                                {% if validation.validation_emails %}
+                                                <p><strong>Emails de validación:</strong></p>
+                                                <ul>
+                                                    {% for email in validation.validation_emails %}
+                                                    <li>{{ email }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted">No hay información de validación disponible.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar certificado -->
+<div class="modal fade" id="deleteCertificateModal" tabindex="-1" aria-labelledby="deleteCertificateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCertificateModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el certificado para <strong>{{ certificate.domain_name }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <strong>Advertencia:</strong> Esta acción no se puede deshacer. El certificado será eliminado permanentemente.
+                </div>
+                <div class="alert alert-info">
+                    <strong>Nota:</strong> Solo puedes eliminar certificados que no estén siendo utilizados por otros servicios de AWS.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('acm.delete_certificate', certificate_arn=certificate.certificate_arn) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar Certificado</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete() {
+    new bootstrap.Modal(document.getElementById('deleteCertificateModal')).show();
+}
+
+function showValidationDetails() {
+    const details = document.getElementById('validation-details');
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+    } else {
+        details.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

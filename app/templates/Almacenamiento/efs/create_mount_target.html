@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Mount Target EFS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('efs.index') }}">EFS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('efs.file_systems') }}">File Systems</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('efs.file_system_detail', file_system_id=file_system_id) }}">{{ file_system_id }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear Mount Target</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-link me-2"></i>
+                        Crear Mount Target para File System: <code>{{ file_system_id }}</code>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subnet_id" class="form-label">Subnet *</label>
+                                    <select class="form-select" id="subnet_id" name="subnet_id" required>
+                                        <option value="">Seleccionar subnet...</option>
+                                        {% for subnet in subnets %}
+                                        <option value="{{ subnet.SubnetId }}">
+                                            {{ subnet.SubnetId }} - {{ subnet.CidrBlock }}
+                                            {% if subnet.AvailabilityZone %}
+                                                ({{ subnet.AvailabilityZone }})
+                                            {% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        La subnet donde se creará el mount target. Debe estar en una VPC con acceso a EFS.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ip_address" class="form-label">Dirección IP (opcional)</label>
+                                    <input type="text" class="form-control" id="ip_address" name="ip_address"
+                                           placeholder="10.0.1.100" pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                                    <div class="form-text">
+                                        Dirección IP específica para el mount target. Si no se especifica, AWS asignará una automáticamente.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="security_groups" class="form-label">Security Groups</label>
+                                    <select class="form-select" id="security_groups" name="security_groups" multiple>
+                                        {% for sg in security_groups %}
+                                        <option value="{{ sg.GroupId }}">
+                                            {{ sg.GroupId }} - {{ sg.GroupName }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Security groups para controlar el acceso al mount target. Si no se especifican, se usará el security group por defecto de la VPC.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('efs.file_system_detail', file_system_id=file_system_id) }}"
+                                       class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-link me-1"></i>
+                                        Crear Mount Target
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información sobre Mount Targets
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>¿Qué es un Mount Target?</h6>
+                            <p>Un mount target es un punto de montaje NFS en una subnet específica que permite a las instancias EC2 acceder al file system EFS. Cada mount target tiene su propia dirección IP y puede tener diferentes security groups.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Consideraciones importantes</h6>
+                            <ul class="mb-0">
+                                <li>Un file system puede tener hasta 50 mount targets</li>
+                                <li>Cada mount target debe estar en una subnet diferente</li>
+                                <li>Las instancias EC2 deben estar en la misma VPC que el mount target</li>
+                                <li>Los security groups controlan el acceso NFS (puerto 2049)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

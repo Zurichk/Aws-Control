@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clusters EKS - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.index') }}">EKS</a></li>
+                    <li class="breadcrumb-item active">Clusters</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Clusters EKS</h2>
+        <a href="{{ url_for('eks.create_cluster') }}" class="btn btn-aws">
+            <i class="fas fa-plus"></i> Crear Cluster
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        {% if clusters %}
+            {% for cluster in clusters %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ cluster.name }}</h5>
+                        <span class="badge bg-{{ 'success' if cluster.status == 'ACTIVE' else 'warning' if cluster.status == 'CREATING' else 'danger' }}">
+                            {{ cluster.status }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Versión</small><br>
+                                <strong>{{ cluster.version }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Creado</small><br>
+                                <small>{{ cluster.created_at }}</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Node Groups</small><br>
+                                <strong>{{ cluster.nodegroups }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Fargate Profiles</small><br>
+                                <strong>{{ cluster.fargate_profiles }}</strong>
+                            </div>
+                        </div>
+                        {% if cluster.endpoint != 'N/A' %}
+                        <hr>
+                        <small class="text-muted">Endpoint</small><br>
+                        <small class="text-break">{{ cluster.endpoint }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100">
+                            <a href="{{ url_for('eks.cluster_detail', cluster_name=cluster.name) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i> Ver Detalles
+                            </a>
+                            <a href="{{ url_for('eks.nodegroups', cluster_name=cluster.name) }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-server"></i> Node Groups
+                            </a>
+                            <form method="POST" action="{{ url_for('eks.delete_cluster', cluster_name=cluster.name) }}" class="d-inline"
+                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar el cluster {{ cluster.name }}? Esta acción no se puede deshacer.')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cubes fa-3x text-muted mb-3"></i>
+                        <h5>No hay clusters EKS</h5>
+                        <p class="text-muted">No se encontraron clusters EKS en tu cuenta de AWS.</p>
+                        <a href="{{ url_for('eks.create_cluster') }}" class="btn btn-aws">
+                            <i class="fas fa-plus"></i> Crear tu primer cluster
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {% endblock %}
+</body>
+</html>

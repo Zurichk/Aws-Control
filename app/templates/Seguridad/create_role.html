@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Crear Rol IAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-user-shield text-success me-2"></i>
+                        Crear Rol IAM
+                    </h1>
+                    <p class="text-muted mt-1">Crear un nuevo rol en AWS Identity and Access Management</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('iam.roles') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Roles
+                    </a>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-body">
+                            <form action="{{ url_for('iam.create_role') }}" method="POST">
+                                <div class="mb-3">
+                                    <label for="role_name" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>Nombre del Rol *
+                                    </label>
+                                    <input type="text" class="form-control" id="role_name" name="role_name"
+                                           placeholder="mi-rol" required>
+                                    <div class="form-text">
+                                        El nombre debe ser único en la cuenta AWS. Solo puede contener letras, números y los siguientes caracteres: +=,.@-
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="assume_role_policy" class="form-label">
+                                        <i class="fas fa-file-code me-2"></i>Política de Confianza (JSON) *
+                                    </label>
+                                    <textarea class="form-control" id="assume_role_policy" name="assume_role_policy"
+                                              rows="10" required placeholder='{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}'></textarea>
+                                    <div class="form-text">
+                                        Define qué entidades pueden asumir este rol. Para EC2 instances usa "ec2.amazonaws.com", para Lambda usa "lambda.amazonaws.com", etc.
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Nota:</strong> Después de crear el rol, podrás adjuntar políticas de permisos desde la página de detalle del rol.
+                                </div>
+
+                                <div class="d-flex gap-2 mt-4">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-user-shield me-2"></i>Crear Rol
+                                    </button>
+                                    <a href="{{ url_for('iam.roles') }}" class="btn btn-outline-secondary">Cancelar</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del nombre del rol
+document.getElementById('role_name').addEventListener('input', function(e) {
+    const roleName = e.target.value;
+    const regex = /^[a-zA-Z0-9+=,.@-]+$/;
+
+    if (!regex.test(roleName)) {
+        e.target.setCustomValidity('El nombre solo puede contener letras, números y +=,.@-');
+    } else {
+        e.target.setCustomValidity('');
+    }
+});
+
+// Formatear JSON automáticamente
+document.getElementById('assume_role_policy').addEventListener('blur', function(e) {
+    try {
+        const json = JSON.parse(e.target.value);
+        e.target.value = JSON.stringify(json, null, 2);
+    } catch (error) {
+        // No hacer nada si no es JSON válido
+    }
+});
+</script>
+
+{% endblock %}

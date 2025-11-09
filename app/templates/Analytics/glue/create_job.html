@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Glue - Crear Job ETL{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-play-circle me-2"></i>Crear Nuevo Job ETL
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="job_name" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Nombre del Job *
+                                    </label>
+                                    <input type="text" class="form-control" id="job_name" name="job_name"
+                                           placeholder="mi-job-etl" required>
+                                    <div class="form-text">Nombre único para el job ETL</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="max_capacity" class="form-label">
+                                        <i class="fas fa-tachometer-alt me-1"></i>Capacidad Máxima (DPU)
+                                    </label>
+                                    <input type="number" class="form-control" id="max_capacity" name="max_capacity"
+                                           placeholder="2" value="2" min="2" max="100" step="0.25">
+                                    <div class="form-text">Data Processing Units (2-100). 1 DPU = 4 vCPU + 16 GB RAM</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">
+                                <i class="fas fa-user-shield me-1"></i>Rol IAM *
+                            </label>
+                            <input type="text" class="form-control" id="role" name="role"
+                                   placeholder="arn:aws:iam::123456789012:role/AWSGlueServiceRole"
+                                   required>
+                            <div class="form-text">
+                                ARN del rol IAM con permisos para Glue, S3 y otros servicios necesarios.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="script_location" class="form-label">
+                                <i class="fas fa-code me-1"></i>Ubicación del Script *
+                            </label>
+                            <input type="text" class="form-control" id="script_location" name="script_location"
+                                   placeholder="s3://mi-bucket/scripts/mi-job.py" required>
+                            <div class="form-text">
+                                Ruta S3 donde está almacenado el script Python/PySpark.
+                                <a href="#" onclick="showScriptHelp()" class="text-decoration-none">¿Cómo crear un script?</a>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-lightbulb me-2"></i>¿Qué hace un Job ETL?</h6>
+                            <p class="mb-1">Los jobs ETL de AWS Glue procesan y transforman datos usando Apache Spark:</p>
+                            <ul class="mb-0">
+                                <li>Leen datos del Catálogo de Glue (tablas creadas por crawlers)</li>
+                                <li>Ejecutan transformaciones usando PySpark o Python</li>
+                                <li>Escriben resultados en S3, Redshift, RDS u otros destinos</li>
+                                <li>Escalan automáticamente según la carga de trabajo</li>
+                            </ul>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-code me-2"></i>Script de Ejemplo</h6>
+                            <pre class="bg-light p-2 rounded"><code>import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+
+## @params: [JOB_NAME]
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+# Leer datos del catálogo
+datasource0 = glueContext.create_dynamic_frame.from_catalog(
+    database="default",
+    table_name="mi_tabla",
+    transformation_ctx="datasource0"
+)
+
+# Aplicar transformaciones
+transformed = ApplyMapping.apply(
+    frame=datasource0,
+    mappings=[("columna1", "string", "columna1", "string")],
+    transformation_ctx="transformed"
+)
+
+# Escribir resultados
+glueContext.write_dynamic_frame.from_options(
+    frame=transformed,
+    connection_type="s3",
+    connection_options={"path": "s3://mi-bucket/resultados/"},
+    format="parquet",
+    transformation_ctx="datasink"
+)
+
+job.commit()</code></pre>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('glue.jobs') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Crear Job ETL
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de ayuda para scripts -->
+<div class="modal fade" id="scriptHelpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-code me-2"></i>Crear Script ETL para Glue</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Opción 1: Usar AWS Glue Console</h6>
+                <ol>
+                    <li>Ve a <a href="https://console.aws.amazon.com/glue/" target="_blank">Glue Console</a></li>
+                    <li>Jobs > Add job</li>
+                    <li>Selecciona "Spark script editor"</li>
+                    <li>Escribe o pega tu código PySpark</li>
+                    <li>Guarda el script en S3</li>
+                </ol>
+
+                <h6>Opción 2: Desarrollar localmente</h6>
+                <ol>
+                    <li>Crea un script Python con el código ETL</li>
+                    <li>Sube el script a un bucket S3</li>
+                    <li>Referencia la ruta S3 en la configuración del job</li>
+                </ol>
+
+                <h6>Recursos útiles:</h6>
+                <ul>
+                    <li><a href="https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl.html" target="_blank">Guía de Programación ETL</a></li>
+                    <li><a href="https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api.html" target="_blank">API Reference</a></li>
+                    <li><a href="https://github.com/aws-samples/aws-glue-samples" target="_blank">Ejemplos en GitHub</a></li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showScriptHelp() {
+    const modal = new bootstrap.Modal(document.getElementById('scriptHelpModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

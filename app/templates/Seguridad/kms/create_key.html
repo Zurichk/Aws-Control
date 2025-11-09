@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Crear Clave KMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-plus-circle text-warning me-2"></i>
+                        <h5 class="mb-0">Crear Nueva Clave KMS</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('kms.create_key') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Descripción <span class="text-muted">(opcional)</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="description" name="description"
+                                           placeholder="Descripción de la clave" maxlength="8192">
+                                    <div class="form-text">Una descripción opcional para identificar la clave.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="alias" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>
+                                        Alias <span class="text-muted">(opcional)</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">alias/</span>
+                                        <input type="text" class="form-control" id="alias" name="alias"
+                                               placeholder="mi-clave-encriptacion" pattern="^[a-zA-Z0-9/_-]+$">
+                                    </div>
+                                    <div class="form-text">Un alias amigable para la clave (solo letras, números, guiones y barras).</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="key_usage" class="form-label">
+                                        <i class="fas fa-cogs me-2"></i>
+                                        Uso de la Clave
+                                    </label>
+                                    <select class="form-select" id="key_usage" name="key_usage">
+                                        <option value="ENCRYPT_DECRYPT" selected>Encriptar/Desencriptar</option>
+                                        <option value="SIGN_VERIFY">Firmar/Verificar</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <strong>Encriptar/Desencriptar:</strong> Para proteger datos<br>
+                                        <strong>Firmar/Verificar:</strong> Para firmas digitales
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="key_spec" class="form-label">
+                                        <i class="fas fa-key me-2"></i>
+                                        Especificación de la Clave
+                                    </label>
+                                    <select class="form-select" id="key_spec" name="key_spec">
+                                        <option value="SYMMETRIC_DEFAULT" selected>SYMÉTRICA (AES-256-GCM)</option>
+                                        <option value="RSA_2048">RSA 2048</option>
+                                        <option value="RSA_3072">RSA 3072</option>
+                                        <option value="RSA_4096">RSA 4096</option>
+                                        <option value="ECC_NIST_P256">ECC P-256</option>
+                                        <option value="ECC_NIST_P384">ECC P-384</option>
+                                        <option value="ECC_NIST_P521">ECC P-521</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <strong>SYMÉTRICA:</strong> Más rápida, para encriptación general<br>
+                                        <strong>RSA/ECC:</strong> Para firmas y criptografía asimétrica
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="origin" class="form-label">
+                                <i class="fas fa-server me-2"></i>
+                                Origen de la Clave
+                            </label>
+                            <select class="form-select" id="origin" name="origin">
+                                <option value="AWS_KMS" selected>AWS KMS (generada por AWS)</option>
+                                <option value="EXTERNAL">Externa (importada)</option>
+                            </select>
+                            <div class="form-text">
+                                <strong>AWS KMS:</strong> AWS genera y administra la clave<br>
+                                <strong>Externa:</strong> Importarás tu propia clave material
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="multi_region" name="multi_region">
+                                <label class="form-check-label" for="multi_region">
+                                    <i class="fas fa-globe me-2"></i>
+                                    Clave Multi-Región
+                                </label>
+                            </div>
+                            <div class="form-text">Permite replicar la clave en múltiples regiones de AWS.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auto_rotate" name="auto_rotate" checked>
+                                <label class="form-check-label" for="auto_rotate">
+                                    <i class="fas fa-sync me-2"></i>
+                                    Rotación Automática
+                                </label>
+                            </div>
+                            <div class="form-text">AWS rotará automáticamente la clave cada año (solo para claves simétricas).</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Información de Costos:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Claves simétricas: $1/mes por clave</li>
+                                        <li>Claves asimétricas: $1/mes por clave</li>
+                                        <li>Claves multi-región: Costo adicional por réplica</li>
+                                        <li>Operaciones de API: $0.03 por 10,000 solicitudes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('kms.index') }}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-plus me-2"></i>Crear Clave
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Guía de Creación de Claves
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="keyGuideAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#symmetric">
+                                    <i class="fas fa-key me-2"></i>Claves Simétricas vs Asimétricas
+                                </button>
+                            </h2>
+                            <div id="symmetric" class="accordion-collapse collapse show" data-bs-parent="#keyGuideAccordion">
+                                <div class="accordion-body">
+                                    <p><strong>Simétricas (AES-256-GCM):</strong></p>
+                                    <ul>
+                                        <li>Más rápidas y eficientes</li>
+                                        <li>Para encriptar datos hasta 4KB directamente</li>
+                                        <li>Para datos más grandes, usar "claves de datos"</li>
+                                        <li>Soportan rotación automática</li>
+                                    </ul>
+                                    <p><strong>Asimétricas (RSA, ECC):</strong></p>
+                                    <ul>
+                                        <li>Para firmas digitales y verificación</li>
+                                        <li>Para criptografía de clave pública</li>
+                                        <li>No soportan rotación automática</li>
+                                        <li>Más lentas pero más seguras para ciertos casos</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#aliases">
+                                    <i class="fas fa-tag me-2"></i>Aliases y Nombres
+                                </button>
+                            </h2>
+                            <div id="aliases" class="accordion-collapse collapse" data-bs-parent="#keyGuideAccordion">
+                                <div class="accordion-body">
+                                    <p>Los aliases son nombres amigables para tus claves:</p>
+                                    <ul>
+                                        <li>Deben comenzar con <code>alias/</code></li>
+                                        <li>Solo letras, números, guiones, barras y guiones bajos</li>
+                                        <li>Pueden cambiarse sin afectar la funcionalidad</li>
+                                        <li>Útiles para identificar claves en aplicaciones</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rotation">
+                                    <i class="fas fa-sync me-2"></i>Rotación de Claves
+                                </button>
+                            </h2>
+                            <div id="rotation" class="accordion-collapse collapse" data-bs-parent="#keyGuideAccordion">
+                                <div class="accordion-body">
+                                    <p>La rotación mantiene la seguridad de tus datos:</p>
+                                    <ul>
+                                        <li><strong>Automática:</strong> AWS rota la clave cada año</li>
+                                        <li><strong>Manual:</strong> Puedes rotar cuando necesites</li>
+                                        <li>Los datos encriptados con la clave anterior siguen siendo accesibles</li>
+                                        <li>Recomendado para claves de encriptación activa</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Actualizar especificaciones de clave basadas en el uso
+document.getElementById('key_usage').addEventListener('change', function() {
+    const keySpecSelect = document.getElementById('key_spec');
+    const selectedUsage = this.value;
+
+    // Limpiar opciones actuales
+    keySpecSelect.innerHTML = '';
+
+    if (selectedUsage === 'ENCRYPT_DECRYPT') {
+        keySpecSelect.innerHTML = `
+            <option value="SYMMETRIC_DEFAULT" selected>SYMÉTRICA (AES-256-GCM)</option>
+        `;
+    } else if (selectedUsage === 'SIGN_VERIFY') {
+        keySpecSelect.innerHTML = `
+            <option value="RSA_2048">RSA 2048</option>
+            <option value="RSA_3072">RSA 3072</option>
+            <option value="RSA_4096" selected>RSA 4096</option>
+            <option value="ECC_NIST_P256">ECC P-256</option>
+            <option value="ECC_NIST_P384">ECC P-384</option>
+            <option value="ECC_NIST_P521">ECC P-521</option>
+        `;
+    }
+});
+
+// Deshabilitar rotación automática para claves asimétricas
+document.getElementById('key_spec').addEventListener('change', function() {
+    const autoRotateCheckbox = document.getElementById('auto_rotate');
+    const selectedSpec = this.value;
+
+    if (selectedSpec.startsWith('RSA_') || selectedSpec.startsWith('ECC_')) {
+        autoRotateCheckbox.checked = false;
+        autoRotateCheckbox.disabled = true;
+    } else {
+        autoRotateCheckbox.disabled = false;
+        autoRotateCheckbox.checked = true;
+    }
+});
+</script>
+
+{% endblock %}

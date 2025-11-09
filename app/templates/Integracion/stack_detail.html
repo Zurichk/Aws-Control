@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}CloudFormation - Detalles del Stack{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Stack: {{ stack.stack_name }}</h2>
+                        <small class="text-muted">Detalles completos del stack de CloudFormation</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('cloudformation.update_stack', stack_name=stack.stack_name) }}"
+                           class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Actualizar
+                        </a>
+                        <button type="button" class="btn btn-danger"
+                                onclick="deleteStack('{{ stack.stack_name }}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                        <a href="{{ url_for('cloudformation.stacks') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Información básica del stack -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Información del Stack</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <dl class="row">
+                                                <dt class="col-sm-4">Nombre:</dt>
+                                                <dd class="col-sm-8">{{ stack.stack_name }}</dd>
+
+                                                <dt class="col-sm-4">Estado:</dt>
+                                                <dd class="col-sm-8">
+                                                    <span class="badge
+                                                        {% if 'CREATE_COMPLETE' in stack.stack_status or 'UPDATE_COMPLETE' in stack.stack_status %}bg-success
+                                                        {% elif 'IN_PROGRESS' in stack.stack_status %}bg-primary
+                                                        {% elif 'FAILED' in stack.stack_status %}bg-danger
+                                                        {% elif 'DELETE' in stack.stack_status %}bg-warning
+                                                        {% else %}bg-secondary{% endif %}">
+                                                        {{ stack.stack_status }}
+                                                    </span>
+                                                </dd>
+
+                                                <dt class="col-sm-4">Descripción:</dt>
+                                                <dd class="col-sm-8">{{ stack.description or 'Sin descripción' }}</dd>
+
+                                                <dt class="col-sm-4">Creado:</dt>
+                                                <dd class="col-sm-8">{{ stack.creation_time.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                            </dl>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <dl class="row">
+                                                {% if stack.last_updated_time %}
+                                                    <dt class="col-sm-4">Última actualización:</dt>
+                                                    <dd class="col-sm-8">{{ stack.last_updated_time.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                                {% endif %}
+
+                                                <dt class="col-sm-4">ID del Stack:</dt>
+                                                <dd class="col-sm-8">
+                                                    <code class="small">{{ stack.stack_id }}</code>
+                                                </dd>
+
+                                                {% if stack.stack_status_reason %}
+                                                    <dt class="col-sm-4">Razón del estado:</dt>
+                                                    <dd class="col-sm-8">{{ stack.stack_status_reason }}</dd>
+                                                {% endif %}
+
+                                                <dt class="col-sm-4">Timeout:</dt>
+                                                <dd class="col-sm-8">{{ stack.timeout_in_minutes or 'N/A' }} minutos</dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parámetros del stack -->
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Parámetros</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if stack.parameters %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Parámetro</th>
+                                                        <th>Valor</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for param in stack.parameters %}
+                                                        <tr>
+                                                            <td><code>{{ param.parameter_key }}</code></td>
+                                                            <td class="text-truncate" style="max-width: 200px;" title="{{ param.parameter_value }}">
+                                                                {{ param.parameter_value }}
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted mb-0">Sin parámetros</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs para eventos y recursos -->
+                    <ul class="nav nav-tabs" id="stackTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="events-tab" data-bs-toggle="tab"
+                                    data-bs-target="#events" type="button" role="tab">
+                                <i class="fas fa-history"></i> Eventos ({{ events|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="resources-tab" data-bs-toggle="tab"
+                                    data-bs-target="#resources" type="button" role="tab">
+                                <i class="fas fa-cubes"></i> Recursos ({{ resources|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="outputs-tab" data-bs-toggle="tab"
+                                    data-bs-target="#outputs" type="button" role="tab">
+                                <i class="fas fa-sign-out-alt"></i> Outputs
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="stackTabsContent">
+                        <!-- Eventos del stack -->
+                        <div class="tab-pane fade show active" id="events" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Eventos del Stack</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if events %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Hora</th>
+                                                        <th>Recurso</th>
+                                                        <th>Tipo</th>
+                                                        <th>Estado</th>
+                                                        <th>Razón</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for event in events %}
+                                                        <tr>
+                                                            <td class="small">{{ event.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                                            <td>
+                                                                <code class="small">{{ event.logical_resource_id }}</code>
+                                                                {% if event.physical_resource_id %}
+                                                                    <br><small class="text-muted">{{ event.physical_resource_id }}</small>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="small">{{ event.resource_type }}</td>
+                                                            <td>
+                                                                <span class="badge
+                                                                    {% if 'CREATE_COMPLETE' in event.resource_status or 'UPDATE_COMPLETE' in event.resource_status %}badge bg-success
+                                                                    {% elif 'IN_PROGRESS' in event.resource_status %}badge bg-primary
+                                                                    {% elif 'FAILED' in event.resource_status %}badge bg-danger
+                                                                    {% else %}badge bg-secondary{% endif %}">
+                                                                    {{ event.resource_status }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="small">{{ event.resource_status_reason or '' }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">No hay eventos disponibles</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recursos del stack -->
+                        <div class="tab-pane fade" id="resources" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Recursos del Stack</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if resources %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nombre Lógico</th>
+                                                        <th>Tipo</th>
+                                                        <th>Estado</th>
+                                                        <th>ID Físico</th>
+                                                        <th>Última Actualización</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for resource in resources %}
+                                                        <tr>
+                                                            <td><code>{{ resource.logical_resource_id }}</code></td>
+                                                            <td class="small">{{ resource.resource_type }}</td>
+                                                            <td>
+                                                                <span class="badge
+                                                                    {% if resource.resource_status == 'CREATE_COMPLETE' or resource.resource_status == 'UPDATE_COMPLETE' %}badge bg-success
+                                                                    {% elif resource.resource_status == 'CREATE_IN_PROGRESS' or resource.resource_status == 'UPDATE_IN_PROGRESS' %}badge bg-primary
+                                                                    {% elif 'FAILED' in resource.resource_status %}badge bg-danger
+                                                                    {% else %}badge bg-secondary{% endif %}">
+                                                                    {{ resource.resource_status }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="small text-truncate" style="max-width: 300px;" title="{{ resource.physical_resource_id or '' }}">
+                                                                {{ resource.physical_resource_id or 'N/A' }}
+                                                            </td>
+                                                            <td class="small">{{ resource.timestamp.strftime('%Y-%m-%d %H:%M:%S') if resource.timestamp else 'N/A' }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">No hay recursos disponibles</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Outputs del stack -->
+                        <div class="tab-pane fade" id="outputs" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Outputs del Stack</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if stack.outputs %}
+                                        <div class="row">
+                                            {% for output in stack.outputs %}
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">{{ output.output_key }}</h6>
+                                                            <p class="card-text small text-muted">{{ output.description or 'Sin descripción' }}</p>
+                                                            <code class="d-block">{{ output.output_value }}</code>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">No hay outputs definidos en este stack</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar stack -->
+<div class="modal fade" id="deleteStackModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    Eliminar Stack
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el stack <strong id="stackName"></strong>?</p>
+                <div class="alert alert-danger">
+                    <strong>Advertencia:</strong> Esta acción eliminará permanentemente todos los recursos
+                    asociados con este stack. Esta operación no se puede deshacer.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar Stack
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteStack(stackName) {
+    document.getElementById('stackName').textContent = stackName;
+    document.getElementById('deleteForm').action = '{{ url_for("cloudformation.delete_stack", stack_name="PLACEHOLDER") }}'.replace('PLACEHOLDER', stackName);
+    new bootstrap.Modal(document.getElementById('deleteStackModal')).show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Route 53 - Panel de Control AWS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Amazon Route 53</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">Route 53 es un servicio web de DNS escalable y de alta disponibilidad. Conecta las solicitudes de los usuarios a aplicaciones de Internet ejecutándose en AWS.</p>
+
+                    <div class="row">
+                        <!-- Hosted Zones -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-globe fa-2x text-primary mb-3"></i>
+                                    <h5 class="card-title">Zonas Hospedadas</h5>
+                                    <p class="card-text">Gestionar zonas DNS hospedadas</p>
+                                    <a href="{{ url_for('route53.hosted_zones') }}" class="btn btn-outline-primary">Ver Zonas</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create Hosted Zone -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-plus-circle fa-2x text-success mb-3"></i>
+                                    <h5 class="card-title">Crear Zona</h5>
+                                    <p class="card-text">Crear nueva zona hospedada</p>
+                                    <a href="{{ url_for('route53.create_hosted_zone') }}" class="btn btn-outline-success">Crear Zona</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DNS Records -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-list fa-2x text-info mb-3"></i>
+                                    <h5 class="card-title">Registros DNS</h5>
+                                    <p class="card-text">Gestionar registros DNS</p>
+                                    <button class="btn btn-outline-info" disabled>Seleccionar zona primero</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Recibir Mensajes SQS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-download text-info me-2"></i>
+                        Recibir Mensajes
+                    </h1>
+                    <p class="text-muted mt-1">Mensajes de la cola: <strong>{{ queue_name }}</strong></p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sqs.send_message', queue_name=queue_name) }}" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+                    </a>
+                    <a href="{{ url_for('sqs.queue_detail', queue_name=queue_name) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>Mensajes Recibidos ({{ messages|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Estos mensajes están ocultos temporalmente para otros consumidores. Si no se procesan, estarán disponibles nuevamente.
+                    </div>
+
+                    {% for message in messages %}
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i>Mensaje ID: {{ message.MessageId }}
+                            </h6>
+                            <small class="text-muted">
+                                Recibido: {{ message.ReceiptHandle[:20] }}...
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6>Contenido del Mensaje:</h6>
+                                    <pre class="bg-light p-3 rounded"><code>{{ message.Body }}</code></pre>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Metadatos:</h6>
+                                    <ul class="list-unstyled small">
+                                        <li><strong>ID:</strong> {{ message.MessageId }}</li>
+                                        <li><strong>Receipt Handle:</strong> {{ message.ReceiptHandle[:30] }}...</li>
+                                        {% if message.Attributes %}
+                                        <li><strong>Atributos:</strong></li>
+                                        <ul class="ms-3">
+                                            {% for key, value in message.Attributes.items() %}
+                                            <li>{{ key }}: {{ value }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Nota:</strong> Para eliminar estos mensajes de la cola, debes procesarlos en tu aplicación.
+                        Si no los procesas antes del tiempo de visibilidad, estarán disponibles para otros consumidores.
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay mensajes</h5>
+                        <p class="text-muted">No se encontraron mensajes disponibles en esta cola.</p>
+                        <a href="{{ url_for('sqs.send_message', queue_name=queue_name) }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Enviar un mensaje de prueba
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

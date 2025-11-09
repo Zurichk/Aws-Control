@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}CloudFront - Panel de Control AWS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Amazon CloudFront</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">CloudFront es un servicio de red de entrega de contenido (CDN) que acelera la distribución de contenido web estático y dinámico a los usuarios.</p>
+
+                    <div class="row">
+                        <!-- Distributions -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-globe fa-2x text-primary mb-3"></i>
+                                    <h5 class="card-title">Distribuciones</h5>
+                                    <p class="card-text">Gestionar distribuciones CloudFront</p>
+                                    <a href="{{ url_for('cloudfront.distributions') }}" class="btn btn-outline-primary">Ver Distribuciones</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create Distribution -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-plus-circle fa-2x text-success mb-3"></i>
+                                    <h5 class="card-title">Crear Distribución</h5>
+                                    <p class="card-text">Crear nueva distribución CloudFront</p>
+                                    <a href="{{ url_for('cloudfront.create_distribution') }}" class="btn btn-outline-success">Crear Distribución</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invalidations -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-sync fa-2x text-warning mb-3"></i>
+                                    <h5 class="card-title">Invalidaciones</h5>
+                                    <p class="card-text">Invalidar caché de distribuciones</p>
+                                    <button class="btn btn-outline-warning" disabled>Seleccionar distribución primero</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

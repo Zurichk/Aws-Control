@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Repositorio {{ repository.repositoryName }} - ECR{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-box text-info me-2"></i>
+                        Repositorio: {{ repository.repositoryName }}
+                    </h1>
+                    <p class="text-muted mt-1">{{ repository.repositoryUri }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('ecr.repository_policy', repo_name=repository.repositoryName) }}"
+                       class="btn btn-outline-info">
+                        <i class="fas fa-shield-alt me-2"></i>Política
+                    </a>
+                    <a href="{{ url_for('ecr.repositories') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Repository Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Información del Repositorio</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-5">Nombre:</dt>
+                                <dd class="col-sm-7">{{ repository.repositoryName }}</dd>
+
+                                <dt class="col-sm-5">ARN:</dt>
+                                <dd class="col-sm-7"><small>{{ repository.repositoryArn }}</small></dd>
+
+                                <dt class="col-sm-5">URI:</dt>
+                                <dd class="col-sm-7"><code>{{ repository.repositoryUri }}</code></dd>
+
+                                <dt class="col-sm-5">Creado:</dt>
+                                <dd class="col-sm-7">{{ repository.createdAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+
+                                <dt class="col-sm-5">Escaneo:</dt>
+                                <dd class="col-sm-7">
+                                    {% if repository.imageScanningConfiguration.scanOnPush %}
+                                    <span class="badge bg-success">Habilitado</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Deshabilitado</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Comandos Docker</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2"><strong>Login:</strong></p>
+                            <code class="d-block mb-3 p-2 bg-light rounded">aws ecr get-login-password --region {{ repository.repositoryArn.split(':')[3] }} | docker login --username AWS --password-stdin {{ repository.repositoryUri.split('/')[0] }}</code>
+
+                            <p class="mb-2"><strong>Push:</strong></p>
+                            <code class="d-block mb-3 p-2 bg-light rounded">docker tag my-image:latest {{ repository.repositoryUri }}:latest<br>docker push {{ repository.repositoryUri }}:latest</code>
+
+                            <p class="mb-2"><strong>Pull:</strong></p>
+                            <code class="d-block p-2 bg-light rounded">docker pull {{ repository.repositoryUri }}:latest</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Imágenes en el Repositorio</h5>
+                </div>
+                <div class="card-body">
+                    {% if images %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Digest</th>
+                                    <th>Tag</th>
+                                    <th>Tamaño</th>
+                                    <th>Subido</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for image in images %}
+                                <tr>
+                                    <td>
+                                        <code>{{ image.digest[:12] }}...</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ image.tags }}</span>
+                                    </td>
+                                    <td>
+                                        {% if image.size %}
+                                        {{ "%.2f"|format(image.size / 1024 / 1024) }} MB
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ image.pushed_at or 'N/A' }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay imágenes</h5>
+                        <p class="text-muted">Este repositorio aún no contiene imágenes de contenedores.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

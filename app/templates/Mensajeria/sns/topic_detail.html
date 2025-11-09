@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Detalles del Tópico{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-bell text-info me-2"></i>
+                        Tópico: {{ topic.name }}
+                    </h1>
+                    <p class="text-muted mt-1">Detalles y suscripciones del tópico SNS</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sns.publish_message', topic_name=topic.name) }}" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-2"></i>Publicar Mensaje
+                    </a>
+                    <a href="{{ url_for('sns.topics') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Topic Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Información del Tópico
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Nombre:</strong> {{ topic.name }}</p>
+                                    <p><strong>ARN:</strong></p>
+                                    <code class="d-block mb-2">{{ topic.arn }}</code>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Estado de entrega:</strong> {{ topic.attributes.get('EffectiveDeliveryPolicy', 'N/A') }}</p>
+                                    <p><strong>Cifrado:</strong> {{ 'Sí' if topic.attributes.get('KmsMasterKeyId') else 'No' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subscriptions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Suscripciones ({{ topic.subscriptions|length }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if topic.subscriptions %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Protocolo</th>
+                                            <th>Endpoint</th>
+                                            <th>Estado</th>
+                                            <th>ARN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sub in topic.subscriptions %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-primary">{{ sub.Protocol }}</span>
+                                            </td>
+                                            <td>
+                                                <code class="small">{{ sub.Endpoint }}</code>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">{{ sub.SubscriptionArn.split(':')[-1] if sub.SubscriptionArn != 'PendingConfirmation' else 'Pendiente' }}</span>
+                                            </td>
+                                            <td>
+                                                <code class="small">{{ sub.SubscriptionArn[:50] }}...</code>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">Este tópico no tiene suscripciones activas.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Quick Actions -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('sns.publish_message', topic_name=topic.name) }}" class="btn btn-success">
+                                    <i class="fas fa-paper-plane me-2"></i>Publicar Mensaje
+                                </a>
+                                <form method="post" action="{{ url_for('sns.delete_topic', topic_name=topic.name) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este tópico?')">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash me-2"></i>Eliminar Tópico
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Topic Stats -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="h4 mb-0">{{ topic.subscriptions|length }}</div>
+                                    <small class="text-muted">Suscripciones</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="h4 mb-0">{{ topic.attributes.get('SubscriptionsConfirmed', '0') }}</div>
+                                    <small class="text-muted">Confirmadas</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}CloudWatch - Enviar Datos Métricos{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1><i class="fas fa-upload text-success me-2"></i>Enviar Datos Métricos</h1>
+                    <p class="text-muted">Envía métricas personalizadas a CloudWatch</p>
+                </div>
+                <a href="{{ url_for('cloudwatch.metrics') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Métricas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-paper-plane text-success me-2"></i>Enviar Dato Métrico
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="namespace" class="form-label">
+                                        <i class="fas fa-folder me-1"></i>Namespace *
+                                    </label>
+                                    <input type="text" class="form-control" id="namespace" name="namespace"
+                                           placeholder="Ej: MyApp/Metrics" required>
+                                    <div class="form-text">Namespace para organizar tus métricas</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="metric_name" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Nombre de la Métrica *
+                                    </label>
+                                    <input type="text" class="form-control" id="metric_name" name="metric_name"
+                                           placeholder="Ej: ResponseTime" required>
+                                    <div class="form-text">Nombre único para la métrica</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="value" class="form-label">
+                                        <i class="fas fa-hashtag me-1"></i>Valor *
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control" id="value" name="value"
+                                           placeholder="Ej: 42.5" required>
+                                    <div class="form-text">Valor numérico de la métrica</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="unit" class="form-label">
+                                        <i class="fas fa-balance-scale me-1"></i>Unidad
+                                    </label>
+                                    <select class="form-select" id="unit" name="unit">
+                                        <option value="Count">Count (número)</option>
+                                        <option value="Bytes">Bytes</option>
+                                        <option value="Kilobytes">Kilobytes</option>
+                                        <option value="Megabytes">Megabytes</option>
+                                        <option value="Gigabytes">Gigabytes</option>
+                                        <option value="Terabytes">Terabytes</option>
+                                        <option value="Bits">Bits</option>
+                                        <option value="Kilobits">Kilobits</option>
+                                        <option value="Megabits">Megabits</option>
+                                        <option value="Gigabits">Gigabits</option>
+                                        <option value="Terabits">Terabits</option>
+                                        <option value="Percent">Percent (%)</option>
+                                        <option value="Milliseconds">Milliseconds</option>
+                                        <option value="Microseconds">Microseconds</option>
+                                        <option value="Seconds">Seconds</option>
+                                        <option value="Minutes">Minutes</option>
+                                        <option value="Hours">Hours</option>
+                                        <option value="Days">Days</option>
+                                        <option value="None">None (sin unidad)</option>
+                                    </select>
+                                    <div class="form-text">Unidad de medida del valor</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="timestamp" class="form-label">
+                                        <i class="fas fa-calendar me-1"></i>Timestamp (Opcional)
+                                    </label>
+                                    <input type="datetime-local" class="form-control" id="timestamp" name="timestamp">
+                                    <div class="form-text">Si no se especifica, se usa la hora actual</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Los datos métricos pueden tardar hasta 2 minutos en aparecer en CloudWatch.
+                            Las métricas personalizadas tienen un costo adicional por almacenamiento y recuperación.
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Enviar Dato Métrico
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info me-2"></i>Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Consideraciones:</h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-clock me-1"></i> Retraso de 2 minutos</li>
+                        <li><i class="fas fa-dollar-sign me-1"></i> Costo adicional</li>
+                        <li><i class="fas fa-tags me-1"></i> Máximo 10 dimensiones</li>
+                        <li><i class="fas fa-chart-line me-1"></i> Resolución de 1 minuto</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6>Ejemplos de Uso:</h6>
+                    <ul class="list-unstyled small">
+                        <li><code>ResponseTime</code> - Latencia de API</li>
+                        <li><code>ErrorCount</code> - Número de errores</li>
+                        <li><code>UserCount</code> - Usuarios activos</li>
+                        <li><code>Revenue</code> - Ingresos generados</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Mejores Prácticas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-1"></i> Usa namespaces descriptivos</li>
+                        <li><i class="fas fa-check text-success me-1"></i> Nombres de métricas en PascalCase</li>
+                        <li><i class="fas fa-check text-success me-1"></i> Incluye unidades apropiadas</li>
+                        <li><i class="fas fa-check text-success me-1"></i> Evita métricas de alta frecuencia</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

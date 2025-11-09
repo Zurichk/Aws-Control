@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Enviar Registro Kinesis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-paper-plane text-primary"></i>
+                        Enviar Registro a Stream Kinesis
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('kinesis.put_record') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="stream_name" class="form-label">
+                                        <i class="fas fa-stream text-info"></i>
+                                        Nombre del Stream *
+                                    </label>
+                                    <input type="text" class="form-control" id="stream_name" name="stream_name"
+                                           placeholder="mi-stream-kinesis" required>
+                                    <div class="form-text">Nombre del stream donde enviar el registro</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="partition_key" class="form-label">
+                                        <i class="fas fa-key text-warning"></i>
+                                        Clave de Partición *
+                                    </label>
+                                    <input type="text" class="form-control" id="partition_key" name="partition_key"
+                                           placeholder="user-123" required>
+                                    <div class="form-text">Clave que determina en qué shard se almacena el registro</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="region" class="form-label">
+                                        <i class="fas fa-globe text-success"></i>
+                                        Región AWS
+                                    </label>
+                                    <select class="form-select" id="region" name="region">
+                                        <option value="us-east-1">US East (N. Virginia)</option>
+                                        <option value="us-west-2">US West (Oregon)</option>
+                                        <option value="eu-west-1">EU (Ireland)</option>
+                                        <option value="eu-central-1">EU (Frankfurt)</option>
+                                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                        <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                                        <option value="sa-east-1">South America (São Paulo)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="data" class="form-label">
+                                <i class="fas fa-database text-primary"></i>
+                                Datos del Registro *
+                            </label>
+                            <textarea class="form-control" id="data" name="data" rows="6"
+                                      placeholder='{"message": "Hola Mundo", "timestamp": "2024-01-01T00:00:00Z"}' required></textarea>
+                            <div class="form-text">Datos JSON o texto plano a enviar al stream</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('kinesis.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Enviar Registro
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1 @@
+# Integracion templates package

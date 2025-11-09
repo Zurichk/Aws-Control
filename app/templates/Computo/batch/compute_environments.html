@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Batch - Entornos de Cómputo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Entornos de Cómputo</h2>
+                        <small class="text-muted">Gestionar capacidad computacional para trabajos por lotes</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('batch.create_compute_environment') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Crear Entorno
+                        </a>
+                        <a href="{{ url_for('batch.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% if compute_environments %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Tipo</th>
+                                        <th>Instancias Deseadas</th>
+                                        <th>Instancias Mínimas</th>
+                                        <th>Instancias Máximas</th>
+                                        <th>Fecha de Creación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for env in compute_environments %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ env.compute_environment_name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ env.compute_environment_arn }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge
+                                                    {% if env.status == 'ENABLED' %}bg-success
+                                                    {% elif env.status == 'DISABLED' %}bg-secondary
+                                                    {% elif env.status == 'CREATING' %}bg-warning
+                                                    {% elif env.status == 'UPDATING' %}bg-info
+                                                    {% elif env.status == 'DELETING' %}bg-danger
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {{ env.status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if env.type == 'MANAGED' %}
+                                                    <span class="badge bg-primary">Administrado</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">No Administrado</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if env.compute_resources %}
+                                                    {{ env.compute_resources.desiredv_cpus or 0 }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if env.compute_resources %}
+                                                    {{ env.compute_resources.minv_cpus or 0 }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if env.compute_resources %}
+                                                    {{ env.compute_resources.maxv_cpus or 0 }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>{{ env.created_at or 'N/A' }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-outline-info btn-sm"
+                                                            onclick="viewEnvironmentDetails('{{ env.compute_environment_arn }}')">
+                                                        <i class="fas fa-eye"></i> Ver
+                                                    </button>
+                                                    {% if env.status == 'ENABLED' %}
+                                                        <button type="button" class="btn btn-outline-warning btn-sm"
+                                                                onclick="disableEnvironment('{{ env.compute_environment_arn }}', '{{ env.compute_environment_name }}')">
+                                                            <i class="fas fa-pause"></i> Deshabilitar
+                                                        </button>
+                                                    {% elif env.status == 'DISABLED' %}
+                                                        <button type="button" class="btn btn-outline-success btn-sm"
+                                                                onclick="enableEnvironment('{{ env.compute_environment_arn }}', '{{ env.compute_environment_name }}')">
+                                                            <i class="fas fa-play"></i> Habilitar
+                                                        </button>
+                                                    {% endif %}
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                                            onclick="deleteEnvironment('{{ env.compute_environment_arn }}', '{{ env.compute_environment_name }}')">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-microchip fa-4x text-muted mb-3"></i>
+                            <h4>No hay entornos de cómputo</h4>
+                            <p class="text-muted">
+                                No se encontraron entornos de cómputo en esta cuenta.
+                                Los entornos de cómputo proporcionan la capacidad para ejecutar trabajos por lotes.
+                            </p>
+                            <a href="{{ url_for('batch.create_compute_environment') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear tu primer entorno
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de detalles del entorno -->
+<div class="modal fade" id="environmentDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Entorno de Cómputo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="environmentDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar entorno -->
+<div class="modal fade" id="deleteEnvironmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    Eliminar Entorno de Cómputo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el entorno <strong id="envName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <strong>Advertencia:</strong> Esta acción eliminará permanentemente el entorno de cómputo.
+                    Los trabajos en ejecución pueden verse afectados.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar Entorno
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewEnvironmentDetails(arn) {
+    const modal = new bootstrap.Modal(document.getElementById('environmentDetailsModal'));
+    const content = document.getElementById('environmentDetailsContent');
+
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    `;
+
+    // Aquí iría una llamada AJAX para obtener detalles completos
+    // Por ahora, mostramos información básica
+    setTimeout(() => {
+        content.innerHTML = `
+            <dl class="row">
+                <dt class="col-sm-4">ARN:</dt>
+                <dd class="col-sm-8"><code class="small">${arn}</code></dd>
+                <dt class="col-sm-4">Tipo:</dt>
+                <dd class="col-sm-8">Administrado</dd>
+                <dt class="col-sm-4">Estado:</dt>
+                <dd class="col-sm-8"><span class="badge bg-success">Habilitado</span></dd>
+            </dl>
+            <div class="alert alert-info">
+                <small>Para ver detalles completos, implementa una llamada AJAX al endpoint de detalles.</small>
+            </div>
+        `;
+    }, 500);
+
+    modal.show();
+}
+
+function deleteEnvironment(arn, name) {
+    document.getElementById('envName').textContent = name;
+    document.getElementById('deleteForm').action = '{{ url_for("batch.delete_compute_environment", env_arn="PLACEHOLDER") }}'.replace('PLACEHOLDER', encodeURIComponent(arn));
+    new bootstrap.Modal(document.getElementById('deleteEnvironmentModal')).show();
+}
+
+function disableEnvironment(arn, name) {
+    if (confirm(`¿Deshabilitar el entorno "${name}"?`)) {
+        // Implementar lógica para deshabilitar
+        alert('Funcionalidad de deshabilitar entorno próximamente disponible.');
+    }
+}
+
+function enableEnvironment(arn, name) {
+    if (confirm(`¿Habilitar el entorno "${name}"?`)) {
+        // Implementar lógica para habilitar
+        alert('Funcionalidad de habilitar entorno próximamente disponible.');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Política de Escalado - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-plus"></i> Crear Política de Escalado</h2>
+                        <p class="mb-0">Configurar una nueva política de escalado automático</p>
+                    </div>
+                    <a href="{{ url_for('autoscaling_bp.policies') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="policy_name" class="form-label">Nombre de la Política *</label>
+                                    <input type="text" class="form-control" id="policy_name" name="policy_name"
+                                           placeholder="MiPoliticaEscalado" required>
+                                    <div class="form-text">Nombre único para identificar la política</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="group_name" class="form-label">Grupo de Auto Scaling *</label>
+                                    <select class="form-select" id="group_name" name="group_name" required>
+                                        <option value="">Seleccionar grupo...</option>
+                                        {% for group in groups %}
+                                            <option value="{{ group }}">{{ group }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Grupo ASG al que se aplicará la política</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="policy_type" class="form-label">Tipo de Política *</label>
+                                    <select class="form-select" id="policy_type" name="policy_type" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        <option value="SimpleScaling">Simple Scaling</option>
+                                        <option value="StepScaling">Step Scaling</option>
+                                        <option value="TargetTrackingScaling">Target Tracking Scaling</option>
+                                    </select>
+                                    <div class="form-text">Tipo de política de escalado</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="adjustment_type" class="form-label">Tipo de Ajuste *</label>
+                                    <select class="form-select" id="adjustment_type" name="adjustment_type" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        <option value="ChangeInCapacity">Change in Capacity</option>
+                                        <option value="ExactCapacity">Exact Capacity</option>
+                                        <option value="PercentChangeInCapacity">Percent Change in Capacity</option>
+                                    </select>
+                                    <div class="form-text">Cómo se calcula el ajuste</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="scaling_adjustment" class="form-label">Ajuste de Escalado *</label>
+                                    <input type="number" class="form-control" id="scaling_adjustment" name="scaling_adjustment"
+                                           placeholder="1" required>
+                                    <div class="form-text">Valor del ajuste (positivo para escalar arriba, negativo para abajo)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cooldown" class="form-label">Cooldown (segundos)</label>
+                                    <input type="number" class="form-control" id="cooldown" name="cooldown"
+                                           value="300" min="0" placeholder="300">
+                                    <div class="form-text">Tiempo de espera entre ajustes (en segundos)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Tipos de Políticas:</h6>
+                            <ul class="mb-0">
+                                <li><strong>Simple Scaling:</strong> Escala basado en alarmas CloudWatch simples</li>
+                                <li><strong>Step Scaling:</strong> Escala en pasos basados en la magnitud del cambio</li>
+                                <li><strong>Target Tracking:</strong> Mantiene una métrica objetivo (CPU, etc.)</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('autoscaling_bp.policies') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Crear Política
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

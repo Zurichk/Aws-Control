@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDS - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>Amazon Relational Database Service (RDS)</h2>
+        <p>RDS facilita la configuración, operación y escalado de bases de datos relacionales en la nube. Proporciona capacidad rentable y redimensionable.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>Motores de base de datos soportados:</h4>
+        <ul>
+            <li><strong>MySQL</strong></li>
+            <li><strong>PostgreSQL</strong></li>
+            <li><strong>Oracle</strong></li>
+            <li><strong>SQL Server</strong></li>
+            <li><strong>MariaDB</strong></li>
+            <li><strong>Amazon Aurora</strong></li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-database fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Instancias RDS</h5>
+                    <p class="card-text">Gestiona instancias de bases de datos individuales</p>
+                    <a href="{{ url_for('rds.instances') }}" class="btn btn-primary">
+                        <i class="fas fa-list me-2"></i>Ver Instancias
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-server fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Clusters Aurora</h5>
+                    <p class="card-text">Gestiona clusters de bases de datos Aurora</p>
+                    <a href="{{ url_for('rds.clusters') }}" class="btn btn-success">
+                        <i class="fas fa-list me-2"></i>Ver Clusters
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-camera fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Snapshots</h5>
+                    <p class="card-text">Gestiona backups y snapshots de bases de datos</p>
+                    <a href="{{ url_for('rds.snapshots') }}" class="btn btn-info">
+                        <i class="fas fa-list me-2"></i>Ver Snapshots
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

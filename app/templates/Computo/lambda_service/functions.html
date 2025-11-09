@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funciones Lambda - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item active">Funciones</li>
+                </ol>
+            </nav>
+            <h2>Funciones Lambda</h2>
+            <p class="text-muted">Lista todas las funciones Lambda en tu cuenta AWS.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Funciones Disponibles</h5>
+        </div>
+        <div class="card-body">
+            {% if functions %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nombre de Función</th>
+                            <th>ARN</th>
+                            <th>Runtime</th>
+                            <th>Última Modificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for function in functions %}
+                        <tr>
+                            <td>{{ function.name }}</td>
+                            <td><small>{{ function.arn }}</small></td>
+                            <td><span class="badge bg-info">{{ function.runtime }}</span></td>
+                            <td>{{ function.last_modified }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('lambda_bp.invoke_function', function_name=function.name) }}"
+                                       class="btn btn-sm btn-outline-success" title="Invocar">
+                                        <i class="fas fa-play"></i>
+                                    </a>
+                                    <a href="{{ url_for('lambda_bp.update_code', function_name=function.name) }}"
+                                       class="btn btn-sm btn-outline-primary" title="Actualizar Código">
+                                        <i class="fas fa-code"></i>
+                                    </a>
+                                    <a href="{{ url_for('lambda_bp.update_configuration', function_name=function.name) }}"
+                                       class="btn btn-sm btn-outline-warning" title="Configuración">
+                                        <i class="fas fa-cog"></i>
+                                    </a>
+                                    <a href="{{ url_for('lambda_bp.function_versions', function_name=function.name) }}"
+                                       class="btn btn-sm btn-outline-info" title="Versiones">
+                                        <i class="fas fa-code-branch"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            onclick="deleteFunction('{{ function.name }}')" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h5>No se encontraron funciones Lambda</h5>
+                <p>No tienes funciones Lambda en tu cuenta AWS, o no tienes permisos para verlas.</p>
+                <p><strong>Nota:</strong> Asegúrate de que tus credenciales AWS estén configuradas correctamente y que tengas los permisos necesarios (lambda:ListFunctions).</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endblock %}
+
+<script>
+function deleteFunction(functionName) {
+    if (confirm('¿Estás seguro de que quieres eliminar la función Lambda "' + functionName + '"? Esta acción no se puede deshacer.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("lambda_bp.delete_function") }}';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'function_name';
+        input.value = functionName;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+
+</body>
+</html>

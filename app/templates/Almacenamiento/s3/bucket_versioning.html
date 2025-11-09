@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Versionado del Bucket - {{ bucket_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}">{{ bucket_name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Versionado</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Versionado del Bucket: {{ bucket_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-{{ 'success' if current_status == 'Enabled' else 'warning' if current_status == 'Suspended' else 'secondary' }}">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-{{ 'check-circle text-success' if current_status == 'Enabled' else 'pause-circle text-warning' if current_status == 'Suspended' else 'question-circle text-secondary' }} fa-3x"></i>
+                                    </div>
+                                    <h5 class="card-title">
+                                        Estado Actual:
+                                        <span class="badge bg-{{ 'success' if current_status == 'Enabled' else 'warning' if current_status == 'Suspended' else 'secondary' }}">
+                                            {% if current_status == 'Enabled' %}
+                                                Habilitado
+                                            {% elif current_status == 'Suspended' %}
+                                                Suspendido
+                                            {% else %}
+                                                No configurado
+                                            {% endif %}
+                                        </span>
+                                    </h5>
+                                    <p class="card-text">
+                                        {% if current_status == 'Enabled' %}
+                                            El versionado está habilitado. Todas las versiones de los objetos se conservan.
+                                        {% elif current_status == 'Suspended' %}
+                                            El versionado está suspendido. Los nuevos objetos no se versionan, pero las versiones existentes se mantienen.
+                                        {% else %}
+                                            El versionado no está configurado para este bucket.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Cambiar Estado del Versionado</h6>
+                                    <p class="card-text">Selecciona el nuevo estado para el versionado del bucket.</p>
+
+                                    <form method="POST">
+                                        <div class="mb-3">
+                                            <label for="status" class="form-label">Nuevo Estado</label>
+                                            <select class="form-select" id="status" name="status" required>
+                                                <option value="Enabled" {{ 'selected' if current_status == 'Enabled' else '' }}>
+                                                    Habilitado - Conservar todas las versiones
+                                                </option>
+                                                <option value="Suspended" {{ 'selected' if current_status == 'Suspended' else '' }}>
+                                                    Suspendido - No versionar nuevos objetos
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="alert alert-info">
+                                            <small>
+                                                <strong>Nota:</strong> Una vez habilitado, el versionado no se puede deshabilitar completamente,
+                                                solo suspenderse. Las versiones existentes permanecerán disponibles.
+                                            </small>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-save me-1"></i>
+                                            Cambiar Estado
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Acerca del Versionado S3</h6>
+                            <ul class="mb-0">
+                                <li><strong>Habilitado:</strong> Cada vez que se sube un objeto con la misma clave, se crea una nueva versión</li>
+                                <li><strong>Suspendido:</strong> Los nuevos objetos no se versionan, pero las versiones existentes permanecen</li>
+                                <li><strong>Beneficios:</strong> Protección contra eliminación accidental, restauración de versiones anteriores</li>
+                                <li><strong>Costos:</strong> Almacenamiento adicional por cada versión del objeto</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

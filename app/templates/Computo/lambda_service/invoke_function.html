@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invocar Función Lambda - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service/functions">Funciones</a></li>
+                    <li class="breadcrumb-item active">Invocar Función</li>
+                </ol>
+            </nav>
+            <h2>Invocar Función Lambda</h2>
+            <p class="text-muted">Prueba la función <strong>{{ function_name }}</strong> enviando datos de entrada.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Datos de Entrada</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="payload" class="form-label">Payload (JSON)</label>
+                            <textarea class="form-control" id="payload" name="payload" rows="8"
+                                      placeholder='{"key": "value"}'>{{ request.form.payload or '{}' }}</textarea>
+                            <div class="form-text">
+                                Ingresa el payload en formato JSON que se enviará a la función Lambda.
+                                Si no proporcionas ninguno, se enviará un objeto JSON vacío.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-aws">
+                            <i class="fas fa-play me-2"></i>Invocar Función
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Resultado de la Ejecución</h5>
+                </div>
+                <div class="card-body">
+                    {% if result %}
+                        {% if result.error %}
+                            <div class="alert alert-danger">
+                                <h6><i class="fas fa-exclamation-triangle me-2"></i>Error en la Ejecución</h6>
+                                <pre class="mb-0">{{ result.error }}</pre>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-check-circle me-2"></i>Ejecución Exitosa</h6>
+                                <p class="mb-1"><strong>Código de Estado:</strong> {{ result.status_code }}</p>
+                                <p class="mb-1"><strong>Versión Ejecutada:</strong> {{ result.executed_version }}</p>
+                            </div>
+
+                            <h6>Respuesta de la Función:</h6>
+                            <pre class="bg-light p-3 rounded">{{ result.payload }}</pre>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-play-circle fa-3x mb-3"></i>
+                            <p>Envía datos de entrada para ver el resultado de la función</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información sobre Invocación
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>¿Cómo funciona?</h6>
+                            <p>La invocación simula cómo otros servicios de AWS llaman a tu función Lambda.
+                            Puedes enviar datos de entrada y ver la respuesta que retorna la función.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Consideraciones</h6>
+                            <ul>
+                                <li>El payload debe ser válido JSON</li>
+                                <li>Hay límites de tiempo de ejecución</li>
+                                <li>Los errores se muestran en la respuesta</li>
+                                <li>Se aplican los mismos permisos que en producción</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

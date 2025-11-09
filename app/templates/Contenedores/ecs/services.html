@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}ECS - Servicios{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Servicios ECS</h2>
+                        <small class="text-muted">Gestionar servicios en clusters de Amazon ECS</small>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{{ url_for('ecs.create_service') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Crear Servicio
+                        </a>
+                        <a href="{{ url_for('ecs.clusters') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Clusters
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if services %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-cogs text-primary"></i> Servicio</th>
+                                        <th><i class="fas fa-cube text-info"></i> Cluster</th>
+                                        <th><i class="fas fa-play-circle text-success"></i> Estado</th>
+                                        <th><i class="fas fa-tasks text-warning"></i> Tareas</th>
+                                        <th><i class="fas fa-clock text-secondary"></i> Creado</th>
+                                        <th><i class="fas fa-cogs text-dark"></i> Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service in services %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div>
+                                                    <strong>{{ service.serviceName }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ service.taskDefinition.split('/')[-1] }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ service.clusterArn.split('/')[-1] }}</span>
+                                        </td>
+                                        <td>
+                                            {% if service.status == 'ACTIVE' %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle"></i> Activo
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-pause-circle"></i> {{ service.status }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="text-center">
+                                                <span class="badge bg-warning">{{ service.runningCount }}</span> /
+                                                <span class="badge bg-info">{{ service.desiredCount }}</span>
+                                                <br>
+                                                <small class="text-muted">ejecutándose/deseadas</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ service.createdAt.strftime('%Y-%m-%d %H:%M') if service.createdAt else 'N/A' }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('ecs.update_service', service_arn=service.serviceArn) }}" 
+                                                   class="btn btn-outline-primary" title="Actualizar Servicio">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="confirmDelete('{{ service.serviceArn }}', '{{ service.serviceName }}')"
+                                                        title="Eliminar Servicio">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No hay servicios</h4>
+                            <p class="text-muted">No se encontraron servicios ECS en los clusters disponibles.</p>
+                            <a href="{{ url_for('ecs.create_service') }}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Crear Primer Servicio
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar el servicio <strong id="serviceName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <small>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Esta acción detendrá todas las tareas en ejecución y no se puede deshacer.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar Servicio
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(serviceArn, serviceName) {
+    document.getElementById('serviceName').textContent = serviceName;
+    document.getElementById('deleteForm').action = '{{ url_for("ecs.delete_service") }}?service_arn=' + encodeURIComponent(serviceArn);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

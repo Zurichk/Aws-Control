@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}AWS CloudFormation - Panel de Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">AWS CloudFormation</h2>
+                        <small class="text-muted">Infraestructura como código completamente administrada</small>
+                    </div>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Acerca de CloudFormation</h6>
+                        <p class="mb-2">
+                            CloudFormation permite crear y gestionar recursos de AWS mediante plantillas declarativas.
+                            Automatiza el aprovisionamiento de infraestructura de forma segura y repetible.
+                        </p>
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-code fa-2x text-primary mb-2"></i>
+                                    <h6>Infraestructura como Código</h6>
+                                    <small class="text-muted">Define recursos en JSON/YAML</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-sync fa-2x text-success mb-2"></i>
+                                    <h6>Actualizaciones Seguras</h6>
+                                    <small class="text-muted">Cambios predictibles</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-shield-alt fa-2x text-warning mb-2"></i>
+                                    <h6>Gestión de Dependencias</h6>
+                                    <small class="text-muted">Resuelve dependencias automáticamente</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-undo fa-2x text-info mb-2"></i>
+                                    <h6>Rollback Automático</h6>
+                                    <small class="text-muted">Revierte cambios fallidos</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel de acciones principales -->
+                    <div class="row g-3 mt-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-layer-group fa-3x text-primary mb-3"></i>
+                                    <h5>Gestión de Stacks</h5>
+                                    <p class="text-muted">Crear, actualizar y eliminar stacks de infraestructura</p>
+                                    <div class="btn-group-vertical w-100">
+                                        <a href="{{ url_for('cloudformation.stacks') }}" class="btn btn-primary">
+                                            <i class="fas fa-list"></i> Ver Stacks
+                                        </a>
+                                        <a href="{{ url_for('cloudformation.create_stack') }}" class="btn btn-success">
+                                            <i class="fas fa-plus"></i> Crear Stack
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-code fa-3x text-success mb-3"></i>
+                                    <h5>Plantillas y Recursos</h5>
+                                    <p class="text-muted">Gestionar templates y recursos de stacks</p>
+                                    <div class="btn-group-vertical w-100">
+                                        <a href="#" class="btn btn-outline-secondary disabled" title="Próximamente">
+                                            <i class="fas fa-file-alt"></i> Mis Templates
+                                        </a>
+                                        <a href="#" class="btn btn-outline-secondary disabled" title="Próximamente">
+                                            <i class="fas fa-search"></i> Explorar Recursos
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Componentes de CloudFormation</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6><i class="fas fa-layer-group text-primary"></i> Stacks</h6>
+                                            <p class="small text-muted">
+                                                Una colección de recursos de AWS que se crean, actualizan y eliminan como una sola unidad.
+                                                Cada stack está definido por una template.
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="fas fa-file-code text-success"></i> Templates</h6>
+                                            <p class="small text-muted">
+                                                Archivos JSON o YAML que describen los recursos de AWS y sus propiedades.
+                                                Las templates son declarativas y versionables.
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="fas fa-cogs text-warning"></i> Change Sets</h6>
+                                            <p class="small text-muted">
+                                                Previsualización de cambios antes de aplicarlos.
+                                                Permite revisar qué recursos se crearán, modificarán o eliminarán.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejemplos de templates -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Ejemplos de Templates Comunes</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-server fa-2x text-primary mb-2"></i>
+                                                    <h6>EC2 Instance</h6>
+                                                    <small class="text-muted">Instancia EC2 básica con VPC</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-database fa-2x text-success mb-2"></i>
+                                                    <h6>RDS Database</h6>
+                                                    <small class="text-muted">Base de datos relacional</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-network-wired fa-2x text-warning mb-2"></i>
+                                                    <h6>VPC Network</h6>
+                                                    <small class="text-muted">Red completa con subnets</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-cubes fa-2x text-info mb-2"></i>
+                                                    <h6>Serverless</h6>
+                                                    <small class="text-muted">Lambda + API Gateway</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

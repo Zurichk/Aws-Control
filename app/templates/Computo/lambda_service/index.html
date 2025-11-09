@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lambda - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>AWS Lambda</h2>
+        <p>Lambda es un servicio de computo serverless que ejecuta código en respuesta a eventos y administra automáticamente los recursos de computo subyacentes.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>Características de Lambda:</h4>
+        <ul>
+            <li><strong>Serverless:</strong> No necesitas gestionar servidores</li>
+            <li><strong>Escalado automático:</strong> Maneja cualquier cantidad de solicitudes</li>
+            <li><strong>Pago por uso:</strong> Solo pagas por el tiempo de ejecución</li>
+            <li><strong>Múltiples lenguajes:</strong> Soporta Node.js, Python, Java, Go, .NET, Ruby</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Funciones Lambda</h3>
+                <a href="{{ url_for('lambda_bp.functions') }}" class="btn btn-aws">Ver Funciones</a>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

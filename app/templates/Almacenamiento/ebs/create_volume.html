@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Volumen EBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.index') }}">EBS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.volumes') }}">Volúmenes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-plus me-2"></i>
+                        Crear Nuevo Volumen EBS
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="availability_zone" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        Zona de Disponibilidad *
+                                    </label>
+                                    <select class="form-select" id="availability_zone" name="availability_zone" required>
+                                        <option value="">Seleccionar zona...</option>
+                                        {% for zone in availability_zones %}
+                                        <option value="{{ zone }}">{{ zone }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">La zona donde se creará el volumen</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="size" class="form-label">
+                                        <i class="fas fa-weight me-1"></i>
+                                        Tamaño (GB) *
+                                    </label>
+                                    <input type="number" class="form-control" id="size" name="size"
+                                           min="1" max="16384" value="8" required>
+                                    <div class="form-text">Tamaño del volumen en gigabytes</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="volume_type" class="form-label">
+                                        <i class="fas fa-cogs me-1"></i>
+                                        Tipo de Volumen
+                                    </label>
+                                    <select class="form-select" id="volume_type" name="volume_type">
+                                        <option value="gp3" selected>General Purpose SSD (gp3)</option>
+                                        <option value="gp2">General Purpose SSD (gp2)</option>
+                                        <option value="io1">Provisioned IOPS SSD (io1)</option>
+                                        <option value="io2">Provisioned IOPS SSD (io2)</option>
+                                        <option value="st1">Throughput Optimized HDD (st1)</option>
+                                        <option value="sc1">Cold HDD (sc1)</option>
+                                        <option value="standard">Magnetic (standard)</option>
+                                    </select>
+                                    <div class="form-text">Tipo de volumen EBS</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="iops" class="form-label">
+                                        <i class="fas fa-tachometer-alt me-1"></i>
+                                        IOPS
+                                    </label>
+                                    <input type="number" class="form-control" id="iops" name="iops"
+                                           min="100" max="64000" placeholder="Solo para io1, io2, gp3">
+                                    <div class="form-text">IOPS provisionadas (solo para SSD)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="throughput" class="form-label">
+                                <i class="fas fa-stream me-1"></i>
+                                Throughput (MB/s)
+                            </label>
+                            <input type="number" class="form-control" id="throughput" name="throughput"
+                                   min="125" max="1000" placeholder="Solo para gp3">
+                            <div class="form-text">Throughput en MB/s (solo para gp3)</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('ebs.volumes') }}"
+                               class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Crear Volumen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Actualizar campos según el tipo de volumen seleccionado
+document.getElementById('volume_type').addEventListener('change', function() {
+    const volumeType = this.value;
+    const iopsField = document.getElementById('iops');
+    const throughputField = document.getElementById('throughput');
+
+    // Reset fields
+    iopsField.value = '';
+    throughputField.value = '';
+
+    // Enable/disable fields based on volume type
+    if (['io1', 'io2', 'gp3'].includes(volumeType)) {
+        iopsField.disabled = false;
+        iopsField.placeholder = volumeType === 'gp3' ? '100-16000' : '100-64000';
+    } else {
+        iopsField.disabled = true;
+        iopsField.placeholder = 'No disponible para este tipo';
+    }
+
+    if (volumeType === 'gp3') {
+        throughputField.disabled = false;
+        throughputField.placeholder = '125-1000';
+    } else {
+        throughputField.disabled = true;
+        throughputField.placeholder = 'Solo para gp3';
+    }
+});
+
+// Trigger initial update
+document.getElementById('volume_type').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}
+{% endblock %}

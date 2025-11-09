@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Policies del Usuario - {{ username }} - IAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Policies del Usuario</h2>
+                        <small class="text-muted">Usuario: {{ username }}</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('iam.attach_user_policy', username=username) }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Adjuntar Policy
+                        </a>
+                        <a href="{{ url_for('iam.users') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a Usuarios
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if policies %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>ARN</th>
+                                        <th>Tipo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in policies %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ policy.name }}</strong>
+                                        </td>
+                                        <td>
+                                            <code class="small">{{ policy.arn }}</code>
+                                        </td>
+                                        <td>
+                                            {% if policy.type == 'Attached' %}
+                                                <span class="badge bg-primary">Adjuntada</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inline</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if policy.type == 'Attached' %}
+                                            <button class="btn btn-sm btn-outline-danger" title="Desadjuntar Policy"
+                                                    onclick="confirmDetach('{{ policy.arn }}', '{{ policy.name }}')">
+                                                <i class="fas fa-unlink"></i> Desadjuntar
+                                            </button>
+                                            {% else %}
+                                                <em class="text-muted small">No se puede desadjuntar</em>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-signature fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No hay policies adjuntadas</h4>
+                            <p class="text-muted">Este usuario no tiene policies adjuntadas actualmente.</p>
+                            <a href="{{ url_for('iam.attach_user_policy', username=username) }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Adjuntar Primera Policy
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para desadjuntar policy -->
+<div class="modal fade" id="detachPolicyModal" tabindex="-1" aria-labelledby="detachPolicyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detachPolicyModalLabel">Confirmar Desadjuntamiento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres desadjuntar la policy <strong id="policyName"></strong> del usuario <strong>{{ username }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <strong>Advertencia:</strong> El usuario perderá los permisos otorgados por esta policy inmediatamente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="detachForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Desadjuntar Policy</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDetach(policyArn, policyName) {
+    document.getElementById('policyName').textContent = policyName;
+    document.getElementById('detachForm').action = '{{ url_for("iam.detach_user_policy", username=username, policy_arn="PLACEHOLDER") }}'.replace('PLACEHOLDER', encodeURIComponent(policyArn));
+    new bootstrap.Modal(document.getElementById('detachPolicyModal')).show();
+}
+</script>
+{% endblock %}

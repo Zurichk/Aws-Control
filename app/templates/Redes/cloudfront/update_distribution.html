@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Actualizar Distribución CloudFront{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Actualizar Distribución</h2>
+                    <small class="text-muted">ID: {{ distribution_id }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Comentario</label>
+                                    <input type="text" class="form-control" id="comment" name="comment"
+                                           value="{{ config.Comment or '' }}"
+                                           placeholder="Descripción de la distribución">
+                                    <div class="form-text">Comentario para identificar la distribución</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="enabled" name="enabled"
+                                               {% if config.Enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="enabled">
+                                            Distribución habilitada
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        {% if config.Enabled %}
+                                            La distribución está actualmente habilitada
+                                        {% else %}
+                                            La distribución está actualmente deshabilitada
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Información de la Distribución</h6>
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4">ID:</dt>
+                                        <dd class="col-sm-8"><code>{{ distribution_id }}</code></dd>
+
+                                        <dt class="col-sm-4">Dominio:</dt>
+                                        <dd class="col-sm-8">{{ config.get('DomainName', 'N/A') }}</dd>
+
+                                        <dt class="col-sm-4">Estado:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if config.get('Status') == 'Deployed' %}
+                                                <span class="badge bg-success">Desplegada</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">{{ config.get('Status', 'Desconocido') }}</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">Orígenes:</dt>
+                                        <dd class="col-sm-8">{{ config.get('Origins', {}).get('Quantity', 0) }}</dd>
+                                    </dl>
+                                </div>
+
+                                {% if not config.Enabled %}
+                                <div class="alert alert-warning">
+                                    <strong>Nota:</strong> Si habilitas la distribución, comenzará a incurrir en costos de CloudFront.
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Configuración Avanzada</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="small text-muted">
+                                            Para configuraciones avanzadas como:
+                                        </p>
+                                        <ul class="small">
+                                            <li>Comportamientos de cache</li>
+                                            <li>Certificados SSL personalizados</li>
+                                            <li>Restricciones geográficas</li>
+                                            <li>Orígenes múltiples</li>
+                                            <li>Logs de acceso</li>
+                                        </ul>
+
+                                        <div class="alert alert-info small">
+                                            <strong>Usa la consola AWS:</strong> Para configuraciones avanzadas, utiliza la consola de CloudFront en AWS.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('cloudfront.distributions') }}" class="btn btn-secondary">Cancelar</a>
+                                    <button type="submit" class="btn btn-primary">Actualizar Distribución</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

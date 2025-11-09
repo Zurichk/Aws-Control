@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - RDS Snapshots{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-camera text-primary me-2"></i>
+                        RDS Snapshots
+                    </h1>
+                    <p class="text-muted mt-1">Gestión de snapshots de bases de datos RDS</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSnapshotModal">
+                        <i class="fas fa-plus me-2"></i>Crear Snapshot
+                    </button>
+                </div>
+            </div>
+
+            <!-- Snapshots Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID del Snapshot</th>
+                                    <th>Instancia DB</th>
+                                    <th>Estado</th>
+                                    <th>Engine</th>
+                                    <th>Almacenamiento (GB)</th>
+                                    <th>Tipo</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for snapshot in snapshots %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ snapshot.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ snapshot.db_instance }}</span>
+                                    </td>
+                                    <td>
+                                        {% if snapshot.status == 'available' %}
+                                            <span class="badge bg-success">Disponible</span>
+                                        {% elif snapshot.status == 'creating' %}
+                                            <span class="badge bg-warning">Creando...</span>
+                                        {% elif snapshot.status == 'deleting' %}
+                                            <span class="badge bg-danger">Eliminando...</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ snapshot.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ snapshot.engine }}</td>
+                                    <td>{{ snapshot.allocated_storage }}</td>
+                                    <td>
+                                        {% if snapshot.snapshot_type == 'manual' %}
+                                            <span class="badge bg-primary">Manual</span>
+                                        {% elif snapshot.snapshot_type == 'automated' %}
+                                            <span class="badge bg-info">Automático</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ snapshot.snapshot_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ snapshot.created }}</td>
+                                    <td>
+                                        {% if snapshot.status == 'available' %}
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    onclick="deleteSnapshot('{{ snapshot.id }}')"
+                                                    title="Eliminar snapshot">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not snapshots %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay snapshots</h5>
+                        <p class="text-muted">Crea tu primer snapshot de una instancia RDS</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Snapshot Modal -->
+<div class="modal fade" id="createSnapshotModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-camera text-primary me-2"></i>
+                    Crear Snapshot
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('rds.create_snapshot') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="instance_id" class="form-label">Instancia RDS</label>
+                        <select class="form-select" id="instance_id" name="instance_id" required>
+                            <option value="">Seleccionar instancia...</option>
+                            <!-- Aquí se podrían cargar dinámicamente las instancias disponibles -->
+                        </select>
+                        <div class="form-text">Selecciona la instancia de la que quieres crear el snapshot</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="snapshot_id" class="form-label">ID del Snapshot</label>
+                        <input type="text" class="form-control" id="snapshot_id" name="snapshot_id"
+                               placeholder="mi-snapshot-manual" required>
+                        <div class="form-text">Identificador único para el snapshot (solo letras, números y guiones)</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-camera me-2"></i>Crear Snapshot
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el snapshot <strong id="deleteSnapshotId"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Advertencia:</strong> Esta acción no se puede deshacer.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Eliminar Snapshot
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteSnapshot(snapshotId) {
+    document.getElementById('deleteSnapshotId').textContent = snapshotId;
+    document.getElementById('deleteForm').action = `/rds/snapshot/${snapshotId}/delete`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Cargar instancias disponibles para el dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/rds/instances')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('instance_id');
+            data.instances.forEach(instance => {
+                const option = document.createElement('option');
+                option.value = instance.id;
+                option.textContent = `${instance.id} (${instance.engine} - ${instance.instance_class})`;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error cargando instancias:', error));
+});
+</script>
+
+{% endblock %}

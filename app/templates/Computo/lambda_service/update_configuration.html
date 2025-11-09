@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualizar Configuración Lambda - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service/functions">Funciones</a></li>
+                    <li class="breadcrumb-item active">Configuración</li>
+                </ol>
+            </nav>
+            <h2>Actualizar Configuración: {{ function_name }}</h2>
+            <p class="text-muted">Modifica la configuración de la función Lambda sin cambiar el código.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Configuración Actual</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Timeout</h6>
+                                    <h4 class="text-primary">{{ function.get('Timeout', 'N/A') }}s</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Memoria</h6>
+                                    <h4 class="text-success">{{ function.get('MemorySize', 'N/A') }} MB</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Runtime</h6>
+                                    <h4 class="text-info">{{ function.get('Runtime', 'N/A') }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Nueva Configuración</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descripción</label>
+                                    <input type="text" class="form-control" id="description" name="description"
+                                           value="{{ function.get('Description', '') }}">
+                                    <div class="form-text">Descripción de la función</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="timeout" class="form-label">Timeout (segundos)</label>
+                                    <input type="number" class="form-control" id="timeout" name="timeout"
+                                           value="{{ function.get('Timeout', 30) }}" min="1" max="900">
+                                    <div class="form-text">Tiempo máximo de ejecución (1-900s)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="memory_size" class="form-label">Memoria (MB)</label>
+                                    <input type="number" class="form-control" id="memory_size" name="memory_size"
+                                           value="{{ function.get('MemorySize', 128) }}" min="128" max="3008" step="64">
+                                    <div class="form-text">Memoria asignada (128-3008MB, múltiplos de 64)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="environment_variables" class="form-label">Variables de Entorno</label>
+                                    <textarea class="form-control" id="environment_variables" name="environment_variables"
+                                              rows="3" placeholder="KEY1=VALUE1,KEY2=VALUE2">{{ function.get('Environment', {}).get('Variables', {}) | join(',') }}</textarea>
+                                    <div class="form-text">Formato: KEY1=VALUE1,KEY2=VALUE2</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Nota:</strong> Cambiar la configuración creará una nueva versión $LATEST.
+                            Los cambios no afectan ejecuciones en curso.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-aws">
+                                <i class="fas fa-save me-2"></i>Actualizar Configuración
+                            </button>
+                            <a href="{{ url_for('lambda_bp.functions') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Información de Configuración</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Parámetros Configurables:</h6>
+                    <ul class="small">
+                        <li><strong>Descripción:</strong> Texto descriptivo</li>
+                        <li><strong>Timeout:</strong> Máximo tiempo de ejecución</li>
+                        <li><strong>Memoria:</strong> RAM asignada (afecta CPU)</li>
+                        <li><strong>Variables:</strong> Entorno de ejecución</li>
+                    </ul>
+
+                    <h6 class="mt-3">Consideraciones de Costo:</h6>
+                    <ul class="small">
+                        <li>Más memoria = más CPU disponible</li>
+                        <li>Timeout más largo = potencial costo mayor</li>
+                        <li>GB-segundo = unidad de facturación</li>
+                    </ul>
+
+                    <h6 class="mt-3">Mejores Prácticas:</h6>
+                    <ul class="small">
+                        <li>Configura timeout apropiado</li>
+                        <li>Monitorea uso de memoria</li>
+                        <li>Usa variables de entorno para configuración</li>
+                        <li>Prueba cambios antes de producción</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

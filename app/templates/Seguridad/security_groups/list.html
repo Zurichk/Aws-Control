@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Security Groups - Panel de Control AWS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('security_groups.index') }}">Security Groups</a></li>
+                <li class="breadcrumb-item active">Lista</li>
+            </ol>
+        </nav>
+        <h2>Security Groups</h2>
+        <p class="text-muted">Lista todos los grupos de seguridad en tu cuenta AWS.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Grupos de Seguridad Configurados</h5>
+    </div>
+    <div class="card-body">
+        {% if security_groups %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>VPC ID</th>
+                        <th>Reglas de Entrada</th>
+                        <th>Reglas de Salida</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sg in security_groups %}
+                    <tr>
+                        <td><code>{{ sg.id }}</code></td>
+                        <td>{{ sg.name }}</td>
+                        <td>{{ sg.description }}</td>
+                        <td><code>{{ sg.vpc_id }}</code></td>
+                        <td>
+                            <span class="badge bg-info">{{ sg.ingress_rules }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ sg.egress_rules }}</span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ url_for('security_groups.authorize_ingress', group_id=sg.id) }}"
+                                   class="btn btn-sm btn-success" title="Autorizar Entrada">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                <a href="{{ url_for('security_groups.revoke_ingress', group_id=sg.id) }}"
+                                   class="btn btn-sm btn-warning" title="Revocar Entrada">
+                                    <i class="fas fa-minus"></i>
+                                </a>
+                                <a href="{{ url_for('security_groups.authorize_egress', group_id=sg.id) }}"
+                                   class="btn btn-sm btn-info" title="Autorizar Salida">
+                                    <i class="fas fa-plus-circle"></i>
+                                </a>
+                                <a href="{{ url_for('security_groups.revoke_egress', group_id=sg.id) }}"
+                                   class="btn btn-sm btn-secondary" title="Revocar Salida">
+                                    <i class="fas fa-minus-circle"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('security_groups.delete_security_group', group_id=sg.id) }}"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este Security Group?')">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No se encontraron Security Groups.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

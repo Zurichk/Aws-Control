@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Ejecutar Consulta Athena{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-play-circle text-primary"></i>
+                        Ejecutar Consulta SQL
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('athena.execute_query') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="database" class="form-label">
+                                        <i class="fas fa-database text-info"></i>
+                                        Base de Datos/Catalog
+                                    </label>
+                                    <input type="text" class="form-control" id="database" name="database"
+                                           value="default" placeholder="default">
+                                    <div class="form-text">Nombre de la base de datos o catálogo de datos</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="workgroup" class="form-label">
+                                        <i class="fas fa-users text-warning"></i>
+                                        WorkGroup
+                                    </label>
+                                    <input type="text" class="form-control" id="workgroup" name="workgroup"
+                                           value="primary" placeholder="primary">
+                                    <div class="form-text">Grupo de trabajo para la consulta</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="region" class="form-label">
+                                        <i class="fas fa-globe text-success"></i>
+                                        Región AWS
+                                    </label>
+                                    <select class="form-select" id="region" name="region">
+                                        <option value="us-east-1">US East (N. Virginia)</option>
+                                        <option value="us-west-2">US West (Oregon)</option>
+                                        <option value="eu-west-1">EU (Ireland)</option>
+                                        <option value="eu-central-1">EU (Frankfurt)</option>
+                                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                        <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                                        <option value="sa-east-1">South America (São Paulo)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="query" class="form-label">
+                                <i class="fas fa-code text-primary"></i>
+                                Consulta SQL *
+                            </label>
+                            <textarea class="form-control" id="query" name="query" rows="12"
+                                      placeholder="SELECT * FROM table_name LIMIT 10;">SELECT
+    column1,
+    column2,
+    COUNT(*) as count
+FROM
+    your_table
+WHERE
+    date_column >= '2024-01-01'
+GROUP BY
+    column1, column2
+ORDER BY
+    count DESC
+LIMIT 100;</textarea>
+                            <div class="form-text">Escribe tu consulta SQL. Athena soporta SQL estándar con extensiones para datos en S3.</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('athena.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-play-circle"></i> Ejecutar Consulta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SQL Examples -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Ejemplos de Consultas SQL
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Consulta Básica</h6>
+                            <pre class="bg-light p-2 rounded"><code>SELECT * FROM your_table LIMIT 10;</code></pre>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Consulta con Filtros</h6>
+                            <pre class="bg-light p-2 rounded"><code>SELECT * FROM logs
+WHERE timestamp >= '2024-01-01'
+  AND status = 'ERROR';</code></pre>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Agregación</h6>
+                            <pre class="bg-light p-2 rounded"><code>SELECT status, COUNT(*) as count
+FROM logs
+GROUP BY status
+ORDER BY count DESC;</code></pre>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Consulta JSON</h6>
+                            <pre class="bg-light p-2 rounded"><code>SELECT
+    json_extract(data, '$.user') as user,
+    json_extract(data, '$.action') as action
+FROM events_json;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

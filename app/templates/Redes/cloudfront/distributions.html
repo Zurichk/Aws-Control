@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Distribuciones CloudFront{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="card-title mb-0">Distribuciones CloudFront</h2>
+                    <a href="{{ url_for('cloudfront.create_distribution') }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Crear Distribución
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if distributions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Dominio</th>
+                                        <th>Estado</th>
+                                        <th>Habilitada</th>
+                                        <th>Orígenes</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dist in distributions %}
+                                    <tr>
+                                        <td>
+                                            <code class="small">{{ dist.id }}</code>
+                                        </td>
+                                        <td>
+                                            <strong>{{ dist.domain }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if dist.status == 'Deployed' %}
+                                                <span class="badge bg-success">Desplegada</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">{{ dist.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if dist.enabled %}
+                                                <span class="badge bg-success">Sí</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ dist.origins }}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('cloudfront.update_distribution', distribution_id=dist.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('cloudfront.create_invalidation', distribution_id=dist.id) }}" class="btn btn-sm btn-outline-warning" title="Invalidar Caché">
+                                                    <i class="fas fa-sync"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                                        onclick="confirmDelete('{{ dist.id }}', '{{ dist.domain }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if distributions|length > 10 %}
+                        <div class="mt-3">
+                            <nav aria-label="Paginación de distribuciones">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Anterior</span>
+                                    </li>
+                                    <li class="page-item active">
+                                        <span class="page-link">1</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">2</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Siguiente</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-globe fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No hay distribuciones</h4>
+                            <p class="text-muted">Aún no has creado ninguna distribución CloudFront.</p>
+                            <a href="{{ url_for('cloudfront.create_distribution') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Primera Distribución
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar distribución -->
+<div class="modal fade" id="deleteDistributionModal" tabindex="-1" aria-labelledby="deleteDistributionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteDistributionModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar la distribución <strong id="distributionDomain"></strong>?</p>
+                <div class="alert alert-warning">
+                    <strong>Advertencia:</strong> Esta acción eliminará permanentemente la distribución CloudFront. Primero se deshabilitará si está habilitada.
+                </div>
+                <div class="alert alert-info">
+                    <strong>Nota:</strong> Las distribuciones deben estar deshabilitadas antes de poder eliminarse. Este proceso puede tardar unos minutos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar Distribución</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(distributionId, domain) {
+    document.getElementById('distributionDomain').textContent = domain;
+    document.getElementById('deleteForm').action = '{{ url_for("cloudfront.delete_distribution", distribution_id="PLACEHOLDER") }}'.replace('PLACEHOLDER', distributionId);
+    new bootstrap.Modal(document.getElementById('deleteDistributionModal')).show();
+}
+</script>
+{% endblock %}

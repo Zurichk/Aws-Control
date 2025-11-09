@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Create EMR Cluster - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-plus text-primary"></i> Create EMR Cluster
+                    </h1>
+                    <p class="text-muted">Create a new Amazon EMR cluster for big data processing</p>
+                </div>
+                <a href="{{ url_for('emr.clusters') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Clusters
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Cluster Configuration</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="cluster_name">Cluster Name *</label>
+                            <input type="text" class="form-control" id="cluster_name" name="cluster_name"
+                                   placeholder="Enter cluster name" required>
+                            <small class="form-text text-muted">A unique name for your EMR cluster</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="instance_count">Instance Count</label>
+                                <input type="number" class="form-control" id="instance_count" name="instance_count"
+                                       value="3" min="1" max="50">
+                                <small class="form-text text-muted">Number of EC2 instances (1 master + slaves)</small>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="instance_type">Instance Type</label>
+                                <select class="form-control" id="instance_type" name="instance_type">
+                                    <option value="m5.xlarge" selected>m5.xlarge</option>
+                                    <option value="m5.2xlarge">m5.2xlarge</option>
+                                    <option value="m5.4xlarge">m5.4xlarge</option>
+                                    <option value="m5.8xlarge">m5.8xlarge</option>
+                                    <option value="m5.12xlarge">m5.12xlarge</option>
+                                    <option value="c5.xlarge">c5.xlarge</option>
+                                    <option value="c5.2xlarge">c5.2xlarge</option>
+                                    <option value="r5.xlarge">r5.xlarge</option>
+                                    <option value="r5.2xlarge">r5.2xlarge</option>
+                                </select>
+                                <small class="form-text text-muted">EC2 instance type for cluster nodes</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="release_label">EMR Release</label>
+                            <select class="form-control" id="release_label" name="release_label">
+                                <option value="emr-6.4.0" selected>emr-6.4.0 (Recommended)</option>
+                                <option value="emr-6.3.0">emr-6.3.0</option>
+                                <option value="emr-6.2.0">emr-6.2.0</option>
+                                <option value="emr-6.1.0">emr-6.1.0</option>
+                                <option value="emr-5.36.0">emr-5.36.0</option>
+                            </select>
+                            <small class="form-text text-muted">EMR release version with Hadoop ecosystem components</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Prerequisites</h6>
+                            <p class="mb-1">Before creating an EMR cluster, ensure you have:</p>
+                            <ul class="mb-0">
+                                <li>EMR_DefaultRole IAM service role</li>
+                                <li>EMR_EC2_DefaultRole IAM instance profile</li>
+                                <li>EC2 key pair for SSH access (optional)</li>
+                                <li>VPC and subnet configuration</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Create Cluster
+                            </button>
+                            <a href="{{ url_for('emr.clusters') }}" class="btn btn-secondary ml-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Help Card -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Help & Resources</h6>
+                </div>
+                <div class="card-body">
+                    <h6>EMR Components</h6>
+                    <p>EMR provides managed Hadoop framework with:</p>
+                    <ul>
+                        <li><strong>Hadoop</strong> - Distributed processing</li>
+                        <li><strong>Spark</strong> - Fast big data processing</li>
+                        <li><strong>Hive</strong> - SQL-like queries on big data</li>
+                        <li><strong>Pig</strong> - High-level data processing</li>
+                        <li><strong>HBase</strong> - NoSQL database</li>
+                    </ul>
+
+                    <h6>Instance Types</h6>
+                    <ul>
+                        <li><strong>M5</strong> - General purpose, balanced compute</li>
+                        <li><strong>C5</strong> - Compute optimized, high CPU</li>
+                        <li><strong>R5</strong> - Memory optimized, high RAM</li>
+                    </ul>
+
+                    <div class="mt-3">
+                        <a href="https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-what-is-emr.html"
+                           target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i> EMR Documentation
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Estimation -->
+            <div class="card shadow mt-3">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Cost Estimation</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">Approximate hourly cost for selected configuration:</p>
+                    <div class="h4 text-warning mb-0" id="cost-estimate">$0.00/hour</div>
+                    <small class="text-muted">* Excludes data transfer and storage costs</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Simple cost estimation (rough estimates)
+function updateCostEstimate() {
+    const instanceType = document.getElementById('instance_type').value;
+    const instanceCount = parseInt(document.getElementById('instance_count').value) || 1;
+
+    // Rough hourly costs (us-east-1, on-demand)
+    const costs = {
+        'm5.xlarge': 0.192,
+        'm5.2xlarge': 0.384,
+        'm5.4xlarge': 0.768,
+        'm5.8xlarge': 1.536,
+        'm5.12xlarge': 3.072,
+        'c5.xlarge': 0.170,
+        'c5.2xlarge': 0.340,
+        'r5.xlarge': 0.252,
+        'r5.2xlarge': 0.504
+    };
+
+    const hourlyCost = (costs[instanceType] || 0) * instanceCount;
+    document.getElementById('cost-estimate').textContent = `$${hourlyCost.toFixed(2)}/hour`;
+}
+
+// Update cost on input changes
+document.getElementById('instance_type').addEventListener('change', updateCostEstimate);
+document.getElementById('instance_count').addEventListener('input', updateCostEstimate);
+
+// Initial calculation
+updateCostEstimate();
+</script>
+{% endblock %}

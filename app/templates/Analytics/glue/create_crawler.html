@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Glue - Crear Crawler{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-spider me-2"></i>Crear Nuevo Crawler
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="crawler_name" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Nombre del Crawler *
+                                    </label>
+                                    <input type="text" class="form-control" id="crawler_name" name="crawler_name"
+                                           placeholder="mi-crawler" required>
+                                    <div class="form-text">Nombre único para el crawler</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="database_name" class="form-label">
+                                        <i class="fas fa-database me-1"></i>Base de Datos *
+                                    </label>
+                                    <input type="text" class="form-control" id="database_name" name="database_name"
+                                           placeholder="default" value="default" required>
+                                    <div class="form-text">Base de datos donde se almacenarán las tablas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">
+                                <i class="fas fa-user-shield me-1"></i>Rol IAM *
+                            </label>
+                            <input type="text" class="form-control" id="role" name="role"
+                                   placeholder="arn:aws:iam::123456789012:role/AWSGlueServiceRole"
+                                   required>
+                            <div class="form-text">
+                                ARN del rol IAM con permisos para Glue y S3.
+                                <a href="#" onclick="showRoleHelp()" class="text-decoration-none">¿Cómo crear el rol?</a>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="s3_targets" class="form-label">
+                                <i class="fas fa-folder me-1"></i>Targets S3 *
+                            </label>
+                            <textarea class="form-control" id="s3_targets" name="s3_targets" rows="4"
+                                      placeholder="s3://mi-bucket/datos/
+s3://mi-bucket/logs/
+s3://otro-bucket/archivos/" required></textarea>
+                            <div class="form-text">
+                                Una ruta S3 por línea. El crawler analizará estos paths para inferir esquemas.
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>¿Qué hace un Crawler?</h6>
+                            <p class="mb-1">Los crawlers de AWS Glue analizan automáticamente la estructura de tus datos en S3 y:</p>
+                            <ul class="mb-0">
+                                <li>Inferen esquemas de datos (CSV, JSON, Parquet, etc.)</li>
+                                <li>Crean tablas en el Catálogo de Datos de Glue</li>
+                                <li>Actualizan particiones automáticamente</li>
+                                <li>Facilitan consultas con Athena y EMR</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('glue.crawlers') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Crear Crawler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de ayuda para roles IAM -->
+<div class="modal fade" id="roleHelpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-shield me-2"></i>Crear Rol IAM para Glue</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Paso 1: Ir a IAM Console</h6>
+                <p>Ve a <a href="https://console.aws.amazon.com/iam/" target="_blank">IAM Console</a> > Roles > Crear rol</p>
+
+                <h6>Paso 2: Seleccionar tipo de entidad</h6>
+                <p><strong>Servicio AWS</strong> > <strong>Glue</strong></p>
+
+                <h6>Paso 3: Adjuntar políticas</h6>
+                <p>Adjunta estas políticas administradas:</p>
+                <ul>
+                    <li><code>AWSGlueServiceRole</code></li>
+                    <li><code>AmazonS3FullAccess</code> (o permisos específicos para tus buckets)</li>
+                </ul>
+
+                <h6>Paso 4: Nombre del rol</h6>
+                <p>Usa un nombre como <code>AWSGlueServiceRole</code></p>
+
+                <div class="alert alert-warning">
+                    <strong>Nota:</strong> Asegúrate de que el rol tenga acceso a los buckets S3 que especificaste como targets.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showRoleHelp() {
+    const modal = new bootstrap.Modal(document.getElementById('roleHelpModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

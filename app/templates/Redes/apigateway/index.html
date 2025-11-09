@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Gateway - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>Amazon API Gateway</h2>
+        <p>API Gateway es un servicio completamente administrado que facilita a los desarrolladores la creación, publicación, mantenimiento, monitoreo y protección de APIs a cualquier escala. Actúa como una "puerta de enlace" para aplicaciones que acceden a datos, lógica de negocio o funcionalidad desde servicios backend.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>¿Qué puedes hacer con API Gateway?</h4>
+        <ul>
+            <li><strong>Crear APIs REST y WebSocket:</strong> Construye APIs modernas con facilidad.</li>
+            <li><strong>Escalado automático:</strong> Maneja cualquier nivel de tráfico de API sin gestión de servidores.</li>
+            <li><strong>Seguridad avanzada:</strong> Implementa autenticación, autorización y control de acceso.</li>
+            <li><strong>Monitoreo y logging:</strong> Rastrea el rendimiento y uso de tus APIs con CloudWatch.</li>
+            <li><strong>Integración con Lambda:</strong> Crea APIs serverless que se ejecutan en funciones Lambda.</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>APIs y Recursos</h3>
+                <button class="btn btn-aws" disabled>Crear Nueva API</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Tipos de API</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            REST API
+                            <span class="badge bg-primary">Más usado</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            HTTP API
+                            <span class="badge bg-success">Costo optimizado</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            WebSocket API
+                            <span class="badge bg-info">Tiempo real</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Características Principales</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Funcionalidades clave:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>✅ Control de throttling:</strong> Limita las solicitudes por segundo</li>
+                        <li><strong>✅ CORS support:</strong> Configuración automática de CORS</li>
+                        <li><strong>✅ API Keys:</strong> Gestión de claves de API</li>
+                        <li><strong>✅ Validación de requests:</strong> Validación automática de entrada</li>
+                        <li><strong>✅ Transformación de datos:</strong> Modifica requests/responses</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

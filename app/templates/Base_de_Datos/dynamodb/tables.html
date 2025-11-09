@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Tablas DynamoDB{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Tablas DynamoDB</h2>
+                        <small class="text-muted">{{ tables | length }} tablas encontradas</small>
+                    </div>
+                    <a href="{{ url_for('dynamodb.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if tables %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre de Tabla</th>
+                                        <th>Estado</th>
+                                        <th>Items</th>
+                                        <th>Tamaño</th>
+                                        <th>Modo de Facturación</th>
+                                        <th>Creada</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for table in tables %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ table.name }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if table.status == 'ACTIVE' %}
+                                            <span class="badge bg-success">{{ table.status }}</span>
+                                            {% elif table.status == 'CREATING' %}
+                                            <span class="badge bg-warning">{{ table.status }}</span>
+                                            {% elif table.status == 'DELETING' %}
+                                            <span class="badge bg-danger">{{ table.status }}</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">{{ table.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ "{:,}".format(table.item_count | default(0)) }}</td>
+                                        <td>
+                                            {% if table.size_bytes %}
+                                                {% if table.size_bytes > 1073741824 %}
+                                                    {{ "%.2f"|format(table.size_bytes / 1073741824) }} GB
+                                                {% elif table.size_bytes > 1048576 %}
+                                                    {{ "%.2f"|format(table.size_bytes / 1048576) }} MB
+                                                {% elif table.size_bytes > 1024 %}
+                                                    {{ "%.2f"|format(table.size_bytes / 1024) }} KB
+                                                {% else %}
+                                                    {{ table.size_bytes }} bytes
+                                                {% endif %}
+                                            {% else %}
+                                                0 bytes
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if table.billing_mode == 'PAY_PER_REQUEST' %}
+                                            <span class="badge bg-info">On-Demand</span>
+                                            {% else %}
+                                            <span class="badge bg-primary">Provisioned</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ table.created }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('dynamodb.table_detail', table_name=table.name) }}"
+                                                   class="btn btn-outline-primary" title="Ver Detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('dynamodb.table_items', table_name=table.name) }}"
+                                                   class="btn btn-outline-info" title="Ver Items">
+                                                    <i class="fas fa-list"></i>
+                                                </a>
+                                                <a href="{{ url_for('dynamodb.scan_items', table_name=table.name) }}"
+                                                   class="btn btn-outline-success" title="Escanear">
+                                                    <i class="fas fa-search"></i>
+                                                </a>
+                                                <a href="{{ url_for('dynamodb.query_items', table_name=table.name) }}"
+                                                   class="btn btn-outline-warning" title="Consultar">
+                                                    <i class="fas fa-filter"></i>
+                                                </a>
+                                                <button class="btn btn-outline-danger" title="Eliminar Tabla"
+                                                        onclick="confirmDelete('{{ table.name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-database fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted">No se encontraron tablas</h4>
+                            <p class="text-muted">No hay tablas DynamoDB en esta región</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteTableModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar Tabla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="" id="deleteForm">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Advertencia:</strong> Esta acción no se puede deshacer.
+                    </div>
+                    <p>¿Está seguro de que desea eliminar la tabla <strong id="tableName"></strong>?</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                        <label class="form-check-label" for="confirmDelete">
+                            Confirmo que quiero eliminar esta tabla permanentemente
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>Eliminar Tabla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(tableName) {
+    document.getElementById('tableName').textContent = tableName;
+    document.getElementById('deleteForm').action = '{{ url_for("dynamodb.delete_table", table_name="PLACEHOLDER") }}'.replace('PLACEHOLDER', tableName);
+    document.getElementById('confirmDelete').checked = false;
+    document.getElementById('deleteBtn').disabled = true;
+
+    const modal = new bootstrap.Modal(document.getElementById('deleteTableModal'));
+    modal.show();
+}
+
+// Habilitar/deshabilitar botón de eliminar
+document.getElementById('confirmDelete').addEventListener('change', function() {
+    document.getElementById('deleteBtn').disabled = !this.checked;
+});
+</script>
+{% endblock %}

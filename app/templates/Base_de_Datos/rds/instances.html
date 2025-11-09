@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - RDS Instances{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-server text-primary me-2"></i>
+                        Instancias RDS
+                    </h1>
+                    <p class="text-muted mt-1">Lista de todas tus instancias de bases de datos RDS</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('rds.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Instances Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Instancias de Base de Datos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if instances %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID de Instancia</th>
+                                    <th>Estado</th>
+                                    <th>Motor</th>
+                                    <th>Versión</th>
+                                    <th>Clase</th>
+                                    <th>Almacenamiento (GB)</th>
+                                    <th>Endpoint</th>
+                                    <th>Puerto</th>
+                                    <th>Multi-AZ</th>
+                                    <th>Público</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for instance in instances %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ instance.id }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if instance.status == 'available' %}
+                                            <span class="badge bg-success">Disponible</span>
+                                        {% elif instance.status == 'creating' %}
+                                            <span class="badge bg-warning">Creando</span>
+                                        {% elif instance.status == 'deleting' %}
+                                            <span class="badge bg-danger">Eliminando</span>
+                                        {% elif instance.status == 'stopped' %}
+                                            <span class="badge bg-secondary">Detenida</span>
+                                        {% else %}
+                                            <span class="badge bg-info">{{ instance.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ instance.engine|upper }}</td>
+                                    <td>{{ instance.engine_version }}</td>
+                                    <td>{{ instance.instance_class }}</td>
+                                    <td>{{ instance.storage }}</td>
+                                    <td>
+                                        {% if instance.endpoint != 'N/A' %}
+                                            <code>{{ instance.endpoint }}</code>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ instance.port }}</td>
+                                    <td>
+                                        {% if instance.multi_az %}
+                                            <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                            <i class="fas fa-times text-muted"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if instance.publicly_accessible %}
+                                            <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                            <i class="fas fa-times text-muted"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('rds.modify_instance', instance_id=instance.id) }}" class="btn btn-sm btn-outline-primary" title="Modificar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if instance.status == 'available' %}
+                                                <form method="POST" action="{{ url_for('rds.stop_instance', instance_id=instance.id) }}" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Detener" onclick="return confirm('¿Estás seguro de que quieres detener esta instancia?')">
+                                                        <i class="fas fa-stop"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="{{ url_for('rds.reboot_instance', instance_id=instance.id) }}" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-info" title="Reiniciar" onclick="return confirm('¿Estás seguro de que quieres reiniciar esta instancia?')">
+                                                        <i class="fas fa-redo"></i>
+                                                    </button>
+                                                </form>
+                                            {% elif instance.status == 'stopped' %}
+                                                <form method="POST" action="{{ url_for('rds.start_instance', instance_id=instance.id) }}" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Iniciar" onclick="return confirm('¿Estás seguro de que quieres iniciar esta instancia?')">
+                                                        <i class="fas fa-play"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            <form method="POST" action="{{ url_for('rds.delete_instance', instance_id=instance.id) }}" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de que quieres eliminar esta instancia? Esta acción no se puede deshacer.')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-database fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No hay instancias RDS</h4>
+                        <p class="text-muted">No se encontraron instancias de bases de datos RDS en tu cuenta.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

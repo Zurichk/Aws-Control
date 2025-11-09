@@ -1,0 +1,230 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Comparar Rostros - Rekognition&lt;/title&gt;
+    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+    &lt;link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body class="bg-light"&gt;
+    &lt;div class="container-fluid py-4"&gt;
+        &lt;div class="row"&gt;
+            &lt;div class="col-12"&gt;
+                &lt;nav aria-label="breadcrumb"&gt;
+                    &lt;ol class="breadcrumb"&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('main.index') }}" class="text-decoration-none"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('rekognition.rekognition_dashboard') }}" class="text-decoration-none"&gt;Rekognition&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item active" aria-current="page"&gt;Comparar&lt;/li&gt;
+                    &lt;/ol&gt;
+                &lt;/nav&gt;
+
+                &lt;div class="d-flex justify-content-between align-items-center mb-4"&gt;
+                    &lt;h1 class="h3 mb-0"&gt;&lt;i class="fas fa-users text-warning me-2"&gt;&lt;/i&gt;Comparar Rostros&lt;/h1&gt;
+                    &lt;a href="{{ url_for('rekognition.rekognition_dashboard') }}" class="btn btn-outline-secondary"&gt;
+                        &lt;i class="fas fa-arrow-left me-2"&gt;&lt;/i&gt;Volver
+                    &lt;/a&gt;
+                &lt;/div&gt;
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            &lt;div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert"&gt;
+                                {{ message }}
+                                &lt;button type="button" class="btn-close" data-bs-dismiss="alert"&gt;&lt;/button&gt;
+                            &lt;/div&gt;
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                &lt;div class="row"&gt;
+                    &lt;div class="col-lg-6"&gt;
+                        &lt;div class="card shadow-sm"&gt;
+                            &lt;div class="card-header bg-warning text-white"&gt;
+                                &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-upload me-2"&gt;&lt;/i&gt;Subir Imágenes&lt;/h5&gt;
+                            &lt;/div&gt;
+                            &lt;div class="card-body"&gt;
+                                &lt;form method="POST" enctype="multipart/form-data" id="compareForm"&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="region" class="form-label"&gt;&lt;i class="fas fa-globe me-1"&gt;&lt;/i&gt;Región *&lt;/label&gt;
+                                        &lt;select class="form-select" id="region" name="region" required&gt;
+                                            &lt;option value="us-east-1" {{ 'selected' if region == 'us-east-1' else '' }}&gt;US East (N. Virginia)&lt;/option&gt;
+                                            &lt;option value="us-west-2" {{ 'selected' if region == 'us-west-2' else '' }}&gt;US West (Oregon)&lt;/option&gt;
+                                            &lt;option value="eu-west-1" {{ 'selected' if region == 'eu-west-1' else '' }}&gt;EU West (Ireland)&lt;/option&gt;
+                                            &lt;option value="ap-southeast-1" {{ 'selected' if region == 'ap-southeast-1' else '' }}&gt;Asia Pacific (Singapore)&lt;/option&gt;
+                                        &lt;/select&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="source_image" class="form-label"&gt;&lt;i class="fas fa-user me-1"&gt;&lt;/i&gt;Imagen de Referencia *&lt;/label&gt;
+                                        &lt;input type="file" class="form-control" id="source_image" name="source_image" 
+                                               accept="image/*" required&gt;
+                                        &lt;div class="form-text"&gt;Imagen con el rostro de referencia&lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="target_image" class="form-label"&gt;&lt;i class="fas fa-user-friends me-1"&gt;&lt;/i&gt;Imagen a Comparar *&lt;/label&gt;
+                                        &lt;input type="file" class="form-control" id="target_image" name="target_image" 
+                                               accept="image/*" required&gt;
+                                        &lt;div class="form-text"&gt;Imagen con el rostro a comparar&lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="similarity_threshold" class="form-label"&gt;&lt;i class="fas fa-balance-scale me-1"&gt;&lt;/i&gt;Umbral de Similitud&lt;/label&gt;
+                                        &lt;input type="number" class="form-control" id="similarity_threshold" name="similarity_threshold" 
+                                               value="80" min="0" max="100" step="1"&gt;
+                                        &lt;div class="form-text"&gt;Similitud mínima para considerar coincidencia (%)&lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;button type="submit" class="btn btn-warning w-100"&gt;
+                                        &lt;i class="fas fa-balance-scale me-2"&gt;&lt;/i&gt;Comparar Rostros
+                                    &lt;/button&gt;
+                                &lt;/form&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+
+                    &lt;div class="col-lg-6"&gt;
+                        &lt;div class="row g-3"&gt;
+                            &lt;div class="col-12"&gt;
+                                {% if source_image_data %}
+                                &lt;div class="card shadow-sm"&gt;
+                                    &lt;div class="card-header bg-primary text-white"&gt;
+                                        &lt;h6 class="card-title mb-0"&gt;&lt;i class="fas fa-user me-2"&gt;&lt;/i&gt;Imagen de Referencia&lt;/h6&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="card-body text-center"&gt;
+                                        &lt;img src="data:image/jpeg;base64,{{ source_image_data }}" 
+                                             class="img-fluid rounded shadow-sm" alt="Imagen de referencia" 
+                                             style="max-height: 200px;"&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                                {% endif %}
+                            &lt;/div&gt;
+                            &lt;div class="col-12"&gt;
+                                {% if target_image_data %}
+                                &lt;div class="card shadow-sm"&gt;
+                                    &lt;div class="card-header bg-secondary text-white"&gt;
+                                        &lt;h6 class="card-title mb-0"&gt;&lt;i class="fas fa-user-friends me-2"&gt;&lt;/i&gt;Imagen a Comparar&lt;/h6&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="card-body text-center"&gt;
+                                        &lt;img src="data:image/jpeg;base64,{{ target_image_data }}" 
+                                             class="img-fluid rounded shadow-sm" alt="Imagen a comparar" 
+                                             style="max-height: 200px;"&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                                {% endif %}
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                {% if comparison_results %}
+                &lt;div class="card shadow-sm mt-4"&gt;
+                    &lt;div class="card-header bg-warning text-white"&gt;
+                        &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-balance-scale me-2"&gt;&lt;/i&gt;Resultados de Comparación&lt;/h5&gt;
+                    &lt;/div&gt;
+                    &lt;div class="card-body"&gt;
+                        {% if comparison_results.FaceMatches %}
+                        &lt;div class="alert alert-success"&gt;
+                            &lt;h6&gt;&lt;i class="fas fa-check-circle me-2"&gt;&lt;/i&gt;¡Rostros Coincidentes Encontrados!&lt;/h6&gt;
+                            &lt;p class="mb-0"&gt;Se encontraron {{ comparison_results.FaceMatches|length }} coincidencia(s) de rostro.&lt;/p&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="row"&gt;
+                            {% for match in comparison_results.FaceMatches %}
+                            &lt;div class="col-md-6 mb-3"&gt;
+                                &lt;div class="card border-success h-100"&gt;
+                                    &lt;div class="card-header bg-success text-white"&gt;
+                                        &lt;h6 class="card-title mb-0"&gt;
+                                            &lt;i class="fas fa-user-check me-2"&gt;&lt;/i&gt;Coincidencia {{ loop.index }}
+                                        &lt;/h6&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="card-body"&gt;
+                                        &lt;div class="mb-3"&gt;
+                                            &lt;h6&gt;Similitud: &lt;span class="badge bg-success"&gt;{{ "%.1f"|format(match.Similarity) }}%&lt;/span&gt;&lt;/h6&gt;
+                                            &lt;div class="progress"&gt;
+                                                &lt;div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ match.Similarity }}%" 
+                                                     aria-valuenow="{{ match.Similarity }}" 
+                                                     aria-valuemin="0" aria-valuemax="100"&gt;&lt;/div&gt;
+                                            &lt;/div&gt;
+                                        &lt;/div&gt;
+
+                                        &lt;h6&gt;Posición en Imagen de Referencia:&lt;/h6&gt;
+                                        &lt;small class="text-muted"&gt;
+                                            X: {{ match.Face.BoundingBox.Left|round(3) }}, 
+                                            Y: {{ match.Face.BoundingBox.Top|round(3) }}&lt;br&gt;
+                                            Ancho: {{ match.Face.BoundingBox.Width|round(3) }}, 
+                                            Alto: {{ match.Face.BoundingBox.Height|round(3) }}
+                                        &lt;/small&gt;
+
+                                        {% if match.Face.Confidence %}
+                                        &lt;br&gt;&lt;small class="text-muted"&gt;
+                                            Confianza: {{ "%.1f"|format(match.Face.Confidence) }}%
+                                        &lt;/small&gt;
+                                        {% endif %}
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            {% endfor %}
+                        &lt;/div&gt;
+                        {% else %}
+                        &lt;div class="alert alert-warning"&gt;
+                            &lt;h6&gt;&lt;i class="fas fa-exclamation-triangle me-2"&gt;&lt;/i&gt;No se encontraron coincidencias&lt;/h6&gt;
+                            &lt;p class="mb-0"&gt;Los rostros en las imágenes no coinciden según el umbral establecido.&lt;/p&gt;
+                        &lt;/div&gt;
+                        {% endif %}
+
+                        {% if comparison_results.UnmatchedFaces %}
+                        &lt;div class="mt-3"&gt;
+                            &lt;h6&gt;&lt;i class="fas fa-user-times me-2"&gt;&lt;/i&gt;Rostros sin Coincidencia&lt;/h6&gt;
+                            &lt;p class="text-muted small"&gt;Se encontraron {{ comparison_results.UnmatchedFaces|length }} rostro(s) en la imagen de referencia que no tuvieron coincidencias.&lt;/p&gt;
+                        &lt;/div&gt;
+                        {% endif %}
+
+                        {% if comparison_results.SourceImageFace %}
+                        &lt;div class="mt-3"&gt;
+                            &lt;h6&gt;&lt;i class="fas fa-info-circle me-2"&gt;&lt;/i&gt;Información de la Imagen de Referencia&lt;/h6&gt;
+                            &lt;small class="text-muted"&gt;
+                                Rostros detectados: {{ comparison_results.SourceImageFace|length }}&lt;br&gt;
+                                {% for face in comparison_results.SourceImageFace %}
+                                Rostro {{ loop.index }}: Confianza {{ "%.1f"|format(face.Confidence) }}%
+                                {% if not loop.last %}&lt;br&gt;{% endif %}
+                                {% endfor %}
+                            &lt;/small&gt;
+                        &lt;/div&gt;
+                        {% endif %}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                {% endif %}
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        // Validar archivos de imagen
+        function validateImageFile(file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('La imagen es demasiado grande. Máximo 5MB.');
+                return false;
+            }
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor selecciona un archivo de imagen válido.');
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById('source_image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && !validateImageFile(file)) {
+                e.target.value = '';
+            }
+        });
+
+        document.getElementById('target_image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && !validateImageFile(file)) {
+                e.target.value = '';
+            }
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;

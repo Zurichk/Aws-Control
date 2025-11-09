@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Snapshots EBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.index') }}">EBS</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Snapshots</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-camera me-2"></i>
+                        Snapshots EBS
+                    </h5>
+                    <a href="{{ url_for('ebs.create_snapshot') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>
+                        Crear Snapshot
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if snapshots %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID del Snapshot</th>
+                                        <th>Volumen</th>
+                                        <th>Estado</th>
+                                        <th>Tamaño</th>
+                                        <th>Fecha de Creación</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for snapshot in snapshots %}
+                                    <tr>
+                                        <td><code>{{ snapshot.SnapshotId }}</code></td>
+                                        <td><code>{{ snapshot.VolumeId }}</code></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if snapshot.State == 'completed' else 'warning' if snapshot.State == 'pending' else 'danger' }}">
+                                                {{ snapshot.State }}
+                                            </span>
+                                        </td>
+                                        <td>{{ snapshot.VolumeSize }} GB</td>
+                                        <td>{{ snapshot.StartTime.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                        <td>
+                                            {% if snapshot.Description %}
+                                                {{ snapshot.Description }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <form method="POST"
+                                                  action="{{ url_for('ebs.delete_snapshot', snapshot_id=snapshot.SnapshotId) }}"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('¿Estás seguro de que deseas eliminar este snapshot? Esta acción no se puede deshacer.')">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>No hay snapshots EBS</h6>
+                            <p>No se encontraron snapshots EBS en esta cuenta.</p>
+                            <a href="{{ url_for('ebs.create_snapshot') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Crear Primer Snapshot
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

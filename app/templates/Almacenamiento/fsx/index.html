@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}FSx - File Server{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">FSx</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-server me-2"></i>
+                        Amazon FSx - File Server
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Amazon FSx proporciona sistemas de archivos completamente administrados optimizados para cargas de trabajo específicas, incluyendo Windows File Server, Lustre para computación de alto rendimiento, NetApp ONTAP, y OpenZFS.
+                    </p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-folder-open fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">File Systems</h5>
+                                    <p class="card-text">Gestiona tus sistemas de archivos FSx, crea nuevos file systems y configura sus propiedades específicas por tipo.</p>
+                                    <a href="{{ url_for('fsx.file_systems') }}" class="btn btn-primary">
+                                        <i class="fas fa-list me-1"></i>
+                                        Ver File Systems
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-plus-circle fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Crear File System</h5>
+                                    <p class="card-text">Crea un nuevo sistema de archivos FSx con configuraciones específicas para Lustre, Windows, ONTAP u OpenZFS.</p>
+                                    <a href="{{ url_for('fsx.create_file_system') }}" class="btn btn-success">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Crear File System
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Tipos de Sistemas de Archivos FSx
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6><i class="fas fa-rocket text-warning me-2"></i>Lustre</h6>
+                            <p>Sistema de archivos paralelo de alto rendimiento para computación HPC y ML.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><i class="fab fa-windows text-primary me-2"></i>Windows File Server</h6>
+                            <p>Sistema de archivos nativo de Windows con compatibilidad total con SMB.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><i class="fas fa-network-wired text-success me-2"></i>NetApp ONTAP</h6>
+                            <p>Sistema de archivos empresarial con capacidades avanzadas de gestión de datos.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><i class="fas fa-database text-info me-2"></i>OpenZFS</h6>
+                            <p>Sistema de archivos con capacidades avanzadas de snapshots y clones.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

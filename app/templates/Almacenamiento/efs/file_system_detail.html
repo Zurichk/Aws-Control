@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle del File System EFS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('efs.index') }}">EFS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('efs.file_systems') }}">File Systems</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ file_system.FileSystemId }}</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder-open me-2"></i>
+                        Detalle del File System: <code>{{ file_system.FileSystemId }}</code>
+                    </h5>
+                    <div>
+                        <a href="{{ url_for('efs.create_mount_target', file_system_id=file_system.FileSystemId) }}"
+                           class="btn btn-success btn-sm me-2">
+                            <i class="fas fa-link me-1"></i>
+                            Crear Mount Target
+                        </a>
+                        <form method="POST"
+                              action="{{ url_for('efs.delete_file_system', file_system_id=file_system.FileSystemId) }}"
+                              class="d-inline"
+                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar este file system? Esta acción no se puede deshacer.')">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <thead class="visually-hidden">
+                                    <tr>
+                                        <th>Propiedad</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>ID del File System:</strong></td>
+                                        <td><code>{{ file_system.FileSystemId }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estado:</strong></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if file_system.LifeCycleState == 'available' else 'warning' if file_system.LifeCycleState == 'creating' else 'danger' }}">
+                                                {{ file_system.LifeCycleState }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Modo de Rendimiento:</strong></td>
+                                        <td>{{ file_system.PerformanceMode }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Modo de Throughput:</strong></td>
+                                        <td>{{ file_system.ThroughputMode }}</td>
+                                    </tr>
+                                    {% if file_system.ProvisionedThroughputInMibps %}
+                                    <tr>
+                                        <td><strong>Throughput Provisionado:</strong></td>
+                                        <td>{{ file_system.ProvisionedThroughputInMibps }} MiB/s</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td><strong>Tamaño:</strong></td>
+                                        <td>
+                                            {% if file_system.SizeInBytes %}
+                                                {{ (file_system.SizeInBytes.Value / (1024*1024*1024))|round(2) }} GB
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Creado:</strong></td>
+                                        <td>{{ file_system.CreationTime.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    </tr>
+                                    {% if file_system.Encrypted %}
+                                    <tr>
+                                        <td><strong>Encriptado:</strong></td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-lock me-1"></i>
+                                                Sí
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Mount Targets ({{ mount_targets|length }})</h6>
+                            {% if mount_targets %}
+                                {% for mt in mount_targets %}
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small><strong>ID:</strong></small><br>
+                                                <code>{{ mt.MountTargetId }}</code>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><strong>Estado:</strong></small><br>
+                                                <span class="badge bg-{{ 'success' if mt.LifeCycleState == 'available' else 'warning' }}">
+                                                    {{ mt.LifeCycleState }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-1">
+                                            <div class="col-6">
+                                                <small><strong>Subnet:</strong></small><br>
+                                                <code>{{ mt.SubnetId }}</code>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><strong>IP:</strong></small><br>
+                                                {{ mt.IpAddress }}
+                                            </div>
+                                        </div>
+                                        <div class="row mt-1">
+                                            <div class="col-12">
+                                                <small><strong>Security Groups:</strong></small><br>
+                                                {% for sg in mt.SecurityGroups %}
+                                                    <code>{{ sg }}</code>{% if not loop.last %}, {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <form method="POST"
+                                                  action="{{ url_for('efs.delete_mount_target', mount_target_id=mt.MountTargetId) }}"
+                                                  class="d-inline">
+                                                <input type="hidden" name="file_system_id" value="{{ file_system.FileSystemId }}">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('¿Estás seguro de que deseas eliminar este mount target?')">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>No hay mount targets</h6>
+                                    <p>Este file system no tiene mount targets configurados.</p>
+                                    <a href="{{ url_for('efs.create_mount_target', file_system_id=file_system.FileSystemId) }}"
+                                       class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Crear Mount Target
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

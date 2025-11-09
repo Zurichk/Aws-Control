@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Groups - Cluster {{ cluster_name }} - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.index') }}">EKS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.clusters') }}">Clusters</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.cluster_detail', cluster_name=cluster_name) }}">{{ cluster_name }}</a></li>
+                    <li class="breadcrumb-item active">Node Groups</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Node Groups - {{ cluster_name }}</h2>
+            <small class="text-muted">Grupos de nodos para el cluster EKS</small>
+        </div>
+        <div>
+            <a href="{{ url_for('eks.create_nodegroup', cluster_name=cluster_name) }}" class="btn btn-aws">
+                <i class="fas fa-plus"></i> Crear Node Group
+            </a>
+            <a href="{{ url_for('eks.cluster_detail', cluster_name=cluster_name) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Cluster
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if nodegroups %}
+            {% for ng in nodegroups %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ ng.nodegroupName }}</h5>
+                        <span class="badge bg-{{ 'success' if ng.status == 'ACTIVE' else 'warning' if ng.status == 'CREATING' else 'danger' }}">
+                            {{ ng.status }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Instancia</small><br>
+                                <strong>{{ ng.instanceTypes[0] if ng.instanceTypes else 'N/A' }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Versión</small><br>
+                                <strong>{{ ng.version }}</strong>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-4">
+                                <small class="text-muted">Mín</small><br>
+                                <strong>{{ ng.scalingConfig.minSize }}</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Actual</small><br>
+                                <strong>{{ ng.scalingConfig.desiredSize }}</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Máx</small><br>
+                                <strong>{{ ng.scalingConfig.maxSize }}</strong>
+                            </div>
+                        </div>
+                        {% if ng.subnets %}
+                        <hr>
+                        <small class="text-muted">Subnets</small><br>
+                        <small>{{ ng.subnets|length }} subnets configuradas</small>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100">
+                            <button class="btn btn-outline-primary btn-sm" disabled>
+                                <i class="fas fa-eye"></i> Ver Detalles
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" disabled>
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" disabled>
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-server fa-3x text-muted mb-3"></i>
+                        <h5>No hay Node Groups</h5>
+                        <p class="text-muted">Este cluster no tiene node groups configurados.</p>
+                        <a href="{{ url_for('eks.create_nodegroup', cluster_name=cluster_name) }}" class="btn btn-aws">
+                            <i class="fas fa-plus"></i> Crear tu primer Node Group
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if nodegroups %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Información sobre Node Groups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>¿Qué son los Node Groups?</h6>
+                            <p class="small text-muted">
+                                Los Node Groups son grupos de instancias EC2 que sirven como nodos worker
+                                en tu cluster EKS. Cada node group puede tener diferentes tipos de instancia,
+                                tamaños y configuraciones de escalado.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Configuración recomendada:</h6>
+                            <ul class="small">
+                                <li><strong>Múltiples AZs:</strong> Distribuye nodos en diferentes zonas de disponibilidad</li>
+                                <li><strong>Auto Scaling:</strong> Configura límites apropiados de escalado</li>
+                                <li><strong>Instance Types:</strong> Elige instancias según tus necesidades de CPU/memoria</li>
+                                <li><strong>Spot Instances:</strong> Considera usar instancias spot para workloads tolerantes a fallos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}ECS - Ejecutar Tarea{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Ejecutar Tarea ECS</h2>
+                        <small class="text-muted">Ejecutar una tarea independiente en un cluster de Amazon ECS</small>
+                    </div>
+                    <a href="{{ url_for('ecs.tasks') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cluster_name" class="form-label">
+                                        <i class="fas fa-cube text-info me-2"></i>Cluster
+                                    </label>
+                                    <select class="form-select" id="cluster_name" name="cluster_name" required>
+                                        <option value="">Seleccionar cluster...</option>
+                                        {% for cluster in clusters %}
+                                        <option value="{{ cluster.clusterName }}">{{ cluster.clusterName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Cluster donde se ejecutará la tarea.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="task_definition" class="form-label">
+                                        <i class="fas fa-file-code text-success me-2"></i>Definición de Tarea
+                                    </label>
+                                    <select class="form-select" id="task_definition" name="task_definition" required>
+                                        <option value="">Seleccionar definición de tarea...</option>
+                                        {% for task_def in task_definitions %}
+                                        <option value="{{ task_def.taskDefinitionArn }}">
+                                            {{ task_def.family }}:{{ task_def.revision }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Definición de tarea que describe cómo ejecutar el contenedor.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="count" class="form-label">
+                                        <i class="fas fa-hashtag text-warning me-2"></i>Número de Tareas
+                                    </label>
+                                    <input type="number" class="form-control" id="count" name="count" 
+                                           required min="1" max="10" value="1">
+                                    <div class="form-text">
+                                        Número de instancias de la tarea a ejecutar (1-10).
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="launch_type" class="form-label">
+                                        <i class="fas fa-rocket text-primary me-2"></i>Tipo de Lanzamiento
+                                    </label>
+                                    <select class="form-select" id="launch_type" name="launch_type" required>
+                                        <option value="FARGATE">FARGATE</option>
+                                        <option value="EC2">EC2</option>
+                                    </select>
+                                    <div class="form-text">
+                                        FARGATE para serverless, EC2 para instancias dedicadas.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Información sobre Tareas ECS</h6>
+                            <ul class="mb-0">
+                                <li>Las tareas son instancias únicas de definiciones de tarea</li>
+                                <li>A diferencia de los servicios, las tareas no se reinician automáticamente</li>
+                                <li>Útil para trabajos por lotes, migraciones, o tareas puntuales</li>
+                                <li>Se pueden ejecutar múltiples instancias de la misma tarea</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('ecs.tasks') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-play"></i> Ejecutar Tarea
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const countInput = document.getElementById('count');
+    
+    form.addEventListener('submit', function(e) {
+        const count = parseInt(countInput.value);
+        
+        // Validar número de tareas
+        if (count < 1 || count > 10) {
+            e.preventDefault();
+            alert('El número de tareas debe estar entre 1 y 10');
+            countInput.focus();
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

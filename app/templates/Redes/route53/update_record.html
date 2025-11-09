@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Actualizar Registro DNS - {{ zone_name }} - Route 53{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Actualizar Registro DNS</h2>
+                    <small class="text-muted">Zona: {{ zone_name }} ({{ zone_id }})</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nombre del Registro</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="name" name="name" value="{{ record_name }}" readonly>
+                                        <span class="input-group-text">.{{ zone_name }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">Tipo de Registro</label>
+                                    <input type="text" class="form-control" id="type" name="type" value="{{ record_type }}" readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="current_value" class="form-label">Valor Actual</label>
+                                    <textarea class="form-control" id="current_value" rows="2" readonly>{{ current_value }}</textarea>
+                                    <div class="form-text text-muted">Este es el valor actual del registro.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="new_value" class="form-label">Nuevo Valor <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="new_value" name="new_value" rows="3" required
+                                              placeholder="Introduce el nuevo valor del registro"></textarea>
+                                    <div class="form-text" id="value_help">
+                                        Introduce el nuevo valor para este registro DNS.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="ttl" class="form-label">TTL (Time To Live)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="ttl" name="ttl" min="0" max="2147483647" value="{{ current_ttl or 300 }}">
+                                        <span class="input-group-text">segundos</span>
+                                    </div>
+                                    <div class="form-text">
+                                        Tiempo en segundos que los resolvers DNS cachean este registro.
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Información de la Actualización</h6>
+                                    <p class="mb-0">
+                                        Esta acción creará un cambio en Route 53 que actualizará el registro DNS.
+                                        Los cambios pueden tardar hasta 60 segundos en propagarse globalmente.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Detalles del Registro</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <dl class="row small">
+                                            <dt class="col-sm-4">Tipo:</dt>
+                                            <dd class="col-sm-8">
+                                                <span class="badge bg-primary">{{ record_type }}</span>
+                                            </dd>
+
+                                            <dt class="col-sm-4">TTL Actual:</dt>
+                                            <dd class="col-sm-8">{{ current_ttl or 'No especificado' }}</dd>
+
+                                            <dt class="col-sm-4">Zona:</dt>
+                                            <dd class="col-sm-8">{{ zone_name }}</dd>
+                                        </dl>
+
+                                        <hr>
+
+                                        <h6>¿Qué cambiará?</h6>
+                                        <ul class="small">
+                                            <li>El valor del registro se actualizará</li>
+                                            <li>El TTL puede modificarse si se cambia</li>
+                                            <li>Los cambios se propagan globalmente</li>
+                                        </ul>
+
+                                        <div class="alert alert-warning small">
+                                            <strong>Importante:</strong> Asegúrate de que el nuevo valor sea correcto antes de guardar.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('route53.list_records', zone_id=zone_id) }}" class="btn btn-secondary">Cancelar</a>
+                                    <button type="submit" class="btn btn-primary">Actualizar Registro</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Actualizar ayuda del valor según el tipo de registro
+document.addEventListener('DOMContentLoaded', function() {
+    const type = document.getElementById('type').value;
+    const valueHelp = document.getElementById('value_help');
+    const newValueTextarea = document.getElementById('new_value');
+
+    // Copiar el valor actual como sugerencia inicial
+    const currentValue = document.getElementById('current_value').value;
+    newValueTextarea.value = currentValue;
+
+    switch(type) {
+        case 'A':
+            valueHelp.textContent = 'Introduce una dirección IPv4 válida (ejemplo: 192.168.1.1)';
+            break;
+        case 'AAAA':
+            valueHelp.textContent = 'Introduce una dirección IPv6 válida (ejemplo: 2001:db8::1)';
+            break;
+        case 'CNAME':
+            valueHelp.textContent = 'Introduce el nombre canónico completo (ejemplo: www.ejemplo.com)';
+            break;
+        case 'MX':
+            valueHelp.textContent = 'Introduce el servidor de correo con prioridad (ejemplo: 10 mail.ejemplo.com)';
+            break;
+        case 'TXT':
+            valueHelp.textContent = 'Introduce el texto (ejemplo: "v=spf1 -all" para SPF)';
+            break;
+        case 'SRV':
+            valueHelp.textContent = 'Formato: prioridad peso puerto objetivo (ejemplo: 0 5 5060 sip.ejemplo.com)';
+            break;
+        default:
+            valueHelp.textContent = 'Introduce el nuevo valor para este registro DNS.';
+    }
+});
+
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const newValue = document.getElementById('new_value').value.trim();
+    const currentValue = document.getElementById('current_value').value.trim();
+
+    if (!newValue) {
+        alert('Por favor introduce un nuevo valor para el registro.');
+        e.preventDefault();
+        return;
+    }
+
+    if (newValue === currentValue) {
+        if (!confirm('El nuevo valor es igual al valor actual. ¿Deseas continuar de todos modos?')) {
+            e.preventDefault();
+            return;
+        }
+    }
+
+    // Validaciones específicas por tipo
+    const type = document.getElementById('type').value;
+    switch(type) {
+        case 'A':
+            const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+            if (!ipv4Regex.test(newValue)) {
+                alert('La dirección IPv4 no tiene un formato válido.');
+                e.preventDefault();
+                return;
+            }
+            break;
+        case 'AAAA':
+            // Validación básica de IPv6
+            if (!newValue.includes(':') || newValue.split(':').length < 3) {
+                alert('La dirección IPv6 no tiene un formato válido.');
+                e.preventDefault();
+                return;
+            }
+            break;
+    }
+});
+</script>
+{% endblock %}

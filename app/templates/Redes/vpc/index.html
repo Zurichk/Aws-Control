@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}VPC - Panel de Control AWS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Amazon Virtual Private Cloud (VPC)</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">VPC te permite aprovisionar una sección aislada lógicamente de la nube de AWS donde puedes lanzar recursos de AWS en una red virtual que defines.</p>
+
+                    <div class="row">
+                        <!-- VPCs -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-cloud fa-2x text-primary mb-3"></i>
+                                    <h5 class="card-title">VPCs</h5>
+                                    <p class="card-text">Gestionar Virtual Private Clouds</p>
+                                    <a href="{{ url_for('vpc.vpcs') }}" class="btn btn-outline-primary">Ver VPCs</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subnets -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-network-wired fa-2x text-success mb-3"></i>
+                                    <h5 class="card-title">Subnets</h5>
+                                    <p class="card-text">Crear y gestionar subredes</p>
+                                    <a href="{{ url_for('vpc.subnets') }}" class="btn btn-outline-success">Ver Subnets</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Route Tables -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-route fa-2x text-info mb-3"></i>
+                                    <h5 class="card-title">Route Tables</h5>
+                                    <p class="card-text">Configurar tablas de rutas</p>
+                                    <a href="{{ url_for('vpc.route_tables') }}" class="btn btn-outline-info">Ver Route Tables</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Internet Gateways -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-globe fa-2x text-warning mb-3"></i>
+                                    <h5 class="card-title">Internet Gateways</h5>
+                                    <p class="card-text">Puertas de enlace a internet</p>
+                                    <a href="{{ url_for('vpc.internet_gateways') }}" class="btn btn-outline-warning">Ver IGWs</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NAT Gateways -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exchange-alt fa-2x text-danger mb-3"></i>
+                                    <h5 class="card-title">NAT Gateways</h5>
+                                    <p class="card-text">Traducción de direcciones de red</p>
+                                    <a href="{{ url_for('vpc.nat_gateways') }}" class="btn btn-outline-danger">Ver NATs</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VPC Peerings -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-handshake fa-2x text-secondary mb-3"></i>
+                                    <h5 class="card-title">VPC Peerings</h5>
+                                    <p class="card-text">Conexiones entre VPCs</p>
+                                    <a href="{{ url_for('vpc.vpc_peerings') }}" class="btn btn-outline-secondary">Ver Peerings</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4>Componentes de VPC:</h4>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> <strong>Subredes:</strong> Rangos de direcciones IP dentro de tu VPC</li>
+                            <li><i class="fas fa-check text-success"></i> <strong>Internet Gateways:</strong> Puertas de enlace para acceso a internet</li>
+                            <li><i class="fas fa-check text-success"></i> <strong>NAT Gateways:</strong> Para acceso outbound desde subredes privadas</li>
+                            <li><i class="fas fa-check text-success"></i> <strong>Route Tables:</strong> Controlan el tráfico de red dentro de la VPC</li>
+                            <li><i class="fas fa-check text-success"></i> <strong>VPC Peering:</strong> Conexiones privadas entre VPCs</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

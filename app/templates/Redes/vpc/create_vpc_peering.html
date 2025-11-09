@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Crear VPC Peering - VPC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Crear Nueva VPC Peering Connection</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Las VPC Peering Connections permiten que instancias en diferentes VPCs se comuniquen entre sí
+                        usando direcciones IP privadas, como si estuvieran en la misma red.
+                    </div>
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="requester_vpc_id" class="form-label">VPC Requerente *</label>
+                            <select class="form-select" id="requester_vpc_id" name="requester_vpc_id" required>
+                                <option value="">Seleccionar VPC requerente...</option>
+                                {% for vpc in vpcs %}
+                                <option value="{{ vpc.VpcId }}">{{ vpc.VpcId }} - {{ vpc.CidrBlock }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="peer_vpc_id" class="form-label">VPC Peer *</label>
+                            <select class="form-select" id="peer_vpc_id" name="peer_vpc_id" required>
+                                <option value="">Seleccionar VPC peer...</option>
+                                {% for vpc in vpcs %}
+                                <option value="{{ vpc.VpcId }}">{{ vpc.VpcId }} - {{ vpc.CidrBlock }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="peer_owner_id" class="form-label">Peer Owner ID</label>
+                            <input type="text" class="form-control" id="peer_owner_id" name="peer_owner_id"
+                                   placeholder="123456789012">
+                            <div class="form-text">
+                                Opcional. ID de la cuenta AWS que posee la VPC peer.
+                                Si no se especifica, se asume que es la misma cuenta.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-handshake"></i> Crear VPC Peering
+                            </button>
+                            <a href="{{ url_for('vpc.vpc_peerings') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

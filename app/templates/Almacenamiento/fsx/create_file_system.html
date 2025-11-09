@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Crear File System FSx{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('fsx.index') }}">FSx</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('fsx.file_systems') }}">File Systems</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear File System</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-server me-2"></i>
+                        Crear File System FSx
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="file_system_type" class="form-label">Tipo de File System *</label>
+                                    <select class="form-select" id="file_system_type" name="file_system_type" required>
+                                        <option value="LUSTRE">Lustre (HPC/Computación de Alto Rendimiento)</option>
+                                        <option value="WINDOWS">Windows File Server</option>
+                                        <option value="ONTAP">NetApp ONTAP</option>
+                                        <option value="OPENZFS">OpenZFS</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Selecciona el tipo de sistema de archivos que mejor se adapte a tus necesidades.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="storage_capacity" class="form-label">Capacidad de Almacenamiento (GB) *</label>
+                                    <input type="number" class="form-control" id="storage_capacity"
+                                           name="storage_capacity" value="1200" min="32" required>
+                                    <div class="form-text">
+                                        Capacidad de almacenamiento en GB. Mínimo 32 GB.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración específica para Lustre -->
+                        <div id="lustre_config" class="config-section" style="display: none;">
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">Configuración Lustre</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="deployment_type" class="form-label">Tipo de Despliegue</label>
+                                                <select class="form-select" id="deployment_type" name="deployment_type">
+                                                    <option value="PERSISTENT_1" selected>Persistent 1</option>
+                                                    <option value="PERSISTENT_2">Persistent 2</option>
+                                                    <option value="SCRATCH_1">Scratch 1</option>
+                                                    <option value="SCRATCH_2">Scratch 2</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="per_unit_storage_throughput" class="form-label">Throughput por Unidad (MB/s/TiB)</label>
+                                                <select class="form-select" id="per_unit_storage_throughput" name="per_unit_storage_throughput">
+                                                    <option value="50" selected>50</option>
+                                                    <option value="100">100</option>
+                                                    <option value="200">200</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subnet_ids" class="form-label">Subnets</label>
+                                    <select class="form-select" id="subnet_ids" name="subnet_ids" multiple>
+                                        {% for subnet in subnets %}
+                                        <option value="{{ subnet.SubnetId }}">
+                                            {{ subnet.SubnetId }} - {{ subnet.CidrBlock }}
+                                            {% if subnet.AvailabilityZone %}
+                                                ({{ subnet.AvailabilityZone }})
+                                            {% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Selecciona las subnets donde se desplegará el file system (mínimo 1).
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="security_group_ids" class="form-label">Security Groups</label>
+                                    <select class="form-select" id="security_group_ids" name="security_group_ids" multiple>
+                                        {% for sg in security_groups %}
+                                        <option value="{{ sg.GroupId }}">
+                                            {{ sg.GroupId }} - {{ sg.GroupName }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Security groups para controlar el acceso al file system.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('fsx.file_systems') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-server me-1"></i>
+                                        Crear File System
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información sobre Tipos de File Systems FSx
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-rocket text-warning me-2"></i>Amazon FSx for Lustre</h6>
+                            <ul class="mb-3">
+                                <li>Optimizado para computación de alto rendimiento (HPC)</li>
+                                <li>Compatible con cargas de trabajo de machine learning</li>
+                                <li>Integración con S3 para datos</li>
+                                <li>Escalado automático de throughput</li>
+                            </ul>
+
+                            <h6><i class="fab fa-windows text-primary me-2"></i>Amazon FSx for Windows File Server</h6>
+                            <ul class="mb-3">
+                                <li>Sistema de archivos nativo de Windows</li>
+                                <li>Compatibilidad total con SMB</li>
+                                <li>Integración con Active Directory</li>
+                                <li>Capacidades de DFS y deduplicación</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-network-wired text-success me-2"></i>Amazon FSx for NetApp ONTAP</h6>
+                            <ul class="mb-3">
+                                <li>Capacidades avanzadas de gestión de datos</li>
+                                <li>Snapshots, clones y replicación</li>
+                                <li>Compatibilidad con protocolos NFS, SMB e iSCSI</li>
+                                <li>Compresión y deduplicación</li>
+                            </ul>
+
+                            <h6><i class="fas fa-database text-info me-2"></i>Amazon FSx for OpenZFS</h6>
+                            <ul class="mb-0">
+                                <li>Sistema de archivos con snapshots instantáneos</li>
+                                <li>Clones de bajo costo y alta eficiencia</li>
+                                <li>Compresión de datos integrada</li>
+                                <li>Compatible con protocolos NFS</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('file_system_type').addEventListener('change', function() {
+    const lustreConfig = document.getElementById('lustre_config');
+    const configSections = document.querySelectorAll('.config-section');
+
+    // Ocultar todas las secciones de configuración
+    configSections.forEach(section => section.style.display = 'none');
+
+    // Mostrar la configuración específica del tipo seleccionado
+    if (this.value === 'LUSTRE') {
+        lustreConfig.style.display = 'block';
+    }
+    // Aquí se pueden agregar más tipos en el futuro
+});
+</script>
+{% endblock %}

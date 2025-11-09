@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Zona Hospedada - Route 53{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Crear Zona Hospedada</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nombre de la Zona <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name" required
+                                           placeholder="ejemplo.com" pattern="^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                           title="Debe ser un nombre de dominio válido">
+                                    <div class="form-text">El nombre debe terminar con un punto (.) para zonas públicas</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="caller_reference" class="form-label">Referencia de Llamada <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="caller_reference" name="caller_reference" required
+                                           placeholder="unique-reference-123">
+                                    <div class="form-text">Identificador único para esta zona (generado automáticamente si se deja vacío)</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="private_zone" name="private_zone">
+                                        <label class="form-check-label" for="private_zone">
+                                            Zona Privada
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Marque esta opción si la zona es privada y debe estar asociada a una VPC</div>
+                                </div>
+
+                                <div id="vpc_section" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="vpc_id" class="form-label">ID de VPC <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="vpc_id" name="vpc_id"
+                                               placeholder="vpc-12345678">
+                                        <div class="form-text">ID de la VPC a la que asociar la zona privada</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="vpc_region" class="form-label">Región de VPC <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="vpc_region" name="vpc_region">
+                                            <option value="">Seleccionar región...</option>
+                                            <option value="us-east-1">US East (N. Virginia)</option>
+                                            <option value="us-east-2">US East (Ohio)</option>
+                                            <option value="us-west-1">US West (N. California)</option>
+                                            <option value="us-west-2">US West (Oregon)</option>
+                                            <option value="eu-west-1">EU (Ireland)</option>
+                                            <option value="eu-central-1">EU (Frankfurt)</option>
+                                            <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                            <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                                            <option value="sa-east-1">South America (São Paulo)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Comentario</label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="3"
+                                              placeholder="Comentario opcional sobre la zona"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Información</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>¿Qué es una zona hospedada?</h6>
+                                        <p class="small text-muted">
+                                            Una zona hospedada es un contenedor que contiene información sobre cómo quieres que Route 53 responda a las consultas de DNS para un dominio y sus subdominios.
+                                        </p>
+
+                                        <h6>Zonas Públicas vs Privadas</h6>
+                                        <ul class="small">
+                                            <li><strong>Públicas:</strong> Accesibles desde Internet</li>
+                                            <li><strong>Privadas:</strong> Solo accesibles desde VPCs asociadas</li>
+                                        </ul>
+
+                                        <div class="alert alert-info small">
+                                            <strong>Nota:</strong> Crear una zona hospedada no registra el dominio. Debes registrar el dominio por separado.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('route53.index') }}" class="btn btn-secondary">Cancelar</a>
+                                    <button type="submit" class="btn btn-success">Crear Zona Hospedada</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mostrar/ocultar sección de VPC cuando se marca zona privada
+document.getElementById('private_zone').addEventListener('change', function() {
+    const vpcSection = document.getElementById('vpc_section');
+    const vpcId = document.getElementById('vpc_id');
+    const vpcRegion = document.getElementById('vpc_region');
+
+    if (this.checked) {
+        vpcSection.style.display = 'block';
+        vpcId.required = true;
+        vpcRegion.required = true;
+    } else {
+        vpcSection.style.display = 'none';
+        vpcId.required = false;
+        vpcRegion.required = false;
+    }
+});
+
+// Generar caller reference automáticamente si está vacío
+document.getElementById('name').addEventListener('input', function() {
+    const callerRef = document.getElementById('caller_reference');
+    if (callerRef.value === '') {
+        const timestamp = Date.now();
+        const domain = this.value.replace(/\./g, '-');
+        callerRef.value = `${domain}-${timestamp}`;
+    }
+});
+</script>
+{% endblock %}

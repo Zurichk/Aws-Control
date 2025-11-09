@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Escanear Items - {{ table_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Escanear Items</h2>
+                        <small class="text-muted">{{ table_name }}</small>
+                    </div>
+                    <a href="{{ url_for('dynamodb.table_detail', table_name=table_name) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver al Detalle
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Formulario de filtros -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Filtros de Búsqueda</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="filter_expression" class="form-label">
+                                        <strong>Expresión de Filtro</strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="filter_expression" name="filter_expression"
+                                           placeholder="attribute_name = :value" value="{{ filter_expression }}">
+                                    <div class="form-text">
+                                        Ejemplo: price > :min_price AND category = :cat
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="expression_values" class="form-label">
+                                        <strong>Valores de Expresión (JSON)</strong>
+                                    </label>
+                                    <textarea class="form-control" id="expression_values" name="expression_values"
+                                              rows="2" placeholder='{"min_price": {"N": "100"}, "cat": {"S": "electronics"}}'>{{ expression_values }}</textarea>
+                                    <div class="form-text">
+                                        Valores para los placeholders en la expresión de filtro
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Escanear
+                                    </button>
+                                    <a href="{{ url_for('dynamodb.scan_items', table_name=table_name) }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo"></i> Limpiar Filtros
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Resultados -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Resultados del Escaneo</h5>
+                            <span class="badge bg-info">{{ count }} items encontrados</span>
+                        </div>
+                        <div class="card-body">
+                            {% if items %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Datos del Item</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in items %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>
+                                                    <pre class="mb-0 small">{{ item | tojson(indent=2) }}</pre>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button class="btn btn-outline-primary copy-btn" data-item="{{ item | tojson }}">
+                                                            <i class="fas fa-copy"></i> Copiar
+                                                        </button>
+                                                        <button class="btn btn-outline-danger delete-btn" data-item="{{ item | tojson }}">
+                                                            <i class="fas fa-trash"></i> Eliminar
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {% if count >= 50 %}
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Se muestran solo los primeros 50 items. Para ver más, refine su filtro.
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No se encontraron items</h5>
+                                    <p class="text-muted">Intente con diferentes criterios de búsqueda</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para eliminar item -->
+<div class="modal fade" id="deleteItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('dynamodb.delete_item', table_name=table_name) }}">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ¿Está seguro de que desea eliminar este item?
+                    </div>
+                    <div id="deleteItemData"></div>
+                    <input type="hidden" name="key_data" id="keyDataInput">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Event listeners para botones
+document.addEventListener('DOMContentLoaded', function() {
+    // Botones de copiar
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const item = this.getAttribute('data-item');
+            navigator.clipboard.writeText(item).then(function() {
+                showToast('Item copiado al portapapeles', 'success');
+            });
+        });
+    });
+
+    // Botones de eliminar
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const item = this.getAttribute('data-item');
+            deleteItem(item);
+        });
+    });
+});
+
+function deleteItem(itemJson) {
+    try {
+        const item = JSON.parse(itemJson);
+        // Para simplificar, asumimos que la clave es el primer atributo
+        // En un caso real, esto debería basarse en el esquema de la tabla
+        const keyData = {};
+        const keys = Object.keys(item);
+        if (keys.length > 0) {
+            keyData[keys[0]] = item[keys[0]];
+        }
+
+        document.getElementById('deleteItemData').innerHTML = '<pre class="small">' + JSON.stringify(item, null, 2) + '</pre>';
+        document.getElementById('keyDataInput').value = JSON.stringify(keyData);
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteItemModal'));
+        modal.show();
+    } catch (e) {
+        showToast('Error procesando el item', 'danger');
+    }
+}
+
+function showToast(message, type) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toastContainer.innerHTML = toastHtml;
+    document.body.appendChild(toastContainer);
+
+    const toast = new bootstrap.Toast(toastContainer.firstElementChild);
+    toast.show();
+
+    setTimeout(() => {
+        document.body.removeChild(toastContainer);
+    }, 3000);
+}
+</script>
+{% endblock %}

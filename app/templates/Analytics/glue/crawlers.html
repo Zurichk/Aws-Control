@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Glue - Crawlers{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1><i class="fas fa-spider text-primary me-2"></i>Glue Crawlers</h1>
+                    <p class="text-muted">Crawlers para descubrir y catalogar datos en S3</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('glue.index') }}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-1"></i>Volver
+                    </a>
+                    <a href="{{ url_for('glue.create_crawler') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Crear Crawler
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Lista de Crawlers</h5>
+                </div>
+                <div class="card-body">
+                    {% if crawlers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-tag me-1"></i>Nombre</th>
+                                        <th><i class="fas fa-info-circle me-1"></i>Estado</th>
+                                        <th><i class="fas fa-database me-1"></i>Base de Datos</th>
+                                        <th><i class="fas fa-folder me-1"></i>Targets S3</th>
+                                        <th><i class="fas fa-clock me-1"></i>Última Ejecución</th>
+                                        <th><i class="fas fa-cogs me-1"></i>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for crawler in crawlers %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ crawler.Name }}</strong>
+                                            {% if crawler.Description %}
+                                            <br><small class="text-muted">{{ crawler.Description }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if crawler.State == 'READY' else 'warning' if crawler.State == 'RUNNING' else 'danger' if crawler.State == 'STOPPING' else 'secondary' }}">
+                                                {{ crawler.State }}
+                                            </span>
+                                        </td>
+                                        <td>{{ crawler.DatabaseName }}</td>
+                                        <td>
+                                            {% if crawler.Targets.S3Targets %}
+                                                <small>
+                                                {% for target in crawler.Targets.S3Targets[:2] %}
+                                                    {{ target.Path }}<br>
+                                                {% endfor %}
+                                                {% if crawler.Targets.S3Targets|length > 2 %}
+                                                    <em>... y {{ crawler.Targets.S3Targets|length - 2 }} más</em>
+                                                {% endif %}
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">Sin targets</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if crawler.LastCrawl %}
+                                                <small>
+                                                    {{ crawler.LastCrawl.CrawlTime.strftime('%Y-%m-%d %H:%M') if crawler.LastCrawl.CrawlTime else 'Nunca' }}<br>
+                                                    <span class="badge bg-{{ 'success' if crawler.LastCrawl.Status == 'SUCCEEDED' else 'danger' if crawler.LastCrawl.Status == 'FAILED' else 'warning' }}">
+                                                        {{ crawler.LastCrawl.Status }}
+                                                    </span>
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">Nunca ejecutado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                {% if crawler.State == 'READY' %}
+                                                <form method="post" action="{{ url_for('glue.start_crawler', crawler_name=crawler.Name) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Iniciar Crawler">
+                                                        <i class="fas fa-play"></i>
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                                <button class="btn btn-sm btn-outline-info" title="Ver Detalles" onclick="showCrawlerDetails('{{ crawler.Name }}')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-spider fa-4x mb-3 text-muted"></i>
+                            <h4>No hay crawlers configurados</h4>
+                            <p>Los crawlers ayudan a descubrir automáticamente la estructura de tus datos en S3.</p>
+                            <a href="{{ url_for('glue.create_crawler') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Crear Tu Primer Crawler
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para detalles del crawler -->
+<div class="modal fade" id="crawlerDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-spider me-2"></i>Detalles del Crawler</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="crawlerDetailsContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showCrawlerDetails(crawlerName) {
+    const modal = new bootstrap.Modal(document.getElementById('crawlerDetailsModal'));
+    const content = document.getElementById('crawlerDetailsContent');
+
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    `;
+
+    modal.show();
+
+    // Aquí se podría hacer una llamada AJAX para obtener más detalles
+    // Por ahora mostramos información básica
+    setTimeout(() => {
+        content.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Información General</h6>
+                    <p><strong>Nombre:</strong> ${crawlerName}</p>
+                    <p><strong>Estado:</strong> <span class="badge bg-success">READY</span></p>
+                    <p><strong>Rol IAM:</strong> AWSGlueServiceRole</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Configuración</h6>
+                    <p><strong>Base de Datos:</strong> default</p>
+                    <p><strong>Programación:</strong> Manual</p>
+                    <p><strong>Última Ejecución:</strong> Nunca</p>
+                </div>
+            </div>
+        `;
+    }, 500);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance de Tags EC2 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/ec2">EC2</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ec2.tags') }}">Tags</a></li>
+                    <li class="breadcrumb-item active">Compliance</li>
+                </ol>
+            </nav>
+            <h2>Compliance de Tags EC2</h2>
+            <p class="text-muted">Política "Tag or Terminate" - Instancias sin etiqueta requerida</p>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ total_instances }}</h3>
+                    <p class="text-muted mb-0">Total Instancias</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ tagged_instances }}</h3>
+                    <p class="text-muted mb-0">Con Etiqueta Environment</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-danger">{{ untagged_count }}</h3>
+                    <p class="text-muted mb-0">Sin Etiqueta Environment</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instancias no conformes -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                Instancias No Conformes ({{ untagged_count }})
+            </h5>
+            {% if untagged_instances %}
+            <form method="POST" action="/ec2/terminate-untagged" id="terminateForm" style="display: inline;">
+                <button type="submit" class="btn btn-danger" id="terminateBtn" onclick="return confirm('¿Estás seguro de que quieres TERMINAR todas las instancias sin etiqueta Environment? Esta acción no se puede deshacer.');">
+                    <i class="fas fa-skull-crossbones me-2"></i>
+                    <span id="btnText">Terminar Instancias No Conformes</span>
+                    <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
+                </button>
+            </form>
+            <script>
+                document.getElementById('terminateForm').addEventListener('submit', function(e) {
+                    // Mostrar indicador de carga
+                    document.getElementById('btnText').textContent = 'Terminando...';
+                    document.getElementById('btnSpinner').style.display = 'inline-block';
+                    document.getElementById('terminateBtn').disabled = true;
+                });
+            </script>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if untagged_instances %}
+                <div class="alert alert-danger">
+                    <strong>¡Atención!</strong> Las siguientes instancias no tienen la etiqueta <code>Environment</code> requerida.
+                    Según la política "Tag or Terminate", estas instancias pueden ser terminadas para asegurar el cumplimiento de las políticas de etiquetado.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID de Instancia</th>
+                                <th>Estado</th>
+                                <th>Tipo</th>
+                                <th>IP Pública</th>
+                                <th>IP Privada</th>
+                                <th>Fecha de Lanzamiento</th>
+                                <th>Etiquetas Actuales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for instance in untagged_instances %}
+                            <tr>
+                                <td><code>{{ instance.id }}</code></td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if instance.state == 'running' else 'secondary' }}">
+                                        {{ instance.state }}
+                                    </span>
+                                </td>
+                                <td>{{ instance.type }}</td>
+                                <td>{{ instance.public_ip }}</td>
+                                <td>{{ instance.private_ip }}</td>
+                                <td>{{ instance.launch_time }}</td>
+                                <td>
+                                    {% if instance.tags %}
+                                        {% for tag in instance.tags %}
+                                            <span class="badge bg-light text-dark me-1">
+                                                {{ tag.Key }}: {{ tag.Value }}
+                                            </span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <em class="text-muted">Sin etiquetas</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>¡Excelente!</strong> Todas las instancias EC2 cumplen con la política de etiquetado.
+                    Todas tienen la etiqueta <code>Environment</code> requerida.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sobre la Política "Tag or Terminate"</h5>
+                </div>
+                <div class="card-body">
+                    <p>Esta funcionalidad implementa una política de seguridad común en entornos AWS empresariales:</p>
+                    <ul>
+                        <li><strong>Propósito:</strong> Asegurar que todos los recursos tengan etiquetas adecuadas para control de costos, seguridad y compliance.</li>
+                        <li><strong>Etiqueta requerida:</strong> <code>Environment</code> con valores como "development", "staging", "production".</li>
+                        <li><strong>Acción:</strong> Las instancias sin esta etiqueta pueden ser terminadas automáticamente.</li>
+                        <li><strong>Beneficios:</strong> Reduce costos, mejora la seguridad y facilita la gestión automatizada.</li>
+                    </ul>
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Importante:</strong> La terminación de instancias es una acción destructiva que no se puede deshacer.
+                        Asegúrate de que las instancias listadas no contengan datos importantes antes de proceder.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

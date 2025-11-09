@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - SQS Queues{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-queue text-warning me-2"></i>
+                        Colas SQS
+                    </h1>
+                    <p class="text-muted mt-1">Lista de todas tus colas de Amazon SQS</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sqs.create_queue') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Crear Cola
+                    </a>
+                    <a href="{{ url_for('sqs.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Queues Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Colas ({{ queues|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if queues %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nombre de la Cola</th>
+                                    <th>URL</th>
+                                    <th>Mensajes</th>
+                                    <th>Tiempo de Visibilidad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for queue in queues %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ queue.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <code class="small">{{ queue.url.split('/')[-1] }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ queue.messages }}</span>
+                                    </td>
+                                    <td>
+                                        {{ queue.visibility_timeout }}s
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('sqs.queue_detail', queue_name=queue.name) }}" class="btn btn-sm btn-outline-primary" title="Ver Detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('sqs.send_message', queue_name=queue.name) }}" class="btn btn-sm btn-outline-success" title="Enviar Mensaje">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </a>
+                                            <a href="{{ url_for('sqs.receive_messages', queue_name=queue.name) }}" class="btn btn-sm btn-outline-info" title="Recibir Mensajes">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <form method="post" action="{{ url_for('sqs.delete_queue', queue_name=queue.name) }}" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta cola?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay colas</h5>
+                        <p class="text-muted">Aún no has creado ninguna cola SQS.</p>
+                        <a href="{{ url_for('sqs.create_queue') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Crear tu primera cola
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

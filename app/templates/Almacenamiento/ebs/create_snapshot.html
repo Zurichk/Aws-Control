@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Snapshot EBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.index') }}">EBS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.snapshots') }}">Snapshots</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear Snapshot</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-camera me-2"></i>
+                        Crear Snapshot EBS
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="volume_id" class="form-label">Volumen EBS *</label>
+                                    <select class="form-select" id="volume_id" name="volume_id" required>
+                                        <option value="">Seleccionar volumen...</option>
+                                        {% for volume in volumes %}
+                                        <option value="{{ volume.VolumeId }}">
+                                            {{ volume.VolumeId }} - {{ volume.Size }}GB ({{ volume.VolumeType }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Selecciona el volumen del cual crear el snapshot.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descripción</label>
+                                    <input type="text" class="form-control" id="description" name="description"
+                                           placeholder="Descripción opcional del snapshot">
+                                    <div class="form-text">
+                                        Una descripción opcional para identificar el snapshot.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="wait_for_completion" name="wait_for_completion" checked>
+                                        <label class="form-check-label" for="wait_for_completion">
+                                            Esperar a que el snapshot se complete
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        Si está marcado, la operación esperará hasta que el snapshot esté disponible. Esto puede tomar varios minutos.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('ebs.snapshots') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-camera me-1"></i>
+                                        Crear Snapshot
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información sobre Snapshots EBS
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>¿Qué es un Snapshot EBS?</h6>
+                            <p>Un snapshot EBS es una copia de un momento específico de un volumen EBS. Los snapshots se almacenan en Amazon S3 y son incrementales, lo que significa que solo se guardan los bloques que han cambiado desde el último snapshot.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Consideraciones importantes</h6>
+                            <ul class="mb-0">
+                                <li>Los snapshots son incrementales y se almacenan en S3</li>
+                                <li>Puedes crear volúmenes a partir de snapshots</li>
+                                <li>Los snapshots se pueden compartir entre cuentas</li>
+                                <li>Se recomienda crear snapshots de volúmenes en uso para consistencia</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

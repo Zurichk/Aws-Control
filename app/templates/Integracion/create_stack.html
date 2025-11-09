@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}CloudFormation - Crear Stack{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Crear Stack de CloudFormation</h2>
+                        <small class="text-muted">Crear una nueva pila de infraestructura como código</small>
+                    </div>
+                    <a href="{{ url_for('cloudformation.stacks') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Stacks
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="createStackForm">
+                        <div class="row">
+                            <!-- Configuración básica -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Configuración Básica</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="stack_name" class="form-label">
+                                                Nombre del Stack <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="stack_name" name="stack_name"
+                                                   required maxlength="128" pattern="[a-zA-Z][a-zA-Z0-9\-]*"
+                                                   placeholder="Ej: mi-aplicacion-stack">
+                                            <div class="form-text">
+                                                Nombre único para el stack (solo letras, números y guiones)
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Template <span class="text-danger">*</span></label>
+                                            <div class="mb-2">
+                                                <input type="radio" class="btn-check" id="template_body_radio" name="template_source" value="body" autocomplete="off" checked>
+                                                <label class="btn btn-outline-primary btn-sm" for="template_body_radio">Template Body</label>
+
+                                                <input type="radio" class="btn-check" id="template_url_radio" name="template_source" value="url" autocomplete="off">
+                                                <label class="btn btn-outline-primary btn-sm" for="template_url_radio">Template URL</label>
+                                            </div>
+
+                                            <div id="template_body_section">
+                                                <textarea class="form-control" id="template_body" name="template_body"
+                                                          rows="15" placeholder="Pegue aquí el template JSON/YAML de CloudFormation..."></textarea>
+                                                <div class="form-text">Template en formato JSON o YAML</div>
+                                            </div>
+
+                                            <div id="template_url_section" style="display: none;">
+                                                <input type="url" class="form-control" id="template_url" name="template_url"
+                                                       placeholder="https://s3.amazonaws.com/mi-bucket/template.json">
+                                                <div class="form-text">URL del template (S3, HTTP/HTTPS)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Parámetros -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Parámetros del Stack</h5>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addParameter()">
+                                            <i class="fas fa-plus"></i> Agregar Parámetro
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="parameters-container">
+                                            <!-- Los parámetros se agregarán aquí dinámicamente -->
+                                        </div>
+                                        <div class="form-text">
+                                            Parámetros para personalizar el template (opcional)
+                                        </div>
+
+                                        <!-- Parámetros de ejemplo -->
+                                        <div class="mt-3">
+                                            <h6>Ejemplos de parámetros comunes:</h6>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <small class="text-muted">
+                                                        <strong>InstanceType:</strong> t2.micro, t3.small, etc.<br>
+                                                        <strong>KeyName:</strong> nombre del key pair<br>
+                                                        <strong>VpcId:</strong> ID de la VPC<br>
+                                                        <strong>SubnetId:</strong> ID de la subred
+                                                    </small>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <small class="text-muted">
+                                                        <strong>Environment:</strong> dev, staging, prod<br>
+                                                        <strong>ProjectName:</strong> nombre del proyecto<br>
+                                                        <strong>DatabaseName:</strong> nombre de BD<br>
+                                                        <strong>BucketName:</strong> nombre del bucket S3
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Información Adicional</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="alert alert-info">
+                                            <h6><i class="fas fa-info-circle"></i> Acerca de CloudFormation</h6>
+                                            <ul class="mb-0">
+                                                <li><strong>Stack:</strong> Una colección de recursos de AWS que se pueden crear, actualizar y eliminar como una sola unidad</li>
+                                                <li><strong>Template:</strong> Archivo JSON o YAML que describe los recursos y sus propiedades</li>
+                                                <li><strong>Parámetros:</strong> Valores que se pasan al template para personalizar la infraestructura</li>
+                                                <li><strong>Outputs:</strong> Valores que el stack exporta para ser usados por otros stacks</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Recursos Soportados</h6>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <small>
+                                                            ✅ EC2 Instances<br>
+                                                            ✅ VPC & Subnets<br>
+                                                            ✅ Security Groups<br>
+                                                            ✅ RDS Databases<br>
+                                                            ✅ S3 Buckets<br>
+                                                            ✅ Lambda Functions<br>
+                                                            ✅ API Gateway<br>
+                                                            ✅ CloudWatch Alarms
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small>
+                                                            ✅ Load Balancers<br>
+                                                            ✅ Auto Scaling Groups<br>
+                                                            ✅ IAM Roles<br>
+                                                            ✅ Route 53 Records<br>
+                                                            ✅ CloudFront<br>
+                                                            ✅ SNS Topics<br>
+                                                            ✅ SQS Queues<br>
+                                                            ✅ DynamoDB Tables
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Estados del Stack</h6>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <small>
+                                                            <span class="badge bg-success">CREATE_COMPLETE</span><br>
+                                                            <span class="badge bg-primary">CREATE_IN_PROGRESS</span><br>
+                                                            <span class="badge bg-danger">CREATE_FAILED</span><br>
+                                                            <span class="badge bg-success">UPDATE_COMPLETE</span>
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small>
+                                                            <span class="badge bg-primary">UPDATE_IN_PROGRESS</span><br>
+                                                            <span class="badge bg-danger">UPDATE_FAILED</span><br>
+                                                            <span class="badge bg-warning">DELETE_IN_PROGRESS</span><br>
+                                                            <span class="badge bg-secondary">DELETE_COMPLETE</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ url_for('cloudformation.stacks') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-plus"></i> Crear Stack
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Alternar entre template body y URL
+document.querySelectorAll('input[name="template_source"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const templateBodySection = document.getElementById('template_body_section');
+        const templateUrlSection = document.getElementById('template_url_section');
+
+        if (this.value === 'body') {
+            templateBodySection.style.display = 'block';
+            templateUrlSection.style.display = 'none';
+            document.getElementById('template_body').required = true;
+            document.getElementById('template_url').required = false;
+        } else {
+            templateBodySection.style.display = 'none';
+            templateUrlSection.style.display = 'block';
+            document.getElementById('template_body').required = false;
+            document.getElementById('template_url').required = true;
+        }
+    });
+});
+
+let parameterCount = 0;
+
+function addParameter() {
+    parameterCount++;
+    const container = document.getElementById('parameters-container');
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <input type="text" class="form-control" name="param_key[]" placeholder="Nombre del parámetro" required>
+        <input type="text" class="form-control" name="param_value[]" placeholder="Valor del parámetro" required>
+        <button type="button" class="btn btn-outline-danger" onclick="removeElement(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function removeElement(button) {
+    button.closest('.input-group').remove();
+}
+
+// Validación del formulario
+document.getElementById('createStackForm').addEventListener('submit', function(e) {
+    const stackName = document.getElementById('stack_name').value.trim();
+    const namePattern = /^[a-zA-Z][a-zA-Z0-9\-]*$/;
+
+    if (!stackName) {
+        e.preventDefault();
+        alert('El nombre del stack es obligatorio.');
+        return;
+    }
+
+    if (!namePattern.test(stackName)) {
+        e.preventDefault();
+        alert('El nombre del stack debe comenzar con una letra y contener solo letras, números y guiones.');
+        return;
+    }
+
+    const templateSource = document.querySelector('input[name="template_source"]:checked').value;
+    if (templateSource === 'body' && !document.getElementById('template_body').value.trim()) {
+        e.preventDefault();
+        alert('Debe proporcionar un template body.');
+        return;
+    }
+
+    if (templateSource === 'url' && !document.getElementById('template_url').value.trim()) {
+        e.preventDefault();
+        alert('Debe proporcionar una URL del template.');
+        return;
+    }
+
+    // Mostrar indicador de carga
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando Stack...';
+});
+</script>
+{% endblock %}

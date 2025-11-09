@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Políticas de Escalado - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-chart-line"></i> Políticas de Escalado</h2>
+                        <p class="mb-0">Lista de todas las políticas de escalado automático configuradas</p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('autoscaling_bp.create_policy') }}" class="btn btn-success me-2">
+                            <i class="fas fa-plus"></i> Crear Política
+                        </a>
+                        <a href="{{ url_for('autoscaling_bp.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% if policies %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Grupo ASG</th>
+                                        <th>Tipo</th>
+                                        <th>Tipo de Ajuste</th>
+                                        <th>Ajuste de Escalado</th>
+                                        <th>Cooldown (seg)</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in policies %}
+                                        <tr>
+                                            <td><strong>{{ policy.name }}</strong></td>
+                                            <td>{{ policy.group_name }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ 'primary' if policy.policy_type == 'SimpleScaling' else 'info' }}">
+                                                    {{ policy.policy_type }}
+                                                </span>
+                                            </td>
+                                            <td>{{ policy.adjustment_type }}</td>
+                                            <td>{{ policy.scaling_adjustment }}</td>
+                                            <td>{{ policy.cooldown }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        onclick="deletePolicy('{{ policy.group_name }}', '{{ policy.name }}')" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                            <h5>No se encontraron políticas de escalado</h5>
+                            <p>No tienes políticas de escalado configuradas en tu cuenta AWS.</p>
+                            <a href="{{ url_for('autoscaling_bp.create_policy') }}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Crear Primera Política
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deletePolicy(groupName, policyName) {
+    if (confirm('¿Estás seguro de que quieres eliminar la política de escalado "' + policyName + '"?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("autoscaling_bp.delete_policy", group_name="GROUP", policy_name="POLICY") }}'
+            .replace('GROUP', groupName)
+            .replace('POLICY', policyName);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tags EC2 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/ec2">EC2</a></li>
+                    <li class="breadcrumb-item active">Tags</li>
+                </ol>
+            </nav>
+            <h2>Gestión de Tags EC2</h2>
+            <p class="text-muted">Administra las etiquetas de tus instancias EC2 y asegura el cumplimiento de políticas de etiquetado.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Compliance de Tags
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>Verifica qué instancias EC2 cumplen con las políticas de etiquetado requeridas.</p>
+                    <p class="text-muted small">Esta funcionalidad implementa la política "Tag or Terminate" para asegurar que todas las instancias tengan las etiquetas necesarias.</p>
+                    <a href="{{ url_for('ec2.tag_compliance') }}" class="btn btn-aws">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        Verificar Compliance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>
+                        Gestión de Etiquetas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>Administra las etiquetas de tus instancias EC2 de forma masiva.</p>
+                    <p class="text-muted small">Cambia versiones, actualiza entornos o modifica etiquetas en múltiples instancias simultáneamente.</p>
+                    <button class="btn btn-outline-secondary" disabled>
+                        <i class="fas fa-tag me-2"></i>
+                        Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Información sobre Tags</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Etiquetas Recomendadas</h6>
+                            <ul class="list-unstyled">
+                                <li><code class="text-success">Environment</code> - development, staging, production</li>
+                                <li><code class="text-success">Project</code> - Nombre del proyecto</li>
+                                <li><code class="text-success">Version</code> - Versión de la aplicación</li>
+                                <li><code class="text-success">Owner</code> - Responsable del recurso</li>
+                                <li><code class="text-success">Cost-Center</code> - Centro de costos</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Políticas de Compliance</h6>
+                            <div class="alert alert-info">
+                                <strong>Tag or Terminate:</strong> Las instancias sin la etiqueta <code>Environment</code> pueden ser terminadas automáticamente para asegurar el cumplimiento de políticas de seguridad y costos.
+                            </div>
+                            <p class="small text-muted">
+                                Esta práctica ayuda a mantener el control sobre los recursos AWS y facilita la gestión automatizada de infraestructura.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

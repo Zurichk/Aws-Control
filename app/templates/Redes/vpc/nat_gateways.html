@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}NAT Gateways - VPC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">NAT Gateways</h3>
+                    <a href="{{ url_for('vpc.create_nat_gateway') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear NAT Gateway
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>State</th>
+                                    <th>VPC ID</th>
+                                    <th>Subnet ID</th>
+                                    <th>Connectivity Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for nat in nat_gateways %}
+                                <tr>
+                                    <td><code>{{ nat.id }}</code></td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if nat.state == 'available' else 'warning' }}">
+                                            {{ nat.state }}
+                                        </span>
+                                    </td>
+                                    <td><code>{{ nat.vpc_id }}</code></td>
+                                    <td><code>{{ nat.subnet_id }}</code></td>
+                                    <td>{{ nat.connectivity_type }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" disabled>
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not nat_gateways %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-network-wired fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay NAT gateways disponibles</h5>
+                        <p class="text-muted">Crea tu primer NAT gateway para permitir que instancias privadas accedan a internet.</p>
+                        <a href="{{ url_for('vpc.create_nat_gateway') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Crear primer NAT Gateway
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

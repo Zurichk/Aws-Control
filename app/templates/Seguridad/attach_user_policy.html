@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Adjuntar Policy al Usuario - {{ username }} - IAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Adjuntar Policy al Usuario</h2>
+                        <small class="text-muted">Usuario: {{ username }}</small>
+                    </div>
+                    <a href="{{ url_for('iam.user_policies', username=username) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Policies
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="policy_arn" class="form-label">
+                                        <strong>ARN de la Policy</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="policy_arn" name="policy_arn"
+                                           placeholder="arn:aws:iam::aws:policy/..." required
+                                           value="{{ request.form.policy_arn if request.form else '' }}">
+                                    <div class="form-text">
+                                        Ingresa el ARN completo de la policy que quieres adjuntar.
+                                        <br>Ejemplo: <code>arn:aws:iam::aws:policy/ReadOnlyAccess</code>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa un ARN de policy válido.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <strong>Información del Usuario</strong>
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <p class="mb-1"><strong>Usuario:</strong> {{ username }}</p>
+                                            <p class="mb-1"><strong>ID:</strong> {{ user_id }}</p>
+                                            <p class="mb-0"><strong>Estado:</strong>
+                                                <span class="badge bg-success">Activo</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Políticas AWS Comunes</h6>
+                                    <p class="mb-2">Puedes usar las siguientes políticas administradas por AWS:</p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><code>arn:aws:iam::aws:policy/ReadOnlyAccess</code></li>
+                                                <li><code>arn:aws:iam::aws:policy/PowerUserAccess</code></li>
+                                                <li><code>arn:aws:iam::aws:policy/AdministratorAccess</code></li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><code>arn:aws:iam::aws:policy/IAMUserChangePassword</code></li>
+                                                <li><code>arn:aws:iam::aws:policy/AmazonEC2FullAccess</code></li>
+                                                <li><code>arn:aws:iam::aws:policy/AmazonS3FullAccess</code></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('iam.user_policies', username=username) }}" class="btn btn-outline-secondary me-md-2">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-link"></i> Adjuntar Policy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Validación del ARN
+document.getElementById('policy_arn').addEventListener('input', function() {
+    const arn = this.value;
+    const arnPattern = /^arn:aws:iam::\d+:policy\/.+$/;
+    this.setCustomValidity(arnPattern.test(arn) ? '' : 'ARN de policy inválido');
+});
+</script>
+{% endblock %}

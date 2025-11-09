@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contenido del Bucket - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/s3">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">Buckets</a></li>
+                    <li class="breadcrumb-item active">{{ bucket_name }}</li>
+                </ol>
+            </nav>
+            <h2>Contenido del Bucket: <code>{{ bucket_name }}</code></h2>
+            <p class="text-muted">Lista todos los objetos (archivos) almacenados en este bucket S3.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Objetos en el Bucket</h5>
+                <div>
+                    <a href="{{ url_for('s3.upload_object', bucket_name=bucket_name) }}"
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-upload me-1"></i>
+                        Subir Archivo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Menú de acciones avanzadas -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="btn-group">
+                        <a href="{{ url_for('s3.get_bucket_policy', bucket_name=bucket_name) }}"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Política
+                        </a>
+                        <a href="{{ url_for('s3.get_bucket_lifecycle', bucket_name=bucket_name) }}"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-clock me-1"></i>
+                            Lifecycle
+                        </a>
+                        <a href="{{ url_for('s3.enable_bucket_versioning', bucket_name=bucket_name) }}"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-history me-1"></i>
+                            Versionado
+                        </a>
+                        <a href="{{ url_for('s3.get_bucket_cors', bucket_name=bucket_name) }}"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-globe me-1"></i>
+                            CORS
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if objects %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Objeto</th>
+                            <th>Tamaño</th>
+                            <th>Última Modificación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for obj in objects %}
+                        <tr>
+                            <td><code>{{ obj.key }}</code></td>
+                            <td>{{ obj.size | filesizeformat }}</td>
+                            <td>{{ obj.last_modified }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary btn-sm" disabled title="Descargar próximamente">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <form method="POST"
+                                          action="{{ url_for('s3.delete_object', bucket_name=bucket_name, object_key=obj.key) }}"
+                                          class="d-inline"
+                                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar este objeto?')">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h5>Bucket vacío</h5>
+                <p>Este bucket no contiene ningún objeto actualmente.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

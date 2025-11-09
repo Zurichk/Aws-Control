@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Batch - Crear Entorno de Cómputo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Crear Entorno de Cómputo</h2>
+                        <small class="text-muted">Configurar capacidad computacional para trabajos por lotes</small>
+                    </div>
+                    <a href="{{ url_for('batch.list_compute_environments') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Entornos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="createEnvironmentForm">
+                        <div class="row">
+                            <!-- Configuración básica -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Configuración Básica</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="environment_name" class="form-label">
+                                                Nombre del Entorno <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="environment_name" name="environment_name"
+                                                   required maxlength="128" pattern="[a-zA-Z0-9_-]+"
+                                                   placeholder="Ej: mi-entorno-computo">
+                                            <div class="form-text">
+                                                Nombre único (solo letras, números, guiones y guiones bajos)
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="environment_type" class="form-label">
+                                                Tipo de Entorno <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="environment_type" name="environment_type" required>
+                                                <option value="">Seleccionar tipo...</option>
+                                                <option value="MANAGED">Administrado</option>
+                                                <option value="UNMANAGED">No Administrado</option>
+                                            </select>
+                                            <div class="form-text">
+                                                Administrado: AWS gestiona las instancias. No Administrado: Tú gestionas las instancias.
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="state" class="form-label">
+                                                Estado Inicial <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="state" name="state" required>
+                                                <option value="ENABLED">Habilitado</option>
+                                                <option value="DISABLED">Deshabilitado</option>
+                                            </select>
+                                            <div class="form-text">
+                                                Si está habilitado, puede aceptar trabajos inmediatamente
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recursos de cómputo -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Recursos de Cómputo</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="alert alert-info">
+                                            <small>
+                                                <i class="fas fa-info-circle"></i>
+                                                Configura los recursos computacionales para entornos administrados.
+                                                Para entornos no administrados, estos valores se ignoran.
+                                            </small>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="min_vcpus" class="form-label">vCPUs Mínimas</label>
+                                                    <input type="number" class="form-control" id="min_vcpus" name="min_vcpus"
+                                                           min="0" max="100000" value="0">
+                                                    <div class="form-text">Mínimo de vCPUs</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="desired_vcpus" class="form-label">vCPUs Deseadas</label>
+                                                    <input type="number" class="form-control" id="desired_vcpus" name="desired_vcpus"
+                                                           min="0" max="100000" value="2">
+                                                    <div class="form-text">vCPUs objetivo</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="max_vcpus" class="form-label">vCPUs Máximas</label>
+                                                    <input type="number" class="form-control" id="max_vcpus" name="max_vcpus"
+                                                           min="0" max="100000" value="10">
+                                                    <div class="form-text">Máximo de vCPUs</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="instance_types" class="form-label">
+                                                Tipos de Instancia <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="instance_types" name="instance_types" multiple required>
+                                                <option value="m5.large">m5.large</option>
+                                                <option value="m5.xlarge">m5.xlarge</option>
+                                                <option value="m5.2xlarge">m5.2xlarge</option>
+                                                <option value="c5.large">c5.large</option>
+                                                <option value="c5.xlarge">c5.xlarge</option>
+                                                <option value="c5.2xlarge">c5.2xlarge</option>
+                                                <option value="r5.large">r5.large</option>
+                                                <option value="r5.xlarge">r5.xlarge</option>
+                                                <option value="t3.medium">t3.medium</option>
+                                                <option value="t3.large">t3.large</option>
+                                            </select>
+                                            <div class="form-text">
+                                                Tipos de instancia EC2 permitidos (mantén Ctrl para seleccionar múltiples)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de red -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Configuración de Red</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="subnets" class="form-label">
+                                                        Subredes <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select" id="subnets" name="subnets" multiple required>
+                                                        {% for subnet in subnets %}
+                                                            <option value="{{ subnet.subnet_id }}">
+                                                                {{ subnet.subnet_id }} ({{ subnet.availability_zone }})
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <div class="form-text">
+                                                        Subredes donde se lanzarán las instancias (mantén Ctrl para seleccionar múltiples)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="security_groups" class="form-label">
+                                                        Grupos de Seguridad <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select" id="security_groups" name="security_groups" multiple required>
+                                                        {% for sg in security_groups %}
+                                                            <option value="{{ sg.group_id }}">
+                                                                {{ sg.group_name }} ({{ sg.group_id }})
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <div class="form-text">
+                                                        Grupos de seguridad para las instancias (mantén Ctrl para seleccionar múltiples)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración adicional -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Configuración Adicional</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="service_role" class="form-label">
+                                                        Rol de Servicio <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select" id="service_role" name="service_role" required>
+                                                        <option value="">Seleccionar rol...</option>
+                                                        {% for role in iam_roles %}
+                                                            <option value="{{ role.arn }}">{{ role.role_name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <div class="form-text">
+                                                        Rol IAM para que AWS Batch gestione los recursos
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="instance_role" class="form-label">
+                                                        Rol de Instancia
+                                                    </label>
+                                                    <select class="form-select" id="instance_role" name="instance_role">
+                                                        <option value="">Ninguno</option>
+                                                        {% for role in iam_roles %}
+                                                            <option value="{{ role.arn }}">{{ role.role_name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <div class="form-text">
+                                                        Rol IAM para las instancias EC2 (opcional)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="tags" class="form-label">Etiquetas (JSON)</label>
+                                            <textarea class="form-control" id="tags" name="tags" rows="3"
+                                                      placeholder='{"Environment": "production", "Project": "batch-processing"}'></textarea>
+                                            <div class="form-text">
+                                                Etiquetas en formato JSON para organizar recursos (opcional)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ url_for('batch.list_compute_environments') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-plus"></i> Crear Entorno
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.getElementById('createEnvironmentForm').addEventListener('submit', function(e) {
+    const envName = document.getElementById('environment_name').value.trim();
+    const namePattern = /^[a-zA-Z0-9_-]+$/;
+
+    if (!envName) {
+        e.preventDefault();
+        alert('El nombre del entorno es obligatorio.');
+        return;
+    }
+
+    if (!namePattern.test(envName)) {
+        e.preventDefault();
+        alert('El nombre del entorno solo puede contener letras, números, guiones y guiones bajos.');
+        return;
+    }
+
+    if (envName.length > 128) {
+        e.preventDefault();
+        alert('El nombre del entorno no puede exceder 128 caracteres.');
+        return;
+    }
+
+    const minVcpus = parseInt(document.getElementById('min_vcpus').value) || 0;
+    const desiredVcpus = parseInt(document.getElementById('desired_vcpus').value) || 0;
+    const maxVcpus = parseInt(document.getElementById('max_vcpus').value) || 0;
+
+    if (desiredVcpus < minVcpus) {
+        e.preventDefault();
+        alert('Las vCPUs deseadas no pueden ser menores que las mínimas.');
+        return;
+    }
+
+    if (desiredVcpus > maxVcpus) {
+        e.preventDefault();
+        alert('Las vCPUs deseadas no pueden ser mayores que las máximas.');
+        return;
+    }
+
+    // Mostrar indicador de carga
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+});
+
+// Actualizar validación cuando cambia el tipo de entorno
+document.getElementById('environment_type').addEventListener('change', function() {
+    const computeResources = document.querySelector('.card:has(h5:contains("Recursos de Cómputo"))');
+    const isManaged = this.value === 'MANAGED';
+
+    if (isManaged) {
+        computeResources.style.opacity = '1';
+        // Habilitar validación de recursos de cómputo
+    } else {
+        computeResources.style.opacity = '0.6';
+        // Deshabilitar validación de recursos de cómputo
+    }
+});
+</script>
+{% endblock %}

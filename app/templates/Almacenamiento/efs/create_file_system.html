@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Crear File System EFS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('efs.index') }}">EFS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('efs.file_systems') }}">File Systems</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear File System</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder-plus me-2"></i>
+                        Crear File System EFS
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="creation_token" class="form-label">Token de Creación *</label>
+                                    <input type="text" class="form-control" id="creation_token" name="creation_token"
+                                           placeholder="Token único para el file system" required>
+                                    <div class="form-text">
+                                        Un token único para identificar el file system. Debe ser único en tu cuenta AWS.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="performance_mode" class="form-label">Modo de Rendimiento</label>
+                                    <select class="form-select" id="performance_mode" name="performance_mode">
+                                        <option value="generalPurpose" selected>General Purpose</option>
+                                        <option value="maxIO">Max I/O</option>
+                                    </select>
+                                    <div class="form-text">
+                                        General Purpose para la mayoría de los casos. Max I/O para cargas de trabajo de alto throughput.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="throughput_mode" class="form-label">Modo de Throughput</label>
+                                    <select class="form-select" id="throughput_mode" name="throughput_mode">
+                                        <option value="bursting" selected>Bursting</option>
+                                        <option value="provisioned">Provisioned</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Bursting escala automáticamente. Provisioned permite throughput garantizado.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3" id="provisioned_throughput_group" style="display: none;">
+                                    <label for="provisioned_throughput" class="form-label">Throughput Provisionado (MiB/s)</label>
+                                    <input type="number" class="form-control" id="provisioned_throughput"
+                                           name="provisioned_throughput" min="0.1" step="0.1"
+                                           placeholder="0.1">
+                                    <div class="form-text">
+                                        Throughput mínimo garantizado en MiB/s (0.1 - 1024).
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('efs.file_systems') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-folder-plus me-1"></i>
+                                        Crear File System
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información sobre File Systems EFS
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>¿Qué es Amazon EFS?</h6>
+                            <p>Amazon Elastic File System (EFS) es un sistema de archivos NFS simple, escalable y elástico para usar con servicios de AWS Cloud y recursos locales. Está diseñado para ser altamente disponible y duradero.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Modos de Rendimiento</h6>
+                            <ul class="mb-0">
+                                <li><strong>General Purpose:</strong> Para la mayoría de las cargas de trabajo</li>
+                                <li><strong>Max I/O:</strong> Para aplicaciones que requieren el mayor throughput posible</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Modos de Throughput</h6>
+                            <ul class="mb-0">
+                                <li><strong>Bursting:</strong> Escala automáticamente según el uso</li>
+                                <li><strong>Provisioned:</strong> Throughput garantizado (con costo adicional)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Mount Targets</h6>
+                            <p>Después de crear el file system, necesitarás crear mount targets en las subnets donde quieras acceder al sistema de archivos desde instancias EC2.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('throughput_mode').addEventListener('change', function() {
+    const provisionedGroup = document.getElementById('provisioned_throughput_group');
+    if (this.value === 'provisioned') {
+        provisionedGroup.style.display = 'block';
+        document.getElementById('provisioned_throughput').required = true;
+    } else {
+        provisionedGroup.style.display = 'none';
+        document.getElementById('provisioned_throughput').required = false;
+    }
+});
+</script>
+{% endblock %}

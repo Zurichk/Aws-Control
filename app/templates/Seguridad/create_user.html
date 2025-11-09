@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Crear Usuario IAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-user-plus text-primary me-2"></i>
+                        Crear Usuario IAM
+                    </h1>
+                    <p class="text-muted mt-1">Crear un nuevo usuario en AWS Identity and Access Management</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('iam.users') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Usuarios
+                    </a>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <form action="{{ url_for('iam.create_user') }}" method="POST">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Nombre de Usuario *
+                                    </label>
+                                    <input type="text" class="form-control" id="username" name="username"
+                                           placeholder="mi-usuario" required>
+                                    <div class="form-text">
+                                        El nombre debe ser único en la cuenta AWS. Solo puede contener letras, números y los siguientes caracteres: +=,.@-
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Nota:</strong> Después de crear el usuario, podrás crear access keys desde la página de detalle del usuario.
+                                </div>
+
+                                <div class="d-flex gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                                    </button>
+                                    <a href="{{ url_for('iam.users') }}" class="btn btn-outline-secondary">Cancelar</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del nombre de usuario
+document.getElementById('username').addEventListener('input', function(e) {
+    const username = e.target.value;
+    const regex = /^[a-zA-Z0-9+=,.@-]+$/;
+
+    if (!regex.test(username)) {
+        e.target.setCustomValidity('El nombre solo puede contener letras, números y +=,.@-');
+    } else {
+        e.target.setCustomValidity('');
+    }
+});
+</script>
+
+{% endblock %}

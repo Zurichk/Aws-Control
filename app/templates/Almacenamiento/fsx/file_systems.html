@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}File Systems FSx{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('fsx.index') }}">FSx</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">File Systems</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-server me-2"></i>
+                        File Systems FSx
+                    </h5>
+                    <a href="{{ url_for('fsx.create_file_system') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>
+                        Crear File System
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if file_systems %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID del File System</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Capacidad de Almacenamiento</th>
+                                        <th>Creado</th>
+                                        <th>DNS Name</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fs in file_systems %}
+                                    <tr>
+                                        <td><code>{{ fs.FileSystemId }}</code></td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ fs.FileSystemType }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if fs.Lifecycle == 'AVAILABLE' else 'warning' if fs.Lifecycle == 'CREATING' else 'danger' }}">
+                                                {{ fs.Lifecycle }}
+                                            </span>
+                                        </td>
+                                        <td>{{ fs.StorageCapacity }} GB</td>
+                                        <td>{{ fs.CreationTime.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                        <td>
+                                            {% if fs.DNSName %}
+                                                <small><code>{{ fs.DNSName }}</code></small>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('fsx.file_system_detail', file_system_id=fs.FileSystemId) }}"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <form method="POST"
+                                                  action="{{ url_for('fsx.delete_file_system', file_system_id=fs.FileSystemId) }}"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('¿Estás seguro de que deseas eliminar este file system? Esta acción no se puede deshacer.')">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>No hay file systems FSx</h6>
+                            <p>No se encontraron file systems FSx en esta cuenta.</p>
+                            <a href="{{ url_for('fsx.create_file_system') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Crear Primer File System
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

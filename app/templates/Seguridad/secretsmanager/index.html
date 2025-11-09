@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Secrets Manager - AWS Control Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-key text-warning"></i> Secrets Manager
+                        </h2>
+                        <small class="text-muted">Gestión segura de secretos y credenciales</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('secretsmanager.create_secret') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Crear Secreto
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if secrets %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th>Creado</th>
+                                        <th>Última Modificación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for secret in secrets %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ secret.name }}</strong>
+                                            <br><small class="text-muted">{{ secret.arn }}</small>
+                                        </td>
+                                        <td>
+                                            {% if secret.description %}
+                                                {{ secret.description }}
+                                            {% else %}
+                                                <em class="text-muted">Sin descripción</em>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% set versions = secret.secret_versions_to_stages %}
+                                            {% if 'AWSCURRENT' in versions %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% elif 'AWSPREVIOUS' in versions %}
+                                                <span class="badge bg-warning">Anterior</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Desconocido</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ secret.created_date.strftime('%Y-%m-%d %H:%M') }}
+                                        </td>
+                                        <td>
+                                            {% if secret.last_changed_date %}
+                                                {{ secret.last_changed_date.strftime('%Y-%m-%d %H:%M') }}
+                                            {% else %}
+                                                <em class="text-muted">-</em>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('secretsmanager.get_secret_value', secret_name=secret.name) }}"
+                                                   class="btn btn-sm btn-outline-primary" title="Ver Valor">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('secretsmanager.update_secret', secret_name=secret.name) }}"
+                                                   class="btn btn-sm btn-outline-warning" title="Actualizar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('secretsmanager.rotate_secret', secret_name=secret.name) }}"
+                                                   class="btn btn-sm btn-outline-info" title="Rotar">
+                                                    <i class="fas fa-sync"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                                        onclick="confirmDelete('{{ secret.name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-key fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No hay secretos</h4>
+                            <p class="text-muted">Aún no has creado ningún secreto en Secrets Manager.</p>
+                            <a href="{{ url_for('secretsmanager.create_secret') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Tu Primer Secreto
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar secreto -->
+<div class="modal fade" id="deleteSecretModal" tabindex="-1" aria-labelledby="deleteSecretModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteSecretModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el secreto <strong id="secretName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <strong>Advertencia:</strong> Esta acción no se puede deshacer. El secreto será marcado para eliminación.
+                </div>
+                <div class="mb-3">
+                    <label for="recoveryWindow" class="form-label">Período de recuperación (días):</label>
+                    <input type="number" class="form-control" id="recoveryWindow" value="7" min="7" max="30">
+                    <div class="form-text">El secreto podrá ser restaurado durante este período.</div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="forceDelete">
+                    <label class="form-check-label" for="forceDelete">
+                        Eliminación inmediata (sin período de recuperación)
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar Secreto</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(secretName) {
+    document.getElementById('secretName').textContent = secretName;
+    document.getElementById('deleteForm').action = '{{ url_for("secretsmanager.delete_secret", secret_name="PLACEHOLDER") }}'.replace('PLACEHOLDER', encodeURIComponent(secretName));
+
+    // Actualizar el formulario según las opciones seleccionadas
+    document.getElementById('deleteForm').addEventListener('submit', function(e) {
+        const forceDelete = document.getElementById('forceDelete').checked;
+        const recoveryWindow = document.getElementById('recoveryWindow').value;
+
+        if (!forceDelete) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'recovery_window';
+            input.value = recoveryWindow;
+            this.appendChild(input);
+        } else {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'force_delete';
+            input.value = 'true';
+            this.appendChild(input);
+        }
+    });
+
+    new bootstrap.Modal(document.getElementById('deleteSecretModal')).show();
+}
+</script>
+{% endblock %}

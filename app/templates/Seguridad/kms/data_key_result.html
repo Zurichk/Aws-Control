@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Clave de Datos Generada - KMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Clave de Datos Generada</h2>
+                        <small class="text-muted">Clave KMS: {{ key_id }}</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('kms.generate_data_key', key_id=key_id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-key"></i> Generar Otra Clave
+                        </a>
+                        <a href="{{ url_for('kms.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a Claves
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> Clave de datos generada exitosamente</h5>
+                        <p class="mb-0">Especificación: <strong>{{ key_spec }}</strong></p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-key"></i> Clave de Datos (Texto Plano)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning">
+                                        <strong>⚠️ ADVERTENCIA:</strong> Esta clave nunca debe almacenarse en texto plano.
+                                        Úsala inmediatamente y luego descártala.
+                                    </div>
+                                    <div class="input-group">
+                                        <textarea class="form-control font-monospace small" rows="4" readonly id="plaintextKey">{{ plaintext_key }}</textarea>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="copyPlaintextKey()">
+                                            <i class="fas fa-copy"></i> Copiar
+                                        </button>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">
+                                        Esta clave se genera una sola vez y no puede recuperarse.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-lock"></i> Clave de Datos Encriptada</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <strong>💡 INFO:</strong> Esta versión encriptada puede almacenarse de forma segura.
+                                        Úsala para desencriptar la clave de datos cuando la necesites.
+                                    </div>
+                                    <div class="input-group">
+                                        <textarea class="form-control font-monospace small" rows="4" readonly id="encryptedKey">{{ encrypted_key }}</textarea>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="copyEncryptedKey()">
+                                            <i class="fas fa-copy"></i> Copiar
+                                        </button>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">
+                                        Almacena esta clave encriptada de forma segura.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-question-circle"></i> ¿Cómo usar estas claves?</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Para encriptar datos localmente:</h6>
+                                            <ol>
+                                                <li>Usa la <strong>clave de texto plano</strong> para encriptar tus datos con un algoritmo simétrico (AES-256)</li>
+                                                <li>Almacena los datos encriptados junto con la <strong>clave encriptada</strong></li>
+                                                <li>Descarta la clave de texto plano inmediatamente</li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Para desencriptar datos:</h6>
+                                            <ol>
+                                                <li>Usa KMS para desencriptar la <strong>clave encriptada</strong> y obtener la clave de texto plano</li>
+                                                <li>Usa la clave de texto plano para desencriptar tus datos</li>
+                                                <li>Vuelve a descartar la clave de texto plano</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyPlaintextKey() {
+    const textarea = document.getElementById('plaintextKey');
+    textarea.select();
+    document.execCommand('copy');
+
+    // Mostrar feedback visual
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+
+function copyEncryptedKey() {
+    const textarea = document.getElementById('encryptedKey');
+    textarea.select();
+    document.execCommand('copy');
+
+    // Mostrar feedback visual
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+</script>
+{% endblock %}

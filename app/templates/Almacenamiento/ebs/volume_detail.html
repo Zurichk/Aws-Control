@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle del Volumen EBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.index') }}">EBS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.volumes') }}">Volúmenes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ volume.VolumeId }}</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-hdd me-2"></i>
+                        Detalle del Volumen: <code>{{ volume.VolumeId }}</code>
+                    </h5>
+                    <div>
+                        {% if volume.State == 'available' %}
+                        <a href="{{ url_for('ebs.attach_volume', volume_id=volume.VolumeId) }}" class="btn btn-success btn-sm me-2">
+                            <i class="fas fa-link me-1"></i>
+                            Adjuntar
+                        </a>
+                        {% elif volume.State == 'in-use' %}
+                        <a href="{{ url_for('ebs.detach_volume', volume_id=volume.VolumeId) }}" class="btn btn-warning btn-sm me-2">
+                            <i class="fas fa-unlink me-1"></i>
+                            Desadjuntar
+                        </a>
+                        {% endif %}
+                        <form method="POST"
+                              action="{{ url_for('ebs.delete_volume', volume_id=volume.VolumeId) }}"
+                              class="d-inline"
+                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar este volumen? Esta acción no se puede deshacer.')">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <thead class="visually-hidden">
+                                    <tr>
+                                        <th>Propiedad</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>ID del Volumen:</strong></td>
+                                        <td><code>{{ volume.VolumeId }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estado:</strong></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if volume.State == 'available' else 'primary' if volume.State == 'in-use' else 'warning' }}">
+                                                {{ volume.State }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tipo:</strong></td>
+                                        <td>{{ volume.VolumeType }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tamaño:</strong></td>
+                                        <td>{{ volume.Size }} GB</td>
+                                    </tr>
+                                    {% if volume.Iops %}
+                                    <tr>
+                                        <td><strong>IOPS:</strong></td>
+                                        <td>{{ volume.Iops }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if volume.Throughput %}
+                                    <tr>
+                                        <td><strong>Throughput:</strong></td>
+                                        <td>{{ volume.Throughput }} MiB/s</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td><strong>Zona de Disponibilidad:</strong></td>
+                                        <td>{{ volume.AvailabilityZone }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Creado:</strong></td>
+                                        <td>{{ volume.CreateTime.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    </tr>
+                                    {% if volume.Encrypted %}
+                                    <tr>
+                                        <td><strong>Encriptado:</strong></td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-lock me-1"></i>
+                                                Sí
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            {% if volume.State == 'in-use' and volume.Attachments %}
+                                <h6>Adjuntos</h6>
+                                {% for attachment in volume.Attachments %}
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small><strong>Instancia:</strong></small><br>
+                                                <code>{{ attachment.InstanceId }}</code>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><strong>Dispositivo:</strong></small><br>
+                                                <code>{{ attachment.Device }}</code>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-1">
+                                            <div class="col-6">
+                                                <small><strong>Estado:</strong></small><br>
+                                                <span class="badge bg-{{ 'success' if attachment.State == 'attached' else 'warning' }}">
+                                                    {{ attachment.State }}
+                                                </span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><strong>Adjuntado:</strong></small><br>
+                                                {{ attachment.AttachTime.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Volumen Disponible</h6>
+                                    <p>Este volumen no está adjunto a ninguna instancia EC2.</p>
+                                    <a href="{{ url_for('ebs.attach_volume', volume_id=volume.VolumeId) }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-link me-1"></i>
+                                        Adjuntar a Instancia
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if snapshots %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-camera me-2"></i>
+                        Snapshots de este Volumen
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>ID del Snapshot</th>
+                                    <th>Estado</th>
+                                    <th>Tamaño</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for snapshot in snapshots %}
+                                <tr>
+                                    <td><code>{{ snapshot.SnapshotId }}</code></td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if snapshot.State == 'completed' else 'warning' }}">
+                                            {{ snapshot.State }}
+                                        </span>
+                                    </td>
+                                    <td>{{ snapshot.VolumeSize }} GB</td>
+                                    <td>{{ snapshot.StartTime.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        {% if snapshot.Description %}
+                                            {{ snapshot.Description }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

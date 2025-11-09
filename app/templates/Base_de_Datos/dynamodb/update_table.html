@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Actualizar Tabla - {{ table_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Actualizar Tabla</h2>
+                        <small class="text-muted">{{ table_name }}</small>
+                    </div>
+                    <a href="{{ url_for('dynamodb.table_detail', table_name=table_name) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver al Detalle
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% if billing_mode == 'PROVISIONED' %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="read_capacity" class="form-label">
+                                        <strong>Unidades de Lectura</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="read_capacity" name="read_capacity"
+                                           value="{{ current_read_capacity }}" min="1" max="40000" required>
+                                    <div class="form-text">
+                                        Unidades de capacidad de lectura por segundo (1-40000)
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa un valor válido para unidades de lectura.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="write_capacity" class="form-label">
+                                        <strong>Unidades de Escritura</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="write_capacity" name="write_capacity"
+                                           value="{{ current_write_capacity }}" min="1" max="40000" required>
+                                    <div class="form-text">
+                                        Unidades de capacidad de escritura por segundo (1-40000)
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa un valor válido para unidades de escritura.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="enable_streams"
+                                               name="enable_streams" {{ 'checked' if stream_enabled else '' }}>
+                                        <label class="form-check-label" for="enable_streams">
+                                            <strong>Habilitar Streams de DynamoDB</strong>
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        Los streams permiten capturar cambios en tiempo real en la tabla
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="stream_view_type" class="form-label">
+                                        <strong>Tipo de Vista del Stream</strong>
+                                    </label>
+                                    <select class="form-select" id="stream_view_type" name="stream_view_type">
+                                        <option value="KEYS_ONLY" {{ 'selected' if stream_view_type == 'KEYS_ONLY' else '' }}>
+                                            KEYS_ONLY - Solo claves
+                                        </option>
+                                        <option value="NEW_IMAGE" {{ 'selected' if stream_view_type == 'NEW_IMAGE' else '' }}>
+                                            NEW_IMAGE - Nueva imagen completa
+                                        </option>
+                                        <option value="OLD_IMAGE" {{ 'selected' if stream_view_type == 'OLD_IMAGE' else '' }}>
+                                            OLD_IMAGE - Imagen anterior completa
+                                        </option>
+                                        <option value="NEW_AND_OLD_IMAGES" {{ 'selected' if stream_view_type == 'NEW_AND_OLD_IMAGES' else '' }}>
+                                            NEW_AND_OLD_IMAGES - Ambas imágenes
+                                        </option>
+                                    </select>
+                                    <div class="form-text">
+                                        Qué información incluir en el stream cuando hay cambios
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Información sobre la Actualización</h6>
+                                    <ul class="mb-0">
+                                        <li>Los cambios de capacidad pueden tomar algunos minutos en aplicarse</li>
+                                        <li>Los streams permiten integrar con Lambda, Kinesis, etc.</li>
+                                        <li>Los costos pueden cambiar según la nueva configuración</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('dynamodb.table_detail', table_name=table_name) }}" class="btn btn-outline-secondary me-md-2">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save"></i> Actualizar Tabla
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Mostrar/ocultar opciones de stream
+document.getElementById('enable_streams').addEventListener('change', function() {
+    const streamTypeSelect = document.getElementById('stream_view_type');
+    streamTypeSelect.disabled = !this.checked;
+});
+</script>
+{% endblock %}

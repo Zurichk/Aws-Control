@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - SNS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-bell text-info me-2"></i>
+                        Simple Notification Service (SNS)
+                    </h1>
+                    <p class="text-muted mt-1">Gestiona tus temas y suscripciones de Amazon SNS</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sns.create_topic') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Crear Tópico
+                    </a>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>Acerca de Amazon SNS
+                    </h5>
+                    <p class="card-text">
+                        Amazon Simple Notification Service (SNS) es un servicio de mensajería completamente administrado tanto para comunicación aplicación-a-aplicación (A2A) como aplicación-a-persona (A2P).
+                        Proporciona temas para mensajería push-based de alto rendimiento, muchos-a-muchos entre sistemas distribuidos, microservicios y aplicaciones sin servidor basadas en eventos.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-list fa-3x text-primary mb-3"></i>
+                            <h5>Ver Tópicos</h5>
+                            <p class="text-muted">Lista todos tus tópicos SNS</p>
+                            <a href="{{ url_for('sns.topics') }}" class="btn btn-primary">Ver Tópicos</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-plus-circle fa-3x text-success mb-3"></i>
+                            <h5>Crear Tópico</h5>
+                            <p class="text-muted">Crea un nuevo tópico SNS</p>
+                            <a href="{{ url_for('sns.create_topic') }}" class="btn btn-success">Crear Tópico</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instancias EC2 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/ec2">EC2</a></li>
+                    <li class="breadcrumb-item active">Instancias</li>
+                </ol>
+            </nav>
+            <h2>Instancias EC2</h2>
+            <p class="text-muted">Lista todas las instancias EC2 en tu cuenta AWS. Puedes iniciar, detener o gestionar cada instancia desde aquí.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Instancias Activas</h5>
+            <button class="btn btn-aws btn-sm" data-bs-toggle="modal" data-bs-target="#launchInstanceModal">
+                <i class="fas fa-plus me-2"></i>Lanzar Nueva Instancia
+            </button>
+        </div>
+        <div class="card-body">
+            {% if instances %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID de Instancia</th>
+                            <th>Estado</th>
+                            <th>Tipo</th>
+                            <th>IP Pública</th>
+                            <th>IP Privada</th>
+                            <th>Fecha de Lanzamiento</th>
+                            <th>Etiquetas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instance in instances %}
+                        <tr>
+                            <td><code>{{ instance.id }}</code></td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if instance.state == 'running' else 'secondary' }}">
+                                    {{ instance.state }}
+                                </span>
+                            </td>
+                            <td>{{ instance.type }}</td>
+                            <td>{{ instance.public_ip }}</td>
+                            <td>{{ instance.private_ip }}</td>
+                            <td>{{ instance.launch_time }}</td>
+                            <td>
+                                {% if instance.tags %}
+                                    {% for tag in instance.tags %}
+                                        <span class="badge bg-light text-dark me-1" title="{{ tag.Key }}: {{ tag.Value }}">
+                                            {{ tag.Key }}: {{ tag.Value }}
+                                        </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <em class="text-muted">Sin etiquetas</em>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if instance.state == 'running' %}
+                                <form method="post" action="{{ url_for('ec2.stop_instance', instance_id=instance.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-warning btn-sm">Detener</button>
+                                </form>
+                                {% elif instance.state == 'stopped' %}
+                                <form method="post" action="{{ url_for('ec2.start_instance', instance_id=instance.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm">Iniciar</button>
+                                </form>
+                                {% elif instance.state == 'terminated' %}
+                                <span class="text-muted">Terminada</span>
+                                {% else %}
+                                <span class="text-muted">{{ instance.state|title }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h5>No se encontraron instancias EC2</h5>
+                <p>No tienes instancias EC2 en tu cuenta AWS, o no tienes permisos para verlas.</p>
+                <p><strong>Nota:</strong> Asegúrate de que tus credenciales AWS estén configuradas correctamente y que tengas los permisos necesarios (ec2:DescribeInstances).</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Launch Instance Modal -->
+    <div class="modal fade" id="launchInstanceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Lanzar Nueva Instancia EC2
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="launchInstanceForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="amiId" class="form-label">AMI ID *</label>
+                                    <input type="text" class="form-control" id="amiId" placeholder="ami-12345678" required>
+                                    <div class="form-text">ID de la Amazon Machine Image (ej: ami-0abcdef1234567890)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="instanceType" class="form-label">Tipo de Instancia *</label>
+                                    <select class="form-select" id="instanceType" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        <option value="t2.micro">t2.micro (1 vCPU, 1 GB RAM) - Gratis</option>
+                                        <option value="t2.small">t2.small (1 vCPU, 2 GB RAM)</option>
+                                        <option value="t2.medium">t2.medium (2 vCPU, 4 GB RAM)</option>
+                                        <option value="t3.micro">t3.micro (1 vCPU, 1 GB RAM)</option>
+                                        <option value="t3.small">t3.small (2 vCPU, 2 GB RAM)</option>
+                                        <option value="t3.medium">t3.medium (2 vCPU, 4 GB RAM)</option>
+                                        <option value="m5.large">m5.large (2 vCPU, 8 GB RAM)</option>
+                                        <option value="m5.xlarge">m5.xlarge (4 vCPU, 16 GB RAM)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="keyName" class="form-label">Nombre del Key Pair</label>
+                                    <input type="text" class="form-control" id="keyName" placeholder="my-key-pair">
+                                    <div class="form-text">Key pair para acceso SSH (opcional)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="securityGroup" class="form-label">Grupo de Seguridad</label>
+                                    <input type="text" class="form-control" id="securityGroup" placeholder="default">
+                                    <div class="form-text">ID o nombre del security group (opcional)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userData" class="form-label">User Data (Script de inicialización)</label>
+                            <textarea class="form-control" id="userData" rows="3" placeholder="#!/bin/bash&#10;yum update -y&#10;yum install -y httpd&#10;systemctl start httpd&#10;systemctl enable httpd"></textarea>
+                            <div class="form-text">Script que se ejecutará al iniciar la instancia (opcional)</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="assignPublicIp" checked>
+                                <label class="form-check-label" for="assignPublicIp">
+                                    Asignar IP pública automáticamente
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="launchInstance()">
+                        <i class="fas fa-rocket me-2"></i>Lanzar Instancia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Información sobre Estados de Instancia</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>Running</h6>
+                            <p class="text-success">La instancia está ejecutándose y disponible para uso.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Stopped</h6>
+                            <p class="text-secondary">La instancia está detenida. Puedes iniciarla cuando la necesites.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Pending</h6>
+                            <p class="text-warning">La instancia se está iniciando.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6>Terminated</h6>
+                            <p class="text-danger">La instancia ha sido terminada permanentemente.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    <script>
+    function launchInstance() {
+        const amiId = document.getElementById('amiId').value;
+        const instanceType = document.getElementById('instanceType').value;
+        const keyName = document.getElementById('keyName').value;
+        const securityGroup = document.getElementById('securityGroup').value;
+        const userData = document.getElementById('userData').value;
+        const assignPublicIp = document.getElementById('assignPublicIp').checked;
+
+        if (!amiId || !instanceType) {
+            alert('Por favor complete los campos requeridos: AMI ID y Tipo de Instancia');
+            return;
+        }
+
+        // Mostrar indicador de carga
+        const launchButton = document.querySelector('#launchInstanceModal .btn-primary');
+        const originalText = launchButton.innerHTML;
+        launchButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Lanzando...';
+        launchButton.disabled = true;
+
+        // Preparar datos para enviar
+        const instanceData = {
+            ami_id: amiId,
+            instance_type: instanceType,
+            key_name: keyName || null,
+            security_group: securityGroup || null,
+            user_data: userData || null,
+            assign_public_ip: assignPublicIp
+        };
+
+        // Enviar petición al servidor
+        fetch('/ec2/launch-instance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(instanceData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Instancia lanzada exitosamente!\nID de Instancia: ${data.instance_id}`);
+                // Cerrar modal y recargar página
+                const modal = bootstrap.Modal.getInstance(document.getElementById('launchInstanceModal'));
+                modal.hide();
+                location.reload();
+            } else {
+                alert(`Error al lanzar instancia: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al lanzar instancia. Por favor revise la consola para más detalles.');
+        })
+        .finally(() => {
+            // Restaurar botón
+            launchButton.innerHTML = originalText;
+            launchButton.disabled = false;
+        });
+    }
+    </script>
+</body>
+</html>

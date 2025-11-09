@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}ECS - Crear Servicio{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Crear Servicio ECS</h2>
+                        <small class="text-muted">Crear un nuevo servicio en un cluster de Amazon ECS</small>
+                    </div>
+                    <a href="{{ url_for('ecs.services') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="service_name" class="form-label">
+                                        <i class="fas fa-cogs text-primary me-2"></i>Nombre del Servicio
+                                    </label>
+                                    <input type="text" class="form-control" id="service_name" name="service_name" 
+                                           required placeholder="Mi-Servicio" pattern="[a-zA-Z0-9-_]{1,255}">
+                                    <div class="form-text">
+                                        Nombre único para el servicio en el cluster.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cluster_name" class="form-label">
+                                        <i class="fas fa-cube text-info me-2"></i>Cluster
+                                    </label>
+                                    <select class="form-select" id="cluster_name" name="cluster_name" required>
+                                        <option value="">Seleccionar cluster...</option>
+                                        {% for cluster in clusters %}
+                                        <option value="{{ cluster.clusterName }}">{{ cluster.clusterName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Cluster donde se ejecutará el servicio.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="task_definition" class="form-label">
+                                        <i class="fas fa-file-code text-success me-2"></i>Definición de Tarea
+                                    </label>
+                                    <select class="form-select" id="task_definition" name="task_definition" required>
+                                        <option value="">Seleccionar definición de tarea...</option>
+                                        {% for task_def in task_definitions %}
+                                        <option value="{{ task_def.taskDefinitionArn }}">
+                                            {{ task_def.family }}:{{ task_def.revision }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Definición de tarea que describe cómo ejecutar el contenedor.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="desired_count" class="form-label">
+                                        <i class="fas fa-hashtag text-warning me-2"></i>Conteo Deseado
+                                    </label>
+                                    <input type="number" class="form-control" id="desired_count" name="desired_count" 
+                                           required min="0" max="100" value="1">
+                                    <div class="form-text">
+                                        Número de tareas que deben ejecutarse simultáneamente.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Información sobre Servicios ECS</h6>
+                            <ul class="mb-0">
+                                <li>Un servicio mantiene un número deseado de tareas en ejecución</li>
+                                <li>ECS reinicia automáticamente tareas fallidas</li>
+                                <li>Los servicios pueden usar load balancers para distribución de carga</li>
+                                <li>Se pueden actualizar sin downtime usando deployments</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('ecs.services') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Crear Servicio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const serviceNameInput = document.getElementById('service_name');
+    const desiredCountInput = document.getElementById('desired_count');
+    
+    form.addEventListener('submit', function(e) {
+        const serviceName = serviceNameInput.value.trim();
+        const desiredCount = parseInt(desiredCountInput.value);
+        
+        // Validar nombre del servicio
+        if (!serviceName) {
+            e.preventDefault();
+            alert('El nombre del servicio es obligatorio');
+            serviceNameInput.focus();
+            return;
+        }
+        
+        if (serviceName.length > 255) {
+            e.preventDefault();
+            alert('El nombre del servicio no puede exceder 255 caracteres');
+            serviceNameInput.focus();
+            return;
+        }
+        
+        if (!/^[a-zA-Z0-9-_]+$/.test(serviceName)) {
+            e.preventDefault();
+            alert('El nombre del servicio solo puede contener letras, números, guiones y guiones bajos');
+            serviceNameInput.focus();
+            return;
+        }
+        
+        // Validar conteo deseado
+        if (desiredCount < 0 || desiredCount > 100) {
+            e.preventDefault();
+            alert('El conteo deseado debe estar entre 0 y 100');
+            desiredCountInput.focus();
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

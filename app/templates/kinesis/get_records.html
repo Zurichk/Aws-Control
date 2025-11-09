@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Obtener Registros Kinesis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-list text-primary"></i>
+                        Obtener Registros de Stream Kinesis
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('kinesis.get_records') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="stream_name" class="form-label">
+                                        <i class="fas fa-stream text-info"></i>
+                                        Nombre del Stream *
+                                    </label>
+                                    <input type="text" class="form-control" id="stream_name" name="stream_name"
+                                           placeholder="mi-stream-kinesis" required>
+                                    <div class="form-text">Nombre del stream del cual obtener registros</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="shard_id" class="form-label">
+                                        <i class="fas fa-layer-group text-warning"></i>
+                                        ID del Shard *
+                                    </label>
+                                    <input type="text" class="form-control" id="shard_id" name="shard_id"
+                                           placeholder="shardId-000000000000" required>
+                                    <div class="form-text">ID del shard específico (ej: shardId-000000000000)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="region" class="form-label">
+                                        <i class="fas fa-globe text-success"></i>
+                                        Región AWS
+                                    </label>
+                                    <select class="form-select" id="region" name="region">
+                                        <option value="us-east-1">US East (N. Virginia)</option>
+                                        <option value="us-west-2">US West (Oregon)</option>
+                                        <option value="eu-west-1">EU (Ireland)</option>
+                                        <option value="eu-central-1">EU (Frankfurt)</option>
+                                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                        <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                                        <option value="sa-east-1">South America (São Paulo)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('kinesis.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Obtener Registros
+                            </button>
+                        </div>
+                    </form>
+
+                    {% if records %}
+                    <div class="mt-4">
+                        <h5 class="text-info">
+                            <i class="fas fa-database"></i>
+                            Registros Encontrados ({{ records|length }})
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><i class="fas fa-hashtag"></i> Secuencia</th>
+                                        <th><i class="fas fa-key"></i> Partición</th>
+                                        <th><i class="fas fa-clock"></i> Timestamp</th>
+                                        <th><i class="fas fa-file-alt"></i> Datos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in records %}
+                                    <tr>
+                                        <td class="text-monospace small">{{ record.sequence_number }}</td>
+                                        <td><code>{{ record.partition_key }}</code></td>
+                                        <td>{{ record.approximate_arrival_timestamp or 'N/A' }}</td>
+                                        <td>
+                                            <pre class="mb-0 small"><code>{{ record.data }}</code></pre>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualizar Código Lambda - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service/functions">Funciones</a></li>
+                    <li class="breadcrumb-item active">Actualizar Código</li>
+                </ol>
+            </nav>
+            <h2>Actualizar Código de Función Lambda</h2>
+            <p class="text-muted">Actualiza el código de la función <strong>{{ function_name }}</strong>.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Nuevo Código</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="code_zip" class="form-label">Archivo ZIP con el Código *</label>
+                            <input type="file" class="form-control" id="code_zip" name="code_zip" accept=".zip" required>
+                            <div class="form-text">
+                                Selecciona un archivo ZIP que contenga el código actualizado de la función.
+                                El archivo debe incluir todas las dependencias necesarias.
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Al actualizar el código, se creará automáticamente una nueva versión de la función.
+                            Las versiones anteriores permanecerán disponibles.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-aws">
+                                <i class="fas fa-upload me-2"></i>Actualizar Código
+                            </button>
+                            <a href="{{ url_for('lambda_bp.functions') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Información de Actualización</h6>
+                </div>
+                <div class="card-body">
+                    <h6>¿Qué sucede al actualizar?</h6>
+                    <ul class="small">
+                        <li>Se crea una nueva versión de la función</li>
+                        <li>El código anterior queda disponible</li>
+                        <li>Los aliases apuntan a $LATEST por defecto</li>
+                        <li>Las funciones en ejecución terminan normalmente</li>
+                    </ul>
+
+                    <h6 class="mt-3">Recomendaciones:</h6>
+                    <ul class="small">
+                        <li>Prueba el código antes de actualizar</li>
+                        <li>Usa versiones para control de cambios</li>
+                        <li>Actualiza aliases después de probar</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

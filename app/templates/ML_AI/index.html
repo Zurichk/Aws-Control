@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - SageMaker{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-brain text-danger me-2"></i>
+                        SageMaker
+                    </h1>
+                    <p class="text-muted mt-1">Gestiona tus recursos de machine learning de Amazon SageMaker</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createNotebookModal">
+                        <i class="fas fa-plus me-2"></i>Create Notebook
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>Acerca de Amazon SageMaker
+                    </h5>
+                    <p class="card-text">
+                        Amazon SageMaker es un servicio completamente administrado que proporciona a cada desarrollador y científico de datos la capacidad de construir, entrenar e implementar modelos de machine learning (ML) rápidamente.
+                        SageMaker elimina el trabajo pesado de cada paso del proceso de machine learning para facilitar el desarrollo de modelos de alta calidad.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-flask fa-2x text-warning mb-2"></i>
+                                <h6>Experimento</h6>
+                                <small class="text-muted">Construir y entrenar modelos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-rocket fa-2x text-success mb-2"></i>
+                                <h6>Desplegar</h6>
+                                <small class="text-muted">Despliegue en producción</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                                <h6>Monitorear</h6>
+                                <small class="text-muted">Rendimiento del modelo</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                                <h6>Colaboración</h6>
+                                <small class="text-muted">Desarrollo en equipo</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notebooks List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Notebooks SageMaker ({{ notebooks|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if notebooks %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre del Notebook</th>
+                                        <th>Estado</th>
+                                        <th>Tipo de Instancia</th>
+                                        <th>Hora de Creación</th>
+                                        <th>Última Modificación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for notebook in notebooks %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ notebook.NotebookInstanceName }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if notebook.NotebookInstanceStatus == 'InService' else 'warning' if notebook.NotebookInstanceStatus == 'Pending' else 'danger' }}">
+                                                {{ notebook.NotebookInstanceStatus }}
+                                            </span>
+                                        </td>
+                                        <td>{{ notebook.InstanceType }}</td>
+                                        <td>{{ notebook.CreationTime.strftime('%Y-%m-%d %H:%M') if notebook.CreationTime else 'N/A' }}</td>
+                                        <td>{{ notebook.LastModifiedTime.strftime('%Y-%m-%d %H:%M') if notebook.LastModifiedTime else 'N/A' }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" title="Abrir Notebook">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-success" title="Iniciar">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning" title="Detener">
+                                                    <i class="fas fa-stop"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-brain fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No se encontraron notebooks SageMaker</h5>
+                            <p class="text-muted">Crea tu primera instancia de notebook para comenzar a construir modelos de machine learning.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createNotebookModal">
+                                <i class="fas fa-plus me-2"></i>Crea Tu Primer Notebook
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Additional Resources Section -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-cogs me-2"></i>Trabajos de Entrenamiento
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <i class="fas fa-graduation-cap fa-2x text-primary mb-2"></i>
+                            <p class="mb-2">Gestionar trabajos de entrenamiento de modelos</p>
+                            <button class="btn btn-outline-primary btn-sm">Ver Trabajos de Entrenamiento</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-server me-2"></i>Endpoints
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <i class="fas fa-globe fa-2x text-success mb-2"></i>
+                            <p class="mb-2">Endpoints de modelos desplegados</p>
+                            <button class="btn btn-outline-success btn-sm">Ver Endpoints</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Notebook Modal -->
+<div class="modal fade" id="createNotebookModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Crear Notebook SageMaker
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createNotebookForm">
+                    <div class="mb-3">
+                        <label for="notebookName" class="form-label">Nombre del Notebook *</label>
+                        <input type="text" class="form-control" id="notebookName" required>
+                        <div class="form-text">Un nombre para tu instancia de notebook.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="instanceType" class="form-label">Tipo de Instancia</label>
+                        <select class="form-select" id="instanceType">
+                            <option value="ml.t2.medium">ml.t2.medium (Propósito general)</option>
+                            <option value="ml.t3.medium" selected>ml.t3.medium (Propósito general)</option>
+                            <option value="ml.c5.large">ml.c5.large (Optimizada para computo)</option>
+                            <option value="ml.p3.2xlarge">ml.p3.2xlarge (Instancia GPU)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="volumeSize" class="form-label">Tamaño del Volumen (GB)</label>
+                        <input type="number" class="form-control" id="volumeSize" value="5" min="5" max="16384">
+                        <div class="form-text">Tamaño del volumen EBS para el notebook (5-16384 GB).</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enableDirectInternet" checked>
+                            <label class="form-check-label" for="enableDirectInternet">
+                                Habilitar acceso directo a internet
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enableRootAccess">
+                            <label class="form-check-label" for="enableRootAccess">
+                                Habilitar acceso root (no recomendado para producción)
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createNotebook()">
+                    <i class="fas fa-plus me-2"></i>Crear Notebook
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function createNotebook() {
+    // Implementation for creating notebook would go here
+    alert('Notebook creation functionality would be implemented here');
+}
+</script>
+{% endblock %}

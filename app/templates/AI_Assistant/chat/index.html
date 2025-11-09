@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - AI Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-robot text-primary me-2"></i>
+                        AI Assistant
+                    </h1>
+                    <p class="text-muted mt-1">Tu guía experto en AWS - obtén ayuda y consejos personalizados</p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-primary" onclick="clearChat()">
+                        <i class="fas fa-trash me-2"></i>Limpiar Chat
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Assistant Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-brain text-info me-2"></i>¿Cómo puedo ayudarte?
+                    </h5>
+                    <p class="card-text">
+                        Soy tu asistente de IA especializado en AWS. Puedo guiarte paso a paso para completar tareas específicas,
+                        explicarte conceptos de AWS, recomendar servicios apropiados para tus necesidades, y ayudarte a navegar
+                        por este panel de control educativo.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-route fa-2x text-success mb-2"></i>
+                                <h6>Guías Paso a Paso</h6>
+                                <small class="text-muted">Instrucciones detalladas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-lightbulb fa-2x text-warning mb-2"></i>
+                                <h6>Recomendaciones</h6>
+                                <small class="text-muted">Mejores prácticas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-question-circle fa-2x text-info mb-2"></i>
+                                <h6>Respuestas</h6>
+                                <small class="text-muted">Preguntas sobre AWS</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-compass fa-2x text-primary mb-2"></i>
+                                <h6>Navegación</h6>
+                                <small class="text-muted">Ayuda con el panel</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Conversación con AI Assistant
+                    </h5>
+                    <button id="clearHistoryBtn" class="btn btn-sm btn-outline-danger" title="Limpiar historial de conversación">
+                        <i class="fas fa-trash-alt me-1"></i>Nuevo Chat
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Chat Messages Container -->
+                    <div id="chatContainer" class="chat-container mb-3" style="height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem; background-color: #f8f9fa;">
+                        <!-- Welcome Message -->
+                        <div class="message ai-message mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="avatar ai-avatar me-3">
+                                    <i class="fas fa-robot text-primary"></i>
+                                </div>
+                                <div class="message-content flex-grow-1">
+                                    <div class="message-header">
+                                        <strong class="text-primary">AI Assistant</strong>
+                                        <small class="text-muted ms-2">Ahora</small>
+                                    </div>
+                                    <div class="message-body mt-2">
+                                        ¡Hola! Soy tu asistente de IA especializado en AWS. Tengo conocimiento completo de todos los servicios disponibles en este panel de control.
+
+                                        <strong>Servicios que conozco:</strong>
+                                        <ul class="mt-2">
+                                            <li><strong>Computo:</strong> EC2, Lambda, ECS</li>
+                                            <li><strong>Almacenamiento:</strong> S3</li>
+                                            <li><strong>Base de Datos:</strong> RDS, DynamoDB</li>
+                                            <li><strong>Mensajería:</strong> SNS, SQS</li>
+                                            <li><strong>Redes:</strong> VPC, Route 53, ELB, CloudFront, API Gateway</li>
+                                            <li><strong>Seguridad:</strong> IAM, KMS</li>
+                                            <li><strong>Analytics:</strong> Kinesis</li>
+                                            <li><strong>ML/AI:</strong> SageMaker</li>
+                                            <li><strong>Gestión:</strong> CloudFormation, CloudWatch</li>
+                                        </ul>
+
+                                        ¿En qué puedo ayudarte hoy? Puedo guiarte paso a paso para completar tareas, explicar conceptos, o recomendar servicios para tus necesidades.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="input-group">
+                        <textarea
+                            id="messageInput"
+                            class="form-control"
+                            placeholder="Escribe tu pregunta sobre AWS o describe qué quieres hacer..."
+                            rows="3"
+                            style="resize: none;"
+                        ></textarea>
+                        <button class="btn btn-primary" type="button" onclick="sendMessage()" id="sendButton">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <!-- Quick Suggestions -->
+                    <div class="mt-3">
+                        <small class="text-muted">Sugerencias rápidas:</small>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="quickQuestion('¿Cómo creo una instancia EC2?')">
+                                Crear EC2
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="quickQuestion('¿Qué servicio de base de datos usar para mi aplicación?')">
+                                Elegir Base de Datos
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="quickQuestion('Explícame qué es serverless')">
+                                ¿Qué es Serverless?
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="quickQuestion('¿Cómo configuro un balanceador de carga?')">
+                                Configurar Load Balancer
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="quickQuestion('Recomiéndame servicios para una aplicación web')">
+                                Arquitectura Web
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-container {
+    scroll-behavior: smooth;
+}
+
+.message {
+    margin-bottom: 1rem;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+    flex-shrink: 0;
+}
+
+.ai-avatar {
+    background-color: #e3f2fd;
+}
+
+.user-avatar {
+    background-color: #f3e5f5;
+}
+
+.message-content {
+    max-width: calc(100% - 60px);
+}
+
+.message-header {
+    font-size: 0.875rem;
+}
+
+.message-body {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.typing-indicator {
+    display: none;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.typing-indicator.show {
+    display: block;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    margin: 0.5rem 0;
+    overflow-x: auto;
+}
+</style>
+
+<script>
+let chatContainer = document.getElementById('chatContainer');
+let messageInput = document.getElementById('messageInput');
+let sendButton = document.getElementById('sendButton');
+
+// Auto-resize textarea
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Send message on Enter (but allow Shift+Enter for new lines)
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+function quickQuestion(question) {
+    messageInput.value = question;
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+    sendMessage();
+}
+
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    // Add user message to chat
+    addMessage(message, 'user');
+
+    // Clear input
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+
+    // Show typing indicator
+    showTypingIndicator();
+
+    // Send to server
+    fetch('/chat/send_message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideTypingIndicator();
+
+        if (data.status === 'success') {
+            // Mostrar resultados de herramientas si existen
+            if (data.tool_results && data.tool_results.length > 0) {
+                for (const toolResult of data.tool_results) {
+                    addToolResultMessage(toolResult);
+                }
+            }
+            
+            // Mostrar respuesta del AI
+            if (data.response) {
+                addMessage(data.response, 'ai');
+            }
+        } else {
+            addMessage('Lo siento, hubo un error al procesar tu mensaje: ' + data.error, 'ai', true);
+        }
+    })
+    .catch(error => {
+        hideTypingIndicator();
+        addMessage('Error de conexión. Por favor, verifica tu conexión a internet e intenta nuevamente.', 'ai', true);
+        console.error('Error:', error);
+    });
+}
+
+function addMessage(content, sender, isError = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+
+    const avatarClass = sender === 'ai' ? 'ai-avatar' : 'user-avatar';
+    const avatarIcon = sender === 'ai' ? 'fas fa-robot' : 'fas fa-user';
+    const avatarColor = sender === 'ai' ? 'text-primary' : 'text-secondary';
+    const senderName = sender === 'ai' ? 'AI Assistant' : 'Tú';
+
+    messageDiv.innerHTML = `
+        <div class="d-flex align-items-start">
+            <div class="avatar ${avatarClass} me-3">
+                <i class="${avatarIcon} ${avatarColor}"></i>
+            </div>
+            <div class="message-content flex-grow-1">
+                <div class="message-header">
+                    <strong class="${sender === 'ai' ? 'text-primary' : 'text-secondary'}">${senderName}</strong>
+                    <small class="text-muted ms-2">Ahora</small>
+                </div>
+                <div class="message-body mt-2 ${isError ? 'text-danger' : ''}">
+                    ${formatMessage(content)}
+                </div>
+            </div>
+        </div>
+    `;
+
+    chatContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function addToolResultMessage(toolResult) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ai-message';
+
+    const toolName = toolResult.tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const isSuccess = toolResult.result.success;
+    const statusClass = isSuccess ? 'success' : 'danger';
+    const statusIcon = isSuccess ? 'check-circle' : 'exclamation-triangle';
+
+    let resultHtml = `
+        <div class="alert alert-${statusClass} mb-0">
+            <h6 class="alert-heading">
+                <i class="fas fa-${statusIcon} me-2"></i>
+                <strong>Herramienta Ejecutada:</strong> ${toolName}
+            </h6>
+            <hr>
+    `;
+
+    if (isSuccess && toolResult.result.result) {
+        const result = toolResult.result.result;
+        resultHtml += '<ul class="mb-0">';
+        for (const [key, value] of Object.entries(result)) {
+            if (typeof value === 'object' && value !== null) {
+                resultHtml += `<li><strong>${key}:</strong> ${JSON.stringify(value, null, 2)}</li>`;
+            } else {
+                resultHtml += `<li><strong>${key}:</strong> ${value}</li>`;
+            }
+        }
+        resultHtml += '</ul>';
+    } else if (toolResult.result.error) {
+        resultHtml += `<p class="mb-0"><strong>Error:</strong> ${toolResult.result.error}</p>`;
+    }
+
+    resultHtml += '</div>';
+
+    messageDiv.innerHTML = `
+        <div class="d-flex align-items-start">
+            <div class="avatar ai-avatar me-3">
+                <i class="fas fa-cog text-primary"></i>
+            </div>
+            <div class="message-content flex-grow-1">
+                <div class="message-header">
+                    <strong class="text-primary">Sistema</strong>
+                    <small class="text-muted ms-2">Ahora</small>
+                </div>
+                <div class="message-body mt-2">
+                    ${resultHtml}
+                </div>
+            </div>
+        </div>
+    `;
+
+    chatContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function formatMessage(content) {
+    // Convert line breaks to <br>
+    content = content.replace(/\n/g, '<br>');
+
+    // Convert **bold** to <strong>
+    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Convert *italic* to <em>
+    content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Convert code blocks
+    content = content.replace(/```([\s\S]*?)```/g, '<div class="code-block">$1</div>');
+
+    // Convert inline code
+    content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Convert numbered lists
+    content = content.replace(/(\d+)\.\s/g, '<br>$1. ');
+
+    // Convert bullet points
+    content = content.replace(/^\*\s/gm, '• ');
+
+    return content;
+}
+
+function showTypingIndicator() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message ai-message typing-indicator show';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `
+        <div class="d-flex align-items-start">
+            <div class="avatar ai-avatar me-3">
+                <i class="fas fa-robot text-primary"></i>
+            </div>
+            <div class="message-content flex-grow-1">
+                <div class="message-header">
+                    <strong class="text-primary">AI Assistant</strong>
+                </div>
+                <div class="message-body mt-2">
+                    <i class="fas fa-circle-notch fa-spin me-2"></i>Estoy pensando...
+                </div>
+            </div>
+        </div>
+    `;
+
+    chatContainer.appendChild(typingDiv);
+    scrollToBottom();
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+function scrollToBottom() {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function clearChat() {
+    if (confirm('¿Estás seguro de que quieres limpiar todo el chat?')) {
+        // Keep only the welcome message
+        const welcomeMessage = chatContainer.querySelector('.message');
+        chatContainer.innerHTML = '';
+        if (welcomeMessage) {
+            chatContainer.appendChild(welcomeMessage);
+        }
+    }
+}
+
+async function clearChatHistory() {
+    if (confirm('¿Estás seguro de que quieres iniciar una nueva conversación? Se perderá el contexto de la conversación actual.')) {
+        try {
+            const response = await fetch('/chat/clear_history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                // Limpiar la interfaz visual
+                chatContainer.innerHTML = `
+                    <div class="message ai-message mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="avatar ai-avatar me-3">
+                                <i class="fas fa-robot text-primary"></i>
+                            </div>
+                            <div class="message-content flex-grow-1">
+                                <div class="message-header">
+                                    <strong class="text-primary">AI Assistant</strong>
+                                    <small class="text-muted ms-2">Ahora</small>
+                                </div>
+                                <div class="message-body mt-2">
+                                    ¡Hola! 👋 Soy tu asistente de AWS con capacidad de ejecutar acciones reales. 
+                                    Puedo ayudarte a crear, listar, detener y terminar instancias EC2, crear VPCs, 
+                                    grupos de seguridad, buckets S3 y mucho más. 
+                                    <br><br>
+                                    Dime qué necesitas y lo haré por ti. Por ejemplo:
+                                    <ul>
+                                        <li>"Créame una instancia EC2 t2.micro para desarrollo"</li>
+                                        <li>"Lista todas mis instancias EC2"</li>
+                                        <li>"Crea un bucket S3 llamado mi-bucket-datos"</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Mostrar notificación
+                alert('Nueva conversación iniciada. El historial anterior se ha limpiado.');
+            } else {
+                alert('Error al limpiar el historial: ' + (data.error || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error clearing history:', error);
+            alert('Error al limpiar el historial. Intenta de nuevo.');
+        }
+    }
+}
+
+// Focus on input when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    messageInput.focus();
+    
+    // Agregar event listener para el botón de limpiar historial
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', clearChatHistory);
+    }
+
+});
+</script>
+{% endblock %}

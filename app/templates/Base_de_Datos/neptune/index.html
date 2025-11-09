@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neptune - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>Amazon Neptune</h2>
+        <p>Amazon Neptune es un servicio de base de datos de gráficos rápido, confiable y completamente administrado que facilita la creación y ejecución de aplicaciones que funcionan con conjuntos de datos altamente conectados.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>Características principales de Neptune:</h4>
+        <ul>
+            <li><strong>Base de datos de gráficos:</strong> Optimizada para almacenar y navegar relaciones complejas</li>
+            <li><strong>Motores soportados:</strong> Apache TinkerPop Gremlin y SPARQL</li>
+            <li><strong>Alto rendimiento:</strong> Diseñado para consultas de gráficos complejas con latencia baja</li>
+            <li><strong>Escalabilidad:</strong> Hasta 64 TB de almacenamiento, réplicas de lectura</li>
+            <li><strong>Seguridad:</strong> Encriptación en reposo y en tránsito, integración con IAM</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Clusters Neptune</h3>
+                <a href="{{ url_for('neptune.clusters') }}" class="btn btn-aws">Ver Clusters</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Motores de Consulta</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Apache TinkerPop Gremlin
+                            <span class="badge bg-primary">Más usado</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            SPARQL
+                            <span class="badge bg-secondary">RDF</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            openCypher
+                            <span class="badge bg-info">Próximamente</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Casos de Uso</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Redes sociales y recomendaciones</li>
+                        <li class="list-group-item">Detección de fraudes</li>
+                        <li class="list-group-item">Análisis de redes</li>
+                        <li class="list-group-item">Gestión de identidades</li>
+                        <li class="list-group-item">Catálogos de productos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

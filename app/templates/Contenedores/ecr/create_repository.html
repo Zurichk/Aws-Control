@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Repositorio ECR - Panel de Control AWS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus text-success me-2"></i>
+                        Crear Nuevo Repositorio ECR
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="repository_name" class="form-label">
+                                <strong>Nombre del Repositorio</strong>
+                            </label>
+                            <input type="text" class="form-control" id="repository_name" name="repository_name"
+                                   placeholder="mi-app-backend" required>
+                            <div class="form-text">
+                                El nombre debe ser único dentro de tu cuenta AWS. Solo puede contener letras minúsculas, números, guiones (-) y barras (/).
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="scan_on_push" name="scan_on_push">
+                                <label class="form-check-label" for="scan_on_push">
+                                    <strong>Habilitar escaneo de vulnerabilidades al hacer push</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                Cuando está habilitado, ECR escaneará automáticamente las imágenes en busca de vulnerabilidades de seguridad cuando se suban al repositorio.
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('ecr.repositories') }}" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-plus me-2"></i>Crear Repositorio
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Information Card -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info me-2"></i>Información del Repositorio
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Convenciones de Nomenclatura</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Letras minúsculas</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Números permitidos</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Guiones (-) y barras (/)</li>
+                                <li><i class="fas fa-times text-danger me-2"></i>Sin espacios</li>
+                                <li><i class="fas fa-times text-danger me-2"></i>Sin mayúsculas</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Ejemplos de Nombres</h6>
+                            <ul class="list-unstyled">
+                                <li><code>mi-aplicacion</code></li>
+                                <li><code>backend/api</code></li>
+                                <li><code>frontend/nginx</code></li>
+                                <li><code>database/postgres</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

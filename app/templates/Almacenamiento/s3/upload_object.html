@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Subir Objeto - {{ bucket_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}">{{ bucket_name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Subir Objeto</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-upload me-2"></i>
+                        Subir Objeto al Bucket: {{ bucket_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="file" class="form-label">
+                                        <i class="fas fa-file me-1"></i>
+                                        Archivo *
+                                    </label>
+                                    <input type="file" class="form-control" id="file" name="file" required>
+                                    <div class="form-text">Selecciona el archivo que deseas subir</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="object_key" class="form-label">
+                                        <i class="fas fa-key me-1"></i>
+                                        Clave del Objeto *
+                                    </label>
+                                    <input type="text" class="form-control" id="object_key" name="object_key"
+                                           placeholder="ej: carpeta/archivo.txt" required>
+                                    <div class="form-text">Ruta y nombre del objeto en S3</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content_type" class="form-label">
+                                <i class="fas fa-file-code me-1"></i>
+                                Tipo de Contenido
+                            </label>
+                            <select class="form-select" id="content_type" name="content_type">
+                                <option value="application/octet-stream">Binario (por defecto)</option>
+                                <option value="text/plain">Texto plano</option>
+                                <option value="text/html">HTML</option>
+                                <option value="application/json">JSON</option>
+                                <option value="application/xml">XML</option>
+                                <option value="image/jpeg">Imagen JPEG</option>
+                                <option value="image/png">Imagen PNG</option>
+                                <option value="image/gif">Imagen GIF</option>
+                                <option value="application/pdf">PDF</option>
+                                <option value="application/zip">ZIP</option>
+                            </select>
+                            <div class="form-text">Tipo MIME del archivo</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}"
+                               class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-1"></i>
+                                Subir Objeto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

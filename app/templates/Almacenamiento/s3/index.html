@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>Amazon Simple Storage Service (S3)</h2>
+        <p>S3 es un servicio de almacenamiento de objetos que ofrece escalabilidad, disponibilidad de datos, seguridad y rendimiento líderes en el sector. Puedes usar S3 para almacenar y recuperar cualquier cantidad de datos en cualquier momento y desde cualquier lugar.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>Características principales de S3:</h4>
+        <ul>
+            <li><strong>Almacenamiento ilimitado:</strong> No hay límite en la cantidad de datos que puedes almacenar.</li>
+            <li><strong>Durabilidad del 99.999999999%:</strong> Tus datos están seguros con 11 nueves de durabilidad.</li>
+            <li><strong>Clases de almacenamiento:</strong> Standard, Intelligent-Tiering, Glacier, etc., para diferentes necesidades de acceso.</li>
+            <li><strong>Versionado:</strong> Mantén múltiples versiones de tus objetos.</li>
+            <li><strong>Encriptación:</strong> Protege tus datos en reposo y en tránsito.</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Buckets S3</h3>
+                <a href="{{ url_for('s3.buckets') }}" class="btn btn-aws">Ver Todos los Buckets</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Clases de Almacenamiento</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            S3 Standard
+                            <span class="badge bg-primary">Más usado</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            S3 Intelligent-Tiering
+                            <span class="badge bg-info">Automático</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            S3 Glacier
+                            <span class="badge bg-secondary">Archivo</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            S3 Glacier Deep Archive
+                            <span class="badge bg-dark">Largo plazo</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Acciones Comunes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('s3.buckets') }}" class="btn btn-outline-primary">Listar Buckets</a>
+                        <button class="btn btn-outline-secondary" disabled>Crear Bucket</button>
+                        <button class="btn btn-outline-secondary" disabled>Configurar Versionado</button>
+                        <button class="btn btn-outline-secondary" disabled>Configurar Políticas</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

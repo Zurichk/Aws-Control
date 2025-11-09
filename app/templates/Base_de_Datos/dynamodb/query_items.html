@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Consultar Items - {{ table_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Consultar Items</h2>
+                        <small class="text-muted">{{ table_name }}</small>
+                    </div>
+                    <a href="{{ url_for('dynamodb.table_detail', table_name=table_name) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver al Detalle
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Información del esquema -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Esquema de Claves</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Clave de Partición:</strong> {{ partition_key or 'N/A' }}
+                                </div>
+                                {% if sort_key %}
+                                <div class="col-md-6">
+                                    <strong>Clave de Ordenamiento:</strong> {{ sort_key }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de consulta -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Parámetros de Consulta</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="key_condition" class="form-label">
+                                        <strong>Expresión de Clave</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="key_condition" name="key_condition"
+                                           placeholder="{{ partition_key }} = :pk_val" value="{{ key_condition }}" required>
+                                    <div class="form-text">
+                                        Ejemplo: {{ partition_key }} = :pk_val{% if sort_key %} AND {{ sort_key }} = :sk_val{% endif %}
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        La expresión de clave es requerida.
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="expression_values" class="form-label">
+                                        <strong>Valores de Expresión (JSON)</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" id="expression_values" name="expression_values"
+                                              rows="3" placeholder='{
+  ":pk_val": {"S": "value"},
+  ":sk_val": {"S": "value"}
+}' required>{{ expression_values }}</textarea>
+                                    <div class="form-text">
+                                        Valores para los placeholders en la expresión de clave
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Los valores de expresión son requeridos.
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="filter_expression" class="form-label">
+                                        <strong>Expresión de Filtro (Opcional)</strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="filter_expression" name="filter_expression"
+                                           placeholder="attribute_name = :filter_val" value="{{ filter_expression }}">
+                                    <div class="form-text">
+                                        Filtro adicional aplicado después de la consulta de clave
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Ejecutar Consulta
+                                    </button>
+                                    <a href="{{ url_for('dynamodb.query_items', table_name=table_name) }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo"></i> Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Resultados -->
+                    {% if items is defined %}
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Resultados de la Consulta</h5>
+                            <span class="badge bg-info">{{ count }} items encontrados</span>
+                        </div>
+                        <div class="card-body">
+                            {% if items %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Datos del Item</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in items %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>
+                                                    <pre class="mb-0 small">{{ item | tojson(indent=2) }}</pre>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button class="btn btn-outline-primary copy-btn" data-item="{{ item | tojson }}">
+                                                            <i class="fas fa-copy"></i> Copiar
+                                                        </button>
+                                                        <button class="btn btn-outline-danger delete-btn" data-item="{{ item | tojson }}">
+                                                            <i class="fas fa-trash"></i> Eliminar
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No se encontraron items</h5>
+                                    <p class="text-muted">Verifique los parámetros de consulta</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para eliminar item -->
+<div class="modal fade" id="deleteItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('dynamodb.delete_item', table_name=table_name) }}">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ¿Está seguro de que desea eliminar este item?
+                    </div>
+                    <div id="deleteItemData"></div>
+                    <input type="hidden" name="key_data" id="keyDataInput">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('form')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            const keyCondition = document.getElementById('key_condition');
+            const expressionValues = document.getElementById('expression_values');
+
+            // Validar JSON en expression_values
+            if (expressionValues.value.trim()) {
+                try {
+                    JSON.parse(expressionValues.value);
+                    expressionValues.classList.remove('is-invalid');
+                    expressionValues.classList.add('is-valid');
+                } catch (e) {
+                    expressionValues.classList.remove('is-valid');
+                    expressionValues.classList.add('is-invalid');
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+            }
+
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Event listeners para botones
+document.addEventListener('DOMContentLoaded', function() {
+    // Botones de copiar
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const item = this.getAttribute('data-item');
+            navigator.clipboard.writeText(item).then(function() {
+                showToast('Item copiado al portapapeles', 'success');
+            });
+        });
+    });
+
+    // Botones de eliminar
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const item = this.getAttribute('data-item');
+            deleteItem(item);
+        });
+    });
+});
+
+function deleteItem(itemJson) {
+    try {
+        const item = JSON.parse(itemJson);
+        // Para simplificar, asumimos que la clave es el primer atributo
+        // En un caso real, esto debería basarse en el esquema de la tabla
+        const keyData = {};
+        const keys = Object.keys(item);
+        if (keys.length > 0) {
+            keyData[keys[0]] = item[keys[0]];
+        }
+
+        document.getElementById('deleteItemData').innerHTML = '<pre class="small">' + JSON.stringify(item, null, 2) + '</pre>';
+        document.getElementById('keyDataInput').value = JSON.stringify(keyData);
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteItemModal'));
+        modal.show();
+    } catch (e) {
+        showToast('Error procesando el item', 'danger');
+    }
+}
+
+function showToast(message, type) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toastContainer.innerHTML = toastHtml;
+    document.body.appendChild(toastContainer);
+
+    const toast = new bootstrap.Toast(toastContainer.firstElementChild);
+    toast.show();
+
+    setTimeout(() => {
+        document.body.removeChild(toastContainer);
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}EMR Clusters - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-server text-primary"></i> EMR Clusters
+                    </h1>
+                    <p class="text-muted">Manage Amazon EMR clusters for big data processing</p>
+                </div>
+                <a href="{{ url_for('emr.create_cluster') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Cluster
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Clusters
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ clusters|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-server fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Running
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ clusters|selectattr('Status.State', 'equalto', 'RUNNING')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-play fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Starting
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ clusters|selectattr('Status.State', 'equalto', 'STARTING')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Terminated
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ clusters|selectattr('Status.State', 'equalto', 'TERMINATED')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-stop fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clusters Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">EMR Clusters</h6>
+                </div>
+                <div class="card-body">
+                    {% if clusters %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Cluster Name</th>
+                                    <th>Cluster ID</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Instance Count</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cluster in clusters %}
+                                <tr>
+                                    <td>{{ cluster.Name }}</td>
+                                    <td>
+                                        <code>{{ cluster.Id }}</code>
+                                    </td>
+                                    <td>
+                                        {% if cluster.Status.State == 'RUNNING' %}
+                                            <span class="badge badge-success">{{ cluster.Status.State }}</span>
+                                        {% elif cluster.Status.State == 'STARTING' %}
+                                            <span class="badge badge-warning">{{ cluster.Status.State }}</span>
+                                        {% elif cluster.Status.State == 'TERMINATED' %}
+                                            <span class="badge badge-danger">{{ cluster.Status.State }}</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ cluster.Status.State }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ cluster.Status.Timeline.CreationDateTime.strftime('%Y-%m-%d %H:%M') if cluster.Status.Timeline.CreationDateTime else 'N/A' }}</td>
+                                    <td>{{ cluster.InstanceCount if cluster.InstanceCount else 'N/A' }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if cluster.Status.State == 'RUNNING' %}
+                                            <form method="post" action="{{ url_for('emr.terminate_cluster', cluster_id=cluster.Id) }}" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Are you sure you want to terminate this cluster?')">
+                                                    <i class="fas fa-stop"></i> Terminate
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-server fa-3x text-gray-300 mb-3"></i>
+                        <h5 class="text-gray-500">No EMR clusters found</h5>
+                        <p class="text-gray-400">Create your first EMR cluster to get started with big data processing.</p>
+                        <a href="{{ url_for('emr.create_cluster') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Cluster
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Adjuntar Volumen EBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.index') }}">EBS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.volumes') }}">Volúmenes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Adjuntar {{ volume_id }}</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-link me-2"></i>
+                        Adjuntar Volumen: {{ volume_id }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Información</h6>
+                        <p>Selecciona la instancia EC2 y el dispositivo donde adjuntar el volumen EBS.</p>
+                        <ul>
+                            <li>El volumen debe estar en la misma zona de disponibilidad que la instancia</li>
+                            <li>El dispositivo debe tener el formato <code>/dev/sd[f-p]</code> o <code>/dev/xvd[f-p]</code></li>
+                            <li>La instancia debe estar en estado <code>running</code> o <code>stopped</code></li>
+                        </ul>
+                    </div>
+
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="instance_id" class="form-label">
+                                        <i class="fas fa-server me-1"></i>
+                                        Instancia EC2 *
+                                    </label>
+                                    <select class="form-select" id="instance_id" name="instance_id" required>
+                                        <option value="">Seleccionar instancia...</option>
+                                        {% for instance in instances %}
+                                        <option value="{{ instance.InstanceId }}">
+                                            {{ instance.InstanceId }} ({{ instance.InstanceType }}) - {{ instance.State }} - {{ instance.AvailabilityZone }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Instancia donde adjuntar el volumen</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="device" class="form-label">
+                                        <i class="fas fa-hdd me-1"></i>
+                                        Dispositivo *
+                                    </label>
+                                    <input type="text" class="form-control" id="device" name="device"
+                                           placeholder="/dev/sdf" value="/dev/sdf" required
+                                           pattern="/dev/(sd|xvd)[f-p]">
+                                    <div class="form-text">Nombre del dispositivo (ej: /dev/sdf)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('ebs.volume_detail', volume_id=volume_id) }}"
+                               class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-link me-1"></i>
+                                Adjuntar Volumen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

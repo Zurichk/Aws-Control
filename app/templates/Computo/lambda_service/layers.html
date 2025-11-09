@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lambda Layers - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item active">Layers</li>
+                </ol>
+            </nav>
+            <h2>Lambda Layers</h2>
+            <p class="text-muted">Gestiona los layers de Lambda para compartir código y dependencias entre funciones.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Layers Disponibles</h5>
+            <a href="{{ url_for('lambda_bp.create_layer') }}" class="btn btn-aws btn-sm">
+                <i class="fas fa-plus me-2"></i>Crear Layer
+            </a>
+        </div>
+        <div class="card-body">
+            {% if layers %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Layer</th>
+                            <th>ARN</th>
+                            <th>Runtimes Compatibles</th>
+                            <th>Versión Más Reciente</th>
+                            <th>Tamaño</th>
+                            <th>Última Modificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for layer in layers %}
+                        <tr>
+                            <td><strong>{{ layer.LayerName }}</strong></td>
+                            <td><small>{{ layer.LayerArn }}</small></td>
+                            <td>
+                                {% for runtime in layer.CompatibleRuntimes %}
+                                <span class="badge bg-secondary me-1">{{ runtime }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ layer.LatestMatchingVersion.Version }}</td>
+                            <td>{{ "%.1f"|format(layer.LatestMatchingVersion.CodeSize / 1024 / 1024) }} MB</td>
+                            <td>{{ layer.LatestMatchingVersion.CreatedDate.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-layer-group fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No se encontraron layers</h5>
+                <p class="text-muted">Crea tu primer layer para compartir código entre funciones Lambda.</p>
+                <a href="{{ url_for('lambda_bp.create_layer') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Crear Tu Primer Layer
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información sobre Lambda Layers
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>¿Qué es un Layer?</h6>
+                            <p>Un layer es un archivo ZIP que contiene código adicional (librerías, dependencias, runtime)
+                            que puede ser usado por múltiples funciones Lambda.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Beneficios</h6>
+                            <ul>
+                                <li>Reduce el tamaño del paquete de despliegue</li>
+                                <li>Mejora la reutilización de código</li>
+                                <li>Simplifica las actualizaciones de dependencias</li>
+                                <li>Acorta los tiempos de despliegue</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

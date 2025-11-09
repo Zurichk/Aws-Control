@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}CloudWatch - Estadísticas de Métricas{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1><i class="fas fa-chart-bar text-info me-2"></i>Estadísticas de Métricas</h1>
+                    <p class="text-muted">Obtén estadísticas históricas de métricas en CloudWatch</p>
+                </div>
+                <a href="{{ url_for('cloudwatch.metrics') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Métricas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-search text-primary me-2"></i>Consultar Estadísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('cloudwatch.metric_statistics') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="namespace" class="form-label">
+                                        <i class="fas fa-folder me-1"></i>Namespace *
+                                    </label>
+                                    <input type="text" class="form-control" id="namespace" name="namespace"
+                                           value="{{ request.args.get('namespace', 'AWS/EC2') }}" required>
+                                    <div class="form-text">Ej: AWS/EC2, AWS/RDS</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="metric_name" class="form-label">
+                                        <i class="fas fa-chart-line me-1"></i>Nombre de la Métrica *
+                                    </label>
+                                    <input type="text" class="form-control" id="metric_name" name="metric_name"
+                                           value="{{ request.args.get('metric_name', 'CPUUtilization') }}" required>
+                                    <div class="form-text">Ej: CPUUtilization, NetworkIn</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="start_time" class="form-label">
+                                        <i class="fas fa-calendar me-1"></i>Fecha Inicio *
+                                    </label>
+                                    <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                                    <div class="form-text">Fecha y hora de inicio</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="end_time" class="form-label">
+                                        <i class="fas fa-calendar me-1"></i>Fecha Fin *
+                                    </label>
+                                    <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                                    <div class="form-text">Fecha y hora de fin</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="period" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>Período (segundos) *
+                                    </label>
+                                    <input type="number" class="form-control" id="period" name="period" value="300" required>
+                                    <div class="form-text">300 = 5 min, 3600 = 1 hora</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <fieldset class="mb-3">
+                            <legend class="form-label">
+                                <i class="fas fa-calculator me-1"></i>Estadísticas a Obtener *
+                            </legend>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="statistics" value="Average" id="avg" checked>
+                                        <label class="form-check-label" for="avg">
+                                            Average (Promedio)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="statistics" value="Maximum" id="max">
+                                        <label class="form-check-label" for="max">
+                                            Maximum (Máximo)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="statistics" value="Minimum" id="min">
+                                        <label class="form-check-label" for="min">
+                                            Minimum (Mínimo)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="statistics" value="Sum" id="sum">
+                                        <label class="form-check-label" for="sum">
+                                            Sum (Suma)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="statistics" value="SampleCount" id="count">
+                                        <label class="form-check-label" for="count">
+                                            SampleCount (Conteo)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>Obtener Estadísticas
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info me-2"></i>Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Períodos Comunes:</h6>
+                    <ul class="list-unstyled small">
+                        <li><code>60</code> - 1 minuto</li>
+                        <li><code>300</code> - 5 minutos</li>
+                        <li><code>900</code> - 15 minutos</li>
+                        <li><code>3600</code> - 1 hora</li>
+                        <li><code>86400</code> - 1 día</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6>Estadísticas Disponibles:</h6>
+                    <ul class="list-unstyled small">
+                        <li><strong>Average:</strong> Promedio</li>
+                        <li><strong>Maximum:</strong> Valor máximo</li>
+                        <li><strong>Minimum:</strong> Valor mínimo</li>
+                        <li><strong>Sum:</strong> Suma total</li>
+                        <li><strong>SampleCount:</strong> Número de muestras</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Consejos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-1"></i> Datos disponibles hasta 15 meses</li>
+                        <li><i class="fas fa-check text-success me-1"></i> Máximo 1440 puntos de datos</li>
+                        <li><i class="fas fa-check text-success me-1"></i> Usa períodos apropiados para tus datos</li>
+                        <li><i class="fas fa-check text-success me-1"></i> Las métricas personalizadas pueden tener retraso</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set default datetime values
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - (60 * 60 * 1000));
+
+    const formatDateTime = (date) => {
+        return date.toISOString().slice(0, 16);
+    };
+
+    document.getElementById('start_time').value = formatDateTime(oneHourAgo);
+    document.getElementById('end_time').value = formatDateTime(now);
+});
+</script>
+{% endblock %}

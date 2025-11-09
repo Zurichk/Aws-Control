@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Node Group - Cluster {{ cluster_name }} - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.index') }}">EKS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.clusters') }}">Clusters</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.cluster_detail', cluster_name=cluster_name) }}">{{ cluster_name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.nodegroups', cluster_name=cluster_name) }}">Node Groups</a></li>
+                    <li class="breadcrumb-item active">Crear Node Group</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Crear Node Group - {{ cluster_name }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nodegroup_name" class="form-label">Nombre del Node Group *</label>
+                                    <input type="text" class="form-control" id="nodegroup_name" name="nodegroup_name"
+                                           placeholder="mi-nodegroup" required>
+                                    <div class="form-text">Solo letras minúsculas, números y guiones.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="instance_type" class="form-label">Tipo de Instancia</label>
+                                    <select class="form-select" id="instance_type" name="instance_type">
+                                        <option value="t3.medium">t3.medium (recomendado)</option>
+                                        <option value="t3.small">t3.small</option>
+                                        <option value="t3.large">t3.large</option>
+                                        <option value="t3.xlarge">t3.xlarge</option>
+                                        <option value="m5.large">m5.large</option>
+                                        <option value="m5.xlarge">m5.xlarge</option>
+                                        <option value="c5.large">c5.large (CPU optimizada)</option>
+                                        <option value="r5.large">r5.large (Memoria optimizada)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="node_role_arn" class="form-label">ARN del Rol IAM para Nodos *</label>
+                            <input type="text" class="form-control" id="node_role_arn" name="node_role_arn"
+                                   placeholder="arn:aws:iam::123456789012:role/eks-node-role" required>
+                            <div class="form-text">El rol debe tener las políticas AmazonEKSWorkerNodePolicy, AmazonEKS_CNI_Policy y AmazonEC2ContainerRegistryReadOnly.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="min_size" class="form-label">Tamaño Mínimo</label>
+                                    <input type="number" class="form-control" id="min_size" name="min_size"
+                                           value="1" min="0" max="100" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="desired_size" class="form-label">Tamaño Deseado</label>
+                                    <input type="number" class="form-control" id="desired_size" name="desired_size"
+                                           value="2" min="0" max="100" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="max_size" class="form-label">Tamaño Máximo</label>
+                                    <input type="number" class="form-control" id="max_size" name="max_size"
+                                           value="3" min="0" max="100" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subnet-0" class="form-label">Subnets *</label>
+                            <div id="subnet-container">
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="subnet-0" name="subnet_ids[]"
+                                           placeholder="subnet-12345678" required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="addSubnet()">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-text">Subnets donde se lanzarán las instancias EC2. Deben estar en la misma VPC que el cluster.</div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Información importante</h6>
+                            <ul class="mb-0">
+                                <li>Las instancias se lanzarán en las subnets especificadas</li>
+                                <li>El node group puede tomar varios minutos en estar listo</li>
+                                <li>Asegúrate de que el rol IAM tenga los permisos correctos</li>
+                                <li>Las instancias necesitarán acceso a internet para descargar imágenes de contenedor</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-aws">
+                                <i class="fas fa-play"></i> Crear Node Group
+                            </button>
+                            <a href="{{ url_for('eks.nodegroups', cluster_name=cluster_name) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Configuración de Node Groups</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Rol IAM requerido:</h6>
+                    <div class="mb-3">
+                        <code class="d-block small">AmazonEKSWorkerNodePolicy</code>
+                        <code class="d-block small">AmazonEKS_CNI_Policy</code>
+                        <code class="d-block small">AmazonEC2ContainerRegistryReadOnly</code>
+                    </div>
+
+                    <h6>Recomendaciones:</h6>
+                    <ul class="small">
+                        <li><strong>Multi-AZ:</strong> Usa subnets en múltiples zonas</li>
+                        <li><strong>Instance Types:</strong> Elige según tus workloads</li>
+                        <li><strong>Scaling:</strong> Configura límites apropiados</li>
+                        <li><strong>Spot:</strong> Considera instancias spot para ahorro</li>
+                    </ul>
+
+                    <h6>Próximos pasos:</h6>
+                    <ol class="small">
+                        <li>Esperar que el node group esté ACTIVE</li>
+                        <li>Verificar que los nodos se unan al cluster</li>
+                        <li>Configurar kubectl para acceder al cluster</li>
+                        <li>Desplegar aplicaciones en los nodos</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addSubnet() {
+            const container = document.getElementById('subnet-container');
+            const inputCount = container.querySelectorAll('input').length;
+            const newInput = document.createElement('div');
+            newInput.className = 'input-group mb-2';
+            newInput.innerHTML = `
+                <input type="text" class="form-control" id="subnet-${inputCount}" name="subnet_ids[]" placeholder="subnet-12345678" required>
+                <button type="button" class="btn btn-outline-danger" onclick="removeSubnet(this)">
+                    <i class="fas fa-minus"></i>
+                </button>
+            `;
+            container.appendChild(newInput);
+        }
+
+        function removeSubnet(button) {
+            button.closest('.input-group').remove();
+        }
+    </script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}ECS - Actualizar Servicio{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Actualizar Servicio ECS</h2>
+                        <small class="text-muted">Modificar configuración del servicio: {{ service.serviceName }}</small>
+                    </div>
+                    <a href="{{ url_for('ecs.services') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-cogs text-primary me-2"></i>Servicio
+                                            </h6>
+                                            <p class="card-text mb-0">{{ service.serviceName }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-cube text-info me-2"></i>Cluster
+                                            </h6>
+                                            <p class="card-text mb-0">{{ service.clusterArn.split('/')[-1] }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="desired_count" class="form-label">
+                                <i class="fas fa-hashtag text-warning me-2"></i>Conteo Deseado de Tareas
+                            </label>
+                            <input type="number" class="form-control" id="desired_count" name="desired_count" 
+                                   required min="0" max="100" value="{{ service.desiredCount }}">
+                            <div class="form-text">
+                                Número de tareas que deben ejecutarse simultáneamente. Actualmente: {{ service.runningCount }} ejecutándose.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="task_definition" class="form-label">
+                                <i class="fas fa-file-code text-success me-2"></i>Definición de Tarea
+                            </label>
+                            <select class="form-select" id="task_definition" name="task_definition" required>
+                                {% for task_def in task_definitions %}
+                                <option value="{{ task_def.taskDefinitionArn }}"
+                                        {% if task_def.taskDefinitionArn == service.taskDefinition %}selected{% endif %}>
+                                    {{ task_def.family }}:{{ task_def.revision }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                Definición de tarea actual: {{ service.taskDefinition.split('/')[-1] }}
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Consideraciones para la Actualización</h6>
+                            <ul class="mb-0">
+                                <li>Cambiar el conteo deseado iniciará o detendrá tareas según sea necesario</li>
+                                <li>Actualizar la definición de tarea creará un nuevo deployment</li>
+                                <li>ECS mantendrá el servicio disponible durante las actualizaciones</li>
+                                <li>Las tareas existentes continuarán ejecutándose hasta que se complete el deployment</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('ecs.services') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Actualizar Servicio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const desiredCountInput = document.getElementById('desired_count');
+    
+    form.addEventListener('submit', function(e) {
+        const desiredCount = parseInt(desiredCountInput.value);
+        
+        // Validar conteo deseado
+        if (desiredCount < 0 || desiredCount > 100) {
+            e.preventDefault();
+            alert('El conteo deseado debe estar entre 0 y 100');
+            desiredCountInput.focus();
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

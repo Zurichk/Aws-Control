@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DynamoDB - Panel de Control AWS</title>
+</head>
+<body>
+{% extends "base.html" %}
+
+{% block title %}Panel de Control AWS - DynamoDB{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-database text-warning me-2"></i>
+                        Tablas DynamoDB
+                    </h1>
+                    <p class="text-muted mt-1">Gestiona tus tablas de base de datos NoSQL de Amazon DynamoDB</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('dynamodb.tables') }}" class="btn btn-primary">
+                        <i class="fas fa-list me-2"></i>Ver Todas las Tablas
+                    </a>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>Acerca de DynamoDB
+                    </h5>
+                    <p class="card-text">
+                        Amazon DynamoDB es un servicio de base de datos NoSQL completamente administrado que proporciona rendimiento rápido y predecible con escalabilidad perfecta.
+                        Soporta tanto modelos de documento como de clave-valor, con seguridad integrada, respaldo y restauración, y almacenamiento en caché en memoria.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-bolt fa-2x text-warning mb-2"></i>
+                                <h6>Rendimiento Rápido</h6>
+                                <small class="text-muted">Latencia de milisegundos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-expand-arrows-alt fa-2x text-success mb-2"></i>
+                                <h6>Escalado Automático</h6>
+                                <small class="text-muted">Gestión automática de capacidad</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                                <h6>Seguro</h6>
+                                <small class="text-muted">Encriptación en reposo y tránsito</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-globe fa-2x text-info mb-2"></i>
+                                <h6>Tablas Globales</h6>
+                                <small class="text-muted">Replicación multi-región</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Tablas Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Panel de Control DynamoDB</h5>
+                        <p class="text-muted">Accede a todas las funcionalidades de gestión de tablas DynamoDB</p>
+                        <div class="row g-3 mt-4">
+                            <div class="col-md-3">
+                                <a href="{{ url_for('dynamodb.tables') }}" class="btn btn-primary w-100">
+                                    <i class="fas fa-list fa-2x mb-2"></i><br>
+                                    Ver Tablas
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{{ url_for('dynamodb.tables') }}" class="btn btn-success w-100">
+                                    <i class="fas fa-plus fa-2x mb-2"></i><br>
+                                    Crear Tabla
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{{ url_for('dynamodb.tables') }}" class="btn btn-info w-100">
+                                    <i class="fas fa-search fa-2x mb-2"></i><br>
+                                    Explorar Datos
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{{ url_for('dynamodb.tables') }}" class="btn btn-warning w-100">
+                                    <i class="fas fa-cogs fa-2x mb-2"></i><br>
+                                    Gestionar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+</body>
+</html>

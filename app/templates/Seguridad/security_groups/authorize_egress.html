@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Autorizar Salida - Security Groups{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Autorizar Regla de Salida</h3>
+                    <small class="text-muted">Security Group: {{ security_group.GroupName }} ({{ security_group.GroupId }})</small>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="protocol" class="form-label">Protocolo *</label>
+                            <select class="form-select" id="protocol" name="protocol" required>
+                                <option value="">Seleccionar protocolo...</option>
+                                <option value="tcp">TCP</option>
+                                <option value="udp">UDP</option>
+                                <option value="icmp">ICMP</option>
+                                <option value="-1">Todos los protocolos</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="port_range_from" class="form-label">Puerto Desde</label>
+                                    <input type="number" class="form-control" id="port_range_from" name="port_range_from"
+                                           placeholder="80" min="0" max="65535">
+                                    <div class="form-text">Para ICMP: Tipo (-1 para todos)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="port_range_to" class="form-label">Puerto Hasta</label>
+                                    <input type="number" class="form-control" id="port_range_to" name="port_range_to"
+                                           placeholder="80" min="0" max="65535">
+                                    <div class="form-text">Para ICMP: Código (-1 para todos)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="destination_type" class="form-label">Tipo de Destino *</label>
+                            <select class="form-select" id="destination_type" name="destination_type" required>
+                                <option value="">Seleccionar tipo...</option>
+                                <option value="cidr">CIDR Block</option>
+                                <option value="security_group">Security Group</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="cidr_block_div" style="display: none;">
+                            <label for="destination_value_cidr" class="form-label">CIDR Block *</label>
+                            <input type="text" class="form-control" id="destination_value_cidr" name="destination_value"
+                                   placeholder="0.0.0.0/0">
+                            <div class="form-text">Ejemplo: 0.0.0.0/0 (todos), 192.168.1.0/24</div>
+                        </div>
+
+                        <div class="mb-3" id="security_group_div" style="display: none;">
+                            <label for="destination_value_sg" class="form-label">Security Group *</label>
+                            <select class="form-select" id="destination_value_sg" name="destination_value">
+                                <option value="">Seleccionar Security Group...</option>
+                                {% for sg in other_security_groups %}
+                                <option value="{{ sg.GroupId }}">{{ sg.GroupName }} ({{ sg.GroupId }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descripción</label>
+                            <input type="text" class="form-control" id="description" name="description"
+                                   placeholder="Descripción opcional de la regla">
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('security_groups.list_security_groups') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-info">Autorizar Regla</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('destination_type').addEventListener('change', function() {
+    const destinationType = this.value;
+    const cidrDiv = document.getElementById('cidr_block_div');
+    const sgDiv = document.getElementById('security_group_div');
+    const cidrInput = document.getElementById('destination_value_cidr');
+    const sgSelect = document.getElementById('destination_value_sg');
+
+    if (destinationType === 'cidr') {
+        cidrDiv.style.display = 'block';
+        sgDiv.style.display = 'none';
+        cidrInput.required = true;
+        sgSelect.required = false;
+    } else if (destinationType === 'security_group') {
+        cidrDiv.style.display = 'none';
+        sgDiv.style.display = 'block';
+        cidrInput.required = false;
+        sgSelect.required = true;
+    } else {
+        cidrDiv.style.display = 'none';
+        sgDiv.style.display = 'none';
+        cidrInput.required = false;
+        sgSelect.required = false;
+    }
+});
+
+document.getElementById('protocol').addEventListener('change', function() {
+    const protocol = this.value;
+    const portFrom = document.getElementById('port_range_from');
+    const portTo = document.getElementById('port_range_to');
+
+    if (protocol === '-1') {
+        // Todos los protocolos - deshabilitar puertos
+        portFrom.disabled = true;
+        portTo.disabled = true;
+        portFrom.required = false;
+        portTo.required = false;
+    } else if (protocol === 'icmp') {
+        // ICMP - cambiar labels
+        portFrom.disabled = false;
+        portTo.disabled = false;
+        portFrom.required = true;
+        portTo.required = true;
+        portFrom.placeholder = "-1";
+        portTo.placeholder = "-1";
+    } else {
+        // TCP/UDP - habilitar puertos
+        portFrom.disabled = false;
+        portTo.disabled = false;
+        portFrom.required = true;
+        portTo.required = true;
+        portFrom.placeholder = "80";
+        portTo.placeholder = "80";
+    }
+});
+</script>
+{% endblock %}

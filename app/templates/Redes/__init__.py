@@ -1,0 +1,1 @@
+# Redes templates package

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Auto Scaling - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-expand-arrows-alt"></i> Auto Scaling</h2>
+                    <p class="mb-0">Gestión de grupos de Auto Scaling y políticas de escalado automático</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-layer-group fa-3x text-primary mb-3"></i>
+                                    <h5>Grupos de Auto Scaling</h5>
+                                    <p>Crear, listar y gestionar grupos de Auto Scaling</p>
+                                    <a href="{{ url_for('autoscaling_bp.groups') }}" class="btn btn-primary">
+                                        <i class="fas fa-list"></i> Ver Grupos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                                    <h5>Políticas de Escalado</h5>
+                                    <p>Configurar políticas de escalado automático</p>
+                                    <a href="{{ url_for('autoscaling_bp.policies') }}" class="btn btn-success">
+                                        <i class="fas fa-cogs"></i> Ver Políticas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle"></i> Información del Servicio</h5>
+                                <p>Auto Scaling permite escalar automáticamente tus instancias EC2 basándose en métricas definidas,
+                                manteniendo la disponibilidad y optimizando costos.</p>
+                                <ul class="mb-0">
+                                    <li><strong>Grupos de Auto Scaling:</strong> Colecciones de instancias EC2 que se escalan automáticamente</li>
+                                    <li><strong>Políticas de Escalado:</strong> Reglas que definen cuándo y cómo escalar</li>
+                                    <li><strong>Launch Templates:</strong> Plantillas para configurar nuevas instancias</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

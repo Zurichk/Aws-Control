@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - RDS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-database text-primary me-2"></i>
+                        Amazon Relational Database Service (RDS)
+                    </h1>
+                    <p class="text-muted mt-1">Gestiona tus instancias y clusters de bases de datos relacionales</p>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-primary me-2"></i>Acerca de Amazon RDS
+                    </h5>
+                    <p class="card-text">
+                        Amazon RDS facilita la configuración, el funcionamiento y el escalado de una base de datos relacional en la nube.
+                        Proporciona capacidad rentable y redimensionable al mismo tiempo que automatiza las tareas de administración
+                        de bases de datos que requieren mucho tiempo, lo que te permite concentrarte en tus aplicaciones.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-server fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Instancias DB</h5>
+                            <p class="card-text">Gestiona tus instancias de bases de datos RDS</p>
+                            <a href="{{ url_for('rds.instances') }}" class="btn btn-primary">
+                                <i class="fas fa-list me-2"></i>Ver Instancias
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-network-wired fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Clusters Aurora</h5>
+                            <p class="card-text">Gestiona tus clusters de Aurora y otros motores compatibles</p>
+                            <a href="{{ url_for('rds.clusters') }}" class="btn btn-success">
+                                <i class="fas fa-list me-2"></i>Ver Clusters
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-save fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title">Snapshots</h5>
+                            <p class="card-text">Gestiona copias de seguridad y snapshots de tus bases de datos</p>
+                            <a href="{{ url_for('rds.snapshots') }}" class="btn btn-warning">
+                                <i class="fas fa-list me-2"></i>Ver Snapshots
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supported Engines -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Motores de Base de Datos Soportados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-elephant fa-2x text-primary mb-2"></i>
+                                <h6>PostgreSQL</h6>
+                                <small class="text-muted">9.6, 10, 11, 12, 13, 14, 15, 16</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-database fa-2x text-info mb-2"></i>
+                                <h6>MySQL</h6>
+                                <small class="text-muted">5.7, 8.0</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-database fa-2x text-warning mb-2"></i>
+                                <h6>MariaDB</h6>
+                                <small class="text-muted">10.3, 10.4, 10.5, 10.6, 10.11</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-database fa-2x text-danger mb-2"></i>
+                                <h6>Oracle</h6>
+                                <small class="text-muted">12c, 19c, 21c</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-database fa-2x text-success mb-2"></i>
+                                <h6>SQL Server</h6>
+                                <small class="text-muted">2016, 2017, 2019, 2022</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-rocket fa-2x text-primary mb-2"></i>
+                                <h6>Aurora MySQL</h6>
+                                <small class="text-muted">Compatible con MySQL 5.6, 5.7, 8.0</small>
+                            </div>
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-rocket fa-2x text-info mb-2"></i>
+                                <h6>Aurora PostgreSQL</h6>
+                                <small class="text-muted">Compatible con PostgreSQL 9.6, 10, 11, 12, 13, 14, 15, 16</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

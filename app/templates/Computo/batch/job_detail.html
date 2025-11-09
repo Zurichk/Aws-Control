@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Batch - Detalle del Trabajo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Detalle del Trabajo</h2>
+                        <small class="text-muted">{{ job.job_name }} ({{ job.job_id }})</small>
+                    </div>
+                    <div>
+                        {% if job.status in ['RUNNING', 'PENDING', 'SUBMITTED'] %}
+                            <button type="button" class="btn btn-danger"
+                                    onclick="terminateJob('{{ job.job_id }}', '{{ job.job_name }}')">
+                                <i class="fas fa-stop"></i> Terminar Trabajo
+                            </button>
+                        {% endif %}
+                        <a href="{{ url_for('batch.list_jobs') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a Trabajos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="row">
+                        <!-- Información básica -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Información Básica</h5>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">ID del Trabajo:</dt>
+                                        <dd class="col-sm-8">
+                                            <code>{{ job.job_id }}</code>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Nombre:</dt>
+                                        <dd class="col-sm-8">{{ job.job_name }}</dd>
+
+                                        <dt class="col-sm-4">Estado:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge
+                                                {% if job.status == 'SUCCEEDED' %}bg-success
+                                                {% elif job.status == 'FAILED' %}bg-danger
+                                                {% elif job.status == 'RUNNING' %}bg-primary
+                                                {% elif job.status == 'PENDING' %}bg-warning
+                                                {% elif job.status == 'SUBMITTED' %}bg-info
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ job.status }}
+                                            </span>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Cola:</dt>
+                                        <dd class="col-sm-8">{{ job.job_queue or 'N/A' }}</dd>
+
+                                        <dt class="col-sm-4">Entorno de Cómputo:</dt>
+                                        <dd class="col-sm-8">{{ job.compute_environment or 'N/A' }}</dd>
+
+                                        <dt class="col-sm-4">Creado:</dt>
+                                        <dd class="col-sm-8">
+                                            {{ job.created_at.strftime('%Y-%m-%d %H:%M:%S') if job.created_at else 'N/A' }}
+                                        </dd>
+
+                                        {% if job.started_at %}
+                                            <dt class="col-sm-4">Iniciado:</dt>
+                                            <dd class="col-sm-8">
+                                                {{ job.started_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            </dd>
+                                        {% endif %}
+
+                                        {% if job.stopped_at %}
+                                            <dt class="col-sm-4">Detenido:</dt>
+                                            <dd class="col-sm-8">
+                                                {{ job.stopped_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            </dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración del trabajo -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Configuración</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if job.container %}
+                                        <h6>Contenedor</h6>
+                                        <dl class="row">
+                                            <dt class="col-sm-4">Imagen:</dt>
+                                            <dd class="col-sm-8">
+                                                <code class="small">{{ job.container.image }}</code>
+                                            </dd>
+
+                                            {% if job.container.vcpus %}
+                                                <dt class="col-sm-4">vCPUs:</dt>
+                                                <dd class="col-sm-8">{{ job.container.vcpus }}</dd>
+                                            {% endif %}
+
+                                            {% if job.container.memory %}
+                                                <dt class="col-sm-4">Memoria:</dt>
+                                                <dd class="col-sm-8">{{ job.container.memory }} MiB</dd>
+                                            {% endif %}
+
+                                            {% if job.container.command %}
+                                                <dt class="col-sm-4">Comando:</dt>
+                                                <dd class="col-sm-8">
+                                                    <code class="small">{{ job.container.command | join(' ') }}</code>
+                                                </dd>
+                                            {% endif %}
+                                        </dl>
+                                    {% endif %}
+
+                                    {% if job.parameters %}
+                                        <h6 class="mt-3">Parámetros</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Parámetro</th>
+                                                        <th>Valor</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for key, value in job.parameters.items() %}
+                                                        <tr>
+                                                            <td><code>{{ key }}</code></td>
+                                                            <td>{{ value }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logs y estado detallado -->
+                    {% if job.status == 'FAILED' and job.status_reason %}
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card border-danger">
+                                    <div class="card-header bg-danger text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Razón del Fallo
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-0">{{ job.status_reason }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Información adicional -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Información Adicional</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Estado del Trabajo</h6>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar
+                                                    {% if job.status == 'SUCCEEDED' %}bg-success
+                                                    {% elif job.status == 'FAILED' %}bg-danger
+                                                    {% elif job.status == 'RUNNING' %}bg-primary
+                                                    {% elif job.status == 'PENDING' %}bg-warning
+                                                    {% else %}bg-secondary{% endif %}"
+                                                    style="width: 100%">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">
+                                                Estado actual: {{ job.status }}
+                                                {% if job.status == 'RUNNING' %}
+                                                    (En ejecución)
+                                                {% elif job.status == 'SUCCEEDED' %}
+                                                    (Completado exitosamente)
+                                                {% elif job.status == 'FAILED' %}
+                                                    (Falló)
+                                                {% elif job.status == 'PENDING' %}
+                                                    (Pendiente)
+                                                {% elif job.status == 'SUBMITTED' %}
+                                                    (Enviado)
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Acciones Disponibles</h6>
+                                            <div class="btn-group-vertical w-100">
+                                                {% if job.status in ['RUNNING', 'PENDING', 'SUBMITTED'] %}
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                                            onclick="terminateJob('{{ job.job_id }}', '{{ job.job_name }}')">
+                                                        <i class="fas fa-stop"></i> Terminar Trabajo
+                                                    </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-outline-info btn-sm"
+                                                        onclick="refreshPage()">
+                                                    <i class="fas fa-sync"></i> Actualizar Estado
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para terminar trabajo -->
+<div class="modal fade" id="terminateJobModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    Terminar Trabajo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres terminar el trabajo <strong id="jobName"></strong>?</p>
+                <p class="text-muted small">
+                    Esta acción no se puede deshacer. El trabajo se detendrá inmediatamente.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="terminateForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-stop"></i> Terminar Trabajo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function terminateJob(jobId, jobName) {
+    document.getElementById('jobName').textContent = jobName;
+    document.getElementById('terminateForm').action = '{{ url_for("batch.terminate_job", job_id="PLACEHOLDER") }}'.replace('PLACEHOLDER', jobId);
+    new bootstrap.Modal(document.getElementById('terminateJobModal')).show();
+}
+
+function refreshPage() {
+    location.reload();
+}
+</script>
+{% endblock %}

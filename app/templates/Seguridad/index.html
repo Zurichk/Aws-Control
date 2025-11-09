@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAM - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>AWS Identity and Access Management (IAM)</h2>
+        <p>IAM te permite gestionar el acceso a servicios y recursos de AWS de forma segura. Controla quién puede acceder a qué recursos y bajo qué condiciones.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>Componentes principales de IAM:</h4>
+        <ul>
+            <li><strong>Usuarios:</strong> Personas que interactúan con AWS</li>
+            <li><strong>Grupos:</strong> Colecciones de usuarios con permisos similares</li>
+            <li><strong>Roles:</strong> Conjuntos de permisos que pueden ser asumidos por usuarios o servicios</li>
+            <li><strong>Políticas:</strong> Documentos que definen permisos</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Gestión de IAM</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Usuarios</h5>
+                </div>
+                <div class="card-body">
+                    <p>Gestiona usuarios IAM y sus permisos.</p>
+                    <a href="{{ url_for('iam.users') }}" class="btn btn-aws">Ver Usuarios</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Roles</h5>
+                </div>
+                <div class="card-body">
+                    <p>Administra roles IAM para servicios y usuarios.</p>
+                    <a href="{{ url_for('iam.roles') }}" class="btn btn-aws">Ver Roles</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

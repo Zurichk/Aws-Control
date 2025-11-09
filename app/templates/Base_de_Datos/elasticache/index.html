@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon ElastiCache - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="container-fluid mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                <li class="breadcrumb-item active" aria-current="page">ElastiCache</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-database text-primary me-2"></i>Amazon ElastiCache</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>Servicio de Cache en Memoria de Alto Rendimiento</h5>
+                                <p class="text-muted">
+                                    Amazon ElastiCache es un servicio web que facilita la implementación, el funcionamiento y el escalado de almacenes de datos en memoria en la nube.
+                                    Mejora el rendimiento de las aplicaciones web al permitirle recuperar información de almacenes de datos en memoria rápidos y administrados, en lugar de depender únicamente de almacenes de datos basados en disco más lentos.
+                                </p>
+
+                                <h6>Motores Soportados:</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fab fa-reddit text-danger me-2"></i><strong>Redis:</strong> Almacén de datos en memoria de código abierto</li>
+                                    <li><i class="fas fa-server text-warning me-2"></i><strong>Memcached:</strong> Sistema de cache de objetos de memoria distribuida</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-bolt fa-3x text-warning mb-3"></i>
+                                        <h6>Casos de Uso</h6>
+                                        <ul class="list-unstyled small">
+                                            <li>• Cache de aplicaciones web</li>
+                                            <li>• Almacenamiento de sesiones</li>
+                                            <li>• Leaderboards y rankings</li>
+                                            <li>• Cache de base de datos</li>
+                                            <li>• Análisis en tiempo real</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('elasticache.redis_clusters') }}" class="btn btn-outline-danger btn-lg w-100 mb-3">
+                                    <i class="fab fa-reddit me-2"></i>Clusters Redis
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('elasticache.memcached_clusters') }}" class="btn btn-outline-warning btn-lg w-100 mb-3">
+                                    <i class="fas fa-server me-2"></i>Clusters Memcached
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

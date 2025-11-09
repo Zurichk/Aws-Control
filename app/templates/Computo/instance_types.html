@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tipos de Instancia EC2 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/ec2">EC2</a></li>
+                    <li class="breadcrumb-item active">Tipos de Instancia</li>
+                </ol>
+            </nav>
+            <h2>Tipos de Instancia EC2</h2>
+            <p class="text-muted">Explora los diferentes tipos de instancia disponibles para tus cargas de trabajo EC2.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0">Tipos de Instancia Disponibles</h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Buscar por nombre o familia...">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if instance_types %}
+            <div class="table-responsive">
+                <table class="table table-striped" id="instanceTypesTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Familia</th>
+                            <th>vCPUs</th>
+                            <th>Memoria (GiB)</th>
+                            <th>Almacenamiento</th>
+                            <th>Red</th>
+                            <th>Precio/Hora (aprox.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instance_type in instance_types %}
+                        <tr>
+                            <td>
+                                <strong>{{ instance_type.InstanceType }}</strong>
+                                <br>
+                                <small class="text-muted">{{ instance_type.InstanceType.split('.')[0] }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ instance_type.InstanceType.split('.')[0] }}</span>
+                            </td>
+                            <td>{{ instance_type.VCpuInfo.DefaultVCpus }}</td>
+                            <td>{{ instance_type.MemoryInfo.SizeInMiB / 1024 }} GiB</td>
+                            <td>
+                                {% if instance_type.InstanceStorageInfo %}
+                                    {{ instance_type.InstanceStorageInfo.TotalSizeInGB }} GB
+                                    {% if instance_type.InstanceStorageInfo.Disks %}
+                                        ({{ instance_type.InstanceStorageInfo.Disks[0].Count }} x {{ instance_type.InstanceStorageInfo.Disks[0].SizeInGB }} GB)
+                                    {% endif %}
+                                {% else %}
+                                    EBS only
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if instance_type.NetworkInfo %}
+                                    {{ instance_type.NetworkInfo.MaximumNetworkInterfaces }} interfaces
+                                    <br>
+                                    <small class="text-muted">{{ instance_type.NetworkInfo.NetworkPerformance }}</small>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if instance_type.InstanceType.startswith('t2') %}
+                                    $0.0116
+                                {% elif instance_type.InstanceType.startswith('t3') %}
+                                    $0.0104
+                                {% elif instance_type.InstanceType.startswith('m5') %}
+                                    $0.096
+                                {% elif instance_type.InstanceType.startswith('c5') %}
+                                    $0.085
+                                {% else %}
+                                    Consultar precios
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-server fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No se pudieron cargar los tipos de instancia</h5>
+                <p class="text-muted">Verifica tu conexión con AWS y vuelve a intentarlo.</p>
+                <button class="btn btn-primary" onclick="location.reload()">
+                    <i class="fas fa-sync me-2"></i>Recargar
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Familias de Instancia
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6>General Purpose</h6>
+                            <ul class="list-unstyled small">
+                                <li><strong>t2/t3:</strong> Burstable</li>
+                                <li><strong>m5/m6g:</strong> Balanceado</li>
+                                <li><strong>m6i:</strong> Intel optimizado</li>
+                            </ul>
+                        </div>
+                        <div class="col-6">
+                            <h6>Compute Optimized</h6>
+                            <ul class="list-unstyled small">
+                                <li><strong>c5/c6g:</strong> Alto rendimiento</li>
+                                <li><strong>c6i:</strong> Intel optimizado</li>
+                                <li><strong>c6a:</strong> AMD optimizado</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Recomendaciones
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i><strong>Web apps:</strong> t3.micro o t3.small</li>
+                        <li><i class="fas fa-check text-success me-2"></i><strong>Bases de datos:</strong> m5.large o superior</li>
+                        <li><i class="fas fa-check text-success me-2"></i><strong>Procesamiento:</strong> c5.large o superior</li>
+                        <li><i class="fas fa-check text-success me-2"></i><strong>Big data:</strong> r5 o r6 series</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    <script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#instanceTypesTable tbody tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        const rows = document.querySelectorAll('#instanceTypesTable tbody tr');
+        rows.forEach(row => row.style.display = '');
+    }
+    </script>
+</body>
+</html>

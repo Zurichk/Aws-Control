@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Desencriptar Datos{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <i class="fas fa-unlock text-info me-2"></i>
+                            <h5 class="mb-0 d-inline">Desencriptar Datos</h5>
+                            <small class="text-muted ms-2">Clave: {{ key_id }}</small>
+                        </div>
+                        <a href="{{ url_for('kms.index') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <form method="POST" action="{{ url_for('kms.decrypt_data', key_id=key_id) }}">
+                                <div class="mb-3">
+                                    <label for="ciphertext" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>
+                                        Datos Encriptados
+                                    </label>
+                                    <textarea class="form-control font-monospace small" id="ciphertext" name="ciphertext" rows="8"
+                                              placeholder="Pega aquí el texto encriptado (Base64, Hex, o Raw)..." required></textarea>
+                                    <div class="form-text">
+                                        El texto encriptado que quieres desencriptar. Puede estar en formato Base64, Hex o Raw.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="encoding" class="form-label">
+                                        <i class="fas fa-code me-2"></i>
+                                        Formato de Entrada
+                                    </label>
+                                    <select class="form-select" id="encoding" name="encoding">
+                                        <option value="base64" selected>Base64 (recomendado)</option>
+                                        <option value="hex">Hexadecimal</option>
+                                        <option value="raw">Raw (bytes)</option>
+                                    </select>
+                                    <div class="form-text">Formato del texto encriptado que proporcionaste.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="add_context" name="add_context">
+                                        <label class="form-check-label" for="add_context">
+                                            <i class="fas fa-plus me-2"></i>
+                                            Usar Contexto de Encriptación
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Si usaste contexto al encriptar, debes proporcionarlo aquí.</div>
+                                </div>
+
+                                <div id="context_fields" class="mb-3" style="display: none;">
+                                    <div class="mb-2">
+                                        <strong>Contexto de Encriptación</strong>
+                                    </div>
+                                    <div id="context_entries">
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" name="context_key_1" placeholder="Clave (ej: user_id)">
+                                            <input type="text" class="form-control" name="context_value_1" placeholder="Valor (ej: 12345)">
+                                            <button type="button" class="btn btn-outline-danger remove-context">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="add_context_entry">
+                                        <i class="fas fa-plus me-2"></i>Agregar Campo
+                                    </button>
+                                </div>
+
+                                <button type="submit" class="btn btn-info">
+                                    <i class="fas fa-unlock me-2"></i>Desencriptar Datos
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Información de la Clave
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if key_info %}
+                                        <dl class="row">
+                                            <dt class="col-sm-4">ID de Clave:</dt>
+                                            <dd class="col-sm-8">
+                                                <code class="small">{{ key_info.key_id }}</code>
+                                            </dd>
+
+                                            <dt class="col-sm-4">Estado:</dt>
+                                            <dd class="col-sm-8">
+                                                {% if key_info.key_state == 'Enabled' %}
+                                                    <span class="badge bg-success">Habilitada</span>
+                                                {% elif key_info.key_state == 'Disabled' %}
+                                                    <span class="badge bg-warning">Deshabilitada</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ key_info.key_state }}</span>
+                                                {% endif %}
+                                            </dd>
+
+                                            <dt class="col-sm-4">Uso:</dt>
+                                            <dd class="col-sm-8">{{ key_info.key_usage }}</dd>
+
+                                            <dt class="col-sm-4">Especificación:</dt>
+                                            <dd class="col-sm-8">{{ key_info.key_spec }}</dd>
+
+                                            {% if key_info.description %}
+                                                <dt class="col-sm-4">Descripción:</dt>
+                                                <dd class="col-sm-8">{{ key_info.description }}</dd>
+                                            {% endif %}
+
+                                            {% if key_info.aliases %}
+                                                <dt class="col-sm-4">Aliases:</dt>
+                                                <dd class="col-sm-8">
+                                                    {% for alias in key_info.aliases %}
+                                                        <span class="badge bg-info me-1">{{ alias }}</span>
+                                                    {% endfor %}
+                                                </dd>
+                                            {% endif %}
+                                        </dl>
+                                    {% else %}
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                            <p>No se pudo cargar la información de la clave.</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-shield-alt me-2"></i>
+                                        Consejos de Seguridad
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-key text-warning me-2"></i>
+                                            <strong>Contexto:</strong> Si usaste contexto al encriptar, debes usar el mismo aquí.
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-lock text-primary me-2"></i>
+                                            <strong>Misma Clave:</strong> Solo la clave que encriptó los datos puede desencriptarlos.
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                            <strong>Permisos:</strong> Asegúrate de tener permisos kms:Decrypt en esta clave.
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-clock text-info me-2"></i>
+                                            <strong>Disponibilidad:</strong> Las claves programadas para eliminación no pueden desencriptar.
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if decrypted_data %}
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-unlock me-2"></i>
+                                            Datos Desencriptados Exitosamente
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <div class="mb-2">
+                                                <strong>Texto Plano Desencriptado</strong>
+                                            </div>
+                                            <div class="input-group">
+                                                <textarea class="form-control" rows="6" readonly
+                                                          id="decryptedOutput">{{ decrypted_data.plaintext }}</textarea>
+                                                <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {% if decrypted_data.key_id %}
+                                            <div class="mb-3">
+                                                <div class="mb-2">
+                                                    <strong>ID de Clave Usada:</strong>
+                                                </div>
+                                                <code class="small">{{ decrypted_data.key_id }}</code>
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <strong>¡Desencriptación exitosa!</strong>
+                                            Los datos han sido desencriptados correctamente usando la clave KMS.
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ url_for('kms.encrypt_data', key_id=key_id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-lock me-2"></i>Volver a Encriptar
+                                            </a>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="clearResults()">
+                                                <i class="fas fa-trash me-2"></i>Limpiar Resultados
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('add_context').addEventListener('change', function() {
+    const contextFields = document.getElementById('context_fields');
+    contextFields.style.display = this.checked ? 'block' : 'none';
+});
+
+let contextEntryCount = 1;
+
+document.getElementById('add_context_entry').addEventListener('click', function() {
+    contextEntryCount++;
+    const contextEntries = document.getElementById('context_entries');
+
+    const newEntry = document.createElement('div');
+    newEntry.className = 'input-group mb-2';
+    newEntry.innerHTML = `
+        <input type="text" class="form-control" name="context_key_${contextEntryCount}" placeholder="Clave (ej: user_id)">
+        <input type="text" class="form-control" name="context_value_${contextEntryCount}" placeholder="Valor (ej: 12345)">
+        <button type="button" class="btn btn-outline-danger remove-context">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+
+    contextEntries.appendChild(newEntry);
+
+    // Agregar event listener al nuevo botón de eliminar
+    newEntry.querySelector('.remove-context').addEventListener('click', function() {
+        newEntry.closest('.input-group').remove();
+    });
+});
+
+// Agregar event listener a los botones de eliminar existentes
+document.querySelectorAll('.remove-context').forEach(button => {
+    button.addEventListener('click', function() {
+        this.closest('.input-group').remove();
+    });
+});
+
+function copyToClipboard() {
+    const textarea = document.getElementById('decryptedOutput');
+    textarea.select();
+    document.execCommand('copy');
+
+    // Mostrar feedback visual
+    const button = textarea.nextElementSibling;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+
+function clearResults() {
+    const resultsCard = document.querySelector('.border-info');
+    if (resultsCard) {
+        resultsCard.remove();
+    }
+}
+</script>
+
+{% endblock %}

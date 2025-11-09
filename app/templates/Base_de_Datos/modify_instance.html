@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modificar Instancia RDS - Amazon RDS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="container-fluid mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('rds.index') }}">RDS</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('rds.instances') }}">Instancias</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Modificar {{ instance.DBInstanceIdentifier }}</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-edit text-primary me-2"></i>Modificar Instancia RDS: {{ instance.DBInstanceIdentifier }}</h2>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h5>Configuración Actual</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <dl class="row">
+                                            <dt class="col-sm-5">ID de Instancia:</dt>
+                                            <dd class="col-sm-7">{{ instance.DBInstanceIdentifier }}</dd>
+
+                                            <dt class="col-sm-5">Estado:</dt>
+                                            <dd class="col-sm-7">
+                                                <span class="badge bg-{{ 'success' if instance.DBInstanceStatus == 'available' else 'warning' if instance.DBInstanceStatus == 'modifying' else 'danger' }}">
+                                                    {{ instance.DBInstanceStatus }}
+                                                </span>
+                                            </dd>
+
+                                            <dt class="col-sm-5">Engine:</dt>
+                                            <dd class="col-sm-7">{{ instance.Engine }} {{ instance.EngineVersion }}</dd>
+
+                                            <dt class="col-sm-5">Clase de Instancia:</dt>
+                                            <dd class="col-sm-7"><code>{{ instance.DBInstanceClass }}</code></dd>
+
+                                            <dt class="col-sm-5">Almacenamiento:</dt>
+                                            <dd class="col-sm-7">{{ instance.AllocatedStorage }} GB</dd>
+
+                                            <dt class="col-sm-5">Multi-AZ:</dt>
+                                            <dd class="col-sm-7">{{ 'Sí' if instance.MultiAZ else 'No' }}</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <form method="POST">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Modificar Configuración</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <label for="instance_class" class="form-label">Nueva Clase de Instancia</label>
+                                                <select class="form-select" id="instance_class" name="instance_class">
+                                                    <option value="">-- Mantener actual ({{ instance.DBInstanceClass }}) --</option>
+                                                    <option value="db.t3.micro">db.t3.micro (1 vCPU, 1 GiB RAM)</option>
+                                                    <option value="db.t3.small">db.t3.small (2 vCPU, 2 GiB RAM)</option>
+                                                    <option value="db.t3.medium">db.t3.medium (2 vCPU, 4 GiB RAM)</option>
+                                                    <option value="db.t3.large">db.t3.large (2 vCPU, 8 GiB RAM)</option>
+                                                    <option value="db.t3.xlarge">db.t3.xlarge (4 vCPU, 16 GiB RAM)</option>
+                                                    <option value="db.m6g.large">db.m6g.large (2 vCPU, 8 GiB RAM)</option>
+                                                    <option value="db.m6g.xlarge">db.m6g.xlarge (4 vCPU, 16 GiB RAM)</option>
+                                                    <option value="db.m6g.2xlarge">db.m6g.2xlarge (8 vCPU, 32 GiB RAM)</option>
+                                                    <option value="db.r6g.large">db.r6g.large (2 vCPU, 16 GiB RAM)</option>
+                                                    <option value="db.r6g.xlarge">db.r6g.xlarge (4 vCPU, 32 GiB RAM)</option>
+                                                    <option value="db.r6g.2xlarge">db.r6g.2xlarge (8 vCPU, 64 GiB RAM)</option>
+                                                </select>
+                                                <div class="form-text">Cambiar el tipo de instancia afecta el rendimiento y costo</div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="allocated_storage" class="form-label">Nuevo Almacenamiento (GB)</label>
+                                                <input type="number" class="form-control" id="allocated_storage" name="allocated_storage"
+                                                       min="{{ instance.AllocatedStorage }}" max="65536" step="1"
+                                                       placeholder="Actual: {{ instance.AllocatedStorage }} GB">
+                                                <div class="form-text">Solo se puede aumentar el almacenamiento. Mínimo: {{ instance.AllocatedStorage }} GB</div>
+                                            </div>
+
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Nota:</strong> Los cambios se aplicarán inmediatamente y pueden causar una breve interrupción del servicio.
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>Aplicar Cambios
+                                            </button>
+                                            <a href="{{ url_for('rds.instances') }}" class="btn btn-secondary ms-2">
+                                                <i class="fas fa-times me-2"></i>Cancelar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

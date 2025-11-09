@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Publicar Mensaje SNS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-paper-plane text-success me-2"></i>
+                        Publicar Mensaje
+                    </h1>
+                    <p class="text-muted mt-1">Enviar un mensaje al tópico: <strong>{{ topic_name }}</strong></p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sns.topic_detail', topic_name=topic_name) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i>Contenido del Mensaje
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Asunto (opcional)</label>
+                                    <input type="text" class="form-control" id="subject" name="subject"
+                                           placeholder="Asunto del mensaje" maxlength="100">
+                                    <div class="form-text">
+                                        El asunto es visible para suscriptores de email. Máximo 100 caracteres.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Mensaje *</label>
+                                    <textarea class="form-control" id="message" name="message" rows="6" required
+                                              placeholder="Escribe tu mensaje aquí..."></textarea>
+                                    <div class="form-text">
+                                        El contenido del mensaje que se enviará a todos los suscriptores del tópico.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-paper-plane me-2"></i>Publicar Mensaje
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Información
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Publicación de mensajes</h6>
+                            <p class="small text-muted">
+                                Cuando publicas un mensaje en un tópico SNS, se entrega a todos los suscriptores activos según su protocolo configurado.
+                            </p>
+
+                            <h6 class="mt-3">Protocolos soportados:</h6>
+                            <ul class="small">
+                                <li><strong>HTTP/HTTPS:</strong> Webhooks</li>
+                                <li><strong>Email/Email-JSON:</strong> Correos electrónicos</li>
+                                <li><strong>SMS:</strong> Mensajes de texto</li>
+                                <li><strong>SQS:</strong> Colas de mensajes</li>
+                                <li><strong>Lambda:</strong> Funciones serverless</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Consideraciones
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="small list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    Los mensajes se entregan al menos una vez
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-clock me-1"></i>
+                                    La entrega no está garantizada en orden
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-dollar-sign me-1"></i>
+                                    Costos aplican por mensaje enviado
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

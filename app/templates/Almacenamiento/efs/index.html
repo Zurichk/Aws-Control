@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}EFS - Elastic File System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">EFS</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder-open me-2"></i>
+                        Amazon EFS - Elastic File System
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Amazon Elastic File System (EFS) proporciona un sistema de archivos NFS simple, escalable y elástico para usar con servicios de AWS Cloud y recursos locales.
+                    </p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-server fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">File Systems</h5>
+                                    <p class="card-text">Gestiona tus sistemas de archivos EFS, crea nuevos file systems y configura sus propiedades.</p>
+                                    <a href="{{ url_for('efs.file_systems') }}" class="btn btn-primary">
+                                        <i class="fas fa-list me-1"></i>
+                                        Ver File Systems
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-plus-circle fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Crear File System</h5>
+                                    <p class="card-text">Crea un nuevo sistema de archivos EFS con configuraciones personalizadas de rendimiento y throughput.</p>
+                                    <a href="{{ url_for('efs.create_file_system') }}" class="btn btn-success">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Crear File System
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Características de EFS
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-expand-arrows-alt text-primary me-2"></i>Escalable</h6>
+                            <p>Crece y se reduce automáticamente según tus necesidades de almacenamiento.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-shield-alt text-success me-2"></i>Altamente Disponible</h6>
+                            <p>Diseñado para ser altamente duradero y disponible dentro y entre zonas de disponibilidad.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-lock text-warning me-2"></i>Seguro</h6>
+                            <p>Integración con IAM para control de acceso y encriptación de datos en tránsito y en reposo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Crear Clave de Acceso{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="spinner-border text-warning mb-3" aria-live="polite" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Creando clave de acceso...</span>
+                    </div>
+                    <h4 class="text-warning">Creando Clave de Acceso</h4>
+                    <p class="text-muted">Generando nueva clave de acceso para el usuario <strong>{{ user_name }}</strong>...</p>
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Esta operación puede tardar unos segundos. No cierres esta página.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Redirigir automáticamente después de 2 segundos
+setTimeout(function() {
+    window.location.href = '{{ url_for("iam.user_access_keys", user_name=user_name) }}';
+}, 2000);
+</script>
+
+{% endblock %}

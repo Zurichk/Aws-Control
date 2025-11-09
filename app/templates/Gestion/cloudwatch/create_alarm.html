@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}CloudWatch - Crear Alarma{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1><i class="fas fa-bell text-warning me-2"></i>Crear Alarma CloudWatch</h1>
+                    <p class="text-muted">Configura una nueva alarma métrica en CloudWatch</p>
+                </div>
+                <a href="{{ url_for('cloudwatch.alarms') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Alarmas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-plus-circle text-success me-2"></i>Configuración de Alarma
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="alarm_name" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Nombre de la Alarma *
+                                    </label>
+                                    <input type="text" class="form-control" id="alarm_name" name="alarm_name" required>
+                                    <div class="form-text">Nombre único para identificar la alarma</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-comment me-1"></i>Descripción
+                                    </label>
+                                    <input type="text" class="form-control" id="description" name="description">
+                                    <div class="form-text">Descripción opcional de la alarma</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="metric_name" class="form-label">
+                                        <i class="fas fa-chart-line me-1"></i>Nombre de la Métrica *
+                                    </label>
+                                    <input type="text" class="form-control" id="metric_name" name="metric_name" required>
+                                    <div class="form-text">Ej: CPUUtilization, NetworkIn</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="namespace" class="form-label">
+                                        <i class="fas fa-folder me-1"></i>Namespace *
+                                    </label>
+                                    <input type="text" class="form-control" id="namespace" name="namespace" required>
+                                    <div class="form-text">Ej: AWS/EC2, AWS/RDS</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="statistic" class="form-label">
+                                        <i class="fas fa-calculator me-1"></i>Estadística *
+                                    </label>
+                                    <select class="form-select" id="statistic" name="statistic" required>
+                                        <option value="Average">Average</option>
+                                        <option value="Sum">Sum</option>
+                                        <option value="Maximum">Maximum</option>
+                                        <option value="Minimum">Minimum</option>
+                                        <option value="SampleCount">SampleCount</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="comparison_operator" class="form-label">
+                                        <i class="fas fa-balance-scale me-1"></i>Operador de Comparación *
+                                    </label>
+                                    <select class="form-select" id="comparison_operator" name="comparison_operator" required>
+                                        <option value="GreaterThanThreshold">Mayor que</option>
+                                        <option value="GreaterThanOrEqualToThreshold">Mayor o igual que</option>
+                                        <option value="LessThanThreshold">Menor que</option>
+                                        <option value="LessThanOrEqualToThreshold">Menor o igual que</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="threshold" class="form-label">
+                                        <i class="fas fa-bullseye me-1"></i>Umbral *
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control" id="threshold" name="threshold" required>
+                                    <div class="form-text">Valor que activará la alarma</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="period" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>Período (segundos) *
+                                    </label>
+                                    <input type="number" class="form-control" id="period" name="period" value="300" required>
+                                    <div class="form-text">Período de evaluación (300 = 5 min)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="evaluation_periods" class="form-label">
+                                        <i class="fas fa-history me-1"></i>Períodos de Evaluación *
+                                    </label>
+                                    <input type="number" class="form-control" id="evaluation_periods" name="evaluation_periods" value="2" required>
+                                    <div class="form-text">Cuántos períodos deben violar el umbral</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Crear Alarma
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-info me-2"></i>Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Namespaces Comunes:</h6>
+                    <ul class="list-unstyled small">
+                        <li><code>AWS/EC2</code> - Instancias EC2</li>
+                        <li><code>AWS/RDS</code> - Bases de datos RDS</li>
+                        <li><code>AWS/Lambda</code> - Funciones Lambda</li>
+                        <li><code>AWS/S3</code> - Buckets S3</li>
+                        <li><code>AWS/ELB</code> - Load Balancers</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6>Métricas Comunes:</h6>
+                    <ul class="list-unstyled small">
+                        <li><code>CPUUtilization</code> - Uso de CPU (%)</li>
+                        <li><code>NetworkIn</code> - Tráfico entrante</li>
+                        <li><code>NetworkOut</code> - Tráfico saliente</li>
+                        <li><code>DiskReadOps</code> - Operaciones de lectura</li>
+                        <li><code>DatabaseConnections</code> - Conexiones DB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

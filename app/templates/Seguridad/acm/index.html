@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate Manager - AWS Control Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-certificate text-success"></i> Certificate Manager (ACM)
+                        </h2>
+                        <small class="text-muted">Gestión de certificados SSL/TLS</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('acm.request_certificate') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Solicitar Certificado
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if certificates %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Dominio</th>
+                                        <th>Estado</th>
+                                        <th>Tipo</th>
+                                        <th>Emisor</th>
+                                        <th>Expiración</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cert in certificates %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ cert.domain_name }}</strong>
+                                            {% if cert.subject_alternative_names %}
+                                                <br><small class="text-muted">
+                                                    SAN: {{ cert.subject_alternative_names[:2]|join(', ') }}
+                                                    {% if cert.subject_alternative_names|length > 2 %}
+                                                        y {{ (cert.subject_alternative_names|length - 2) }} más
+                                                    {% endif %}
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% set status = cert.status %}
+                                            {% if status == 'PENDING_VALIDATION' %}
+                                                <span class="badge bg-warning">Pendiente Validación</span>
+                                            {% elif status == 'ISSUED' %}
+                                                <span class="badge bg-success">Emitido</span>
+                                            {% elif status == 'INACTIVE' %}
+                                                <span class="badge bg-secondary">Inactivo</span>
+                                            {% elif status == 'EXPIRED' %}
+                                                <span class="badge bg-danger">Expirado</span>
+                                            {% elif status == 'VALIDATION_TIMED_OUT' %}
+                                                <span class="badge bg-danger">Validación Expirada</span>
+                                            {% elif status == 'REVOKED' %}
+                                                <span class="badge bg-danger">Revocado</span>
+                                            {% elif status == 'FAILED' %}
+                                                <span class="badge bg-danger">Fallido</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if cert.key_algorithm %}
+                                                <span class="badge bg-info">{{ cert.key_algorithm }}</span>
+                                            {% else %}
+                                                <em class="text-muted">-</em>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if cert.issuer %}
+                                                {{ cert.issuer }}
+                                            {% else %}
+                                                <em class="text-muted">-</em>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if cert.not_after %}
+                                                {{ cert.not_after.strftime('%Y-%m-%d') }}
+                                                {% if cert.not_after < datetime.now() %}
+                                                    <br><small class="text-danger">Expirado</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <em class="text-muted">-</em>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('acm.describe_certificate', certificate_arn=cert.certificate_arn) }}"
+                                                   class="btn btn-sm btn-outline-primary" title="Ver Detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if cert.status in ['PENDING_VALIDATION', 'ISSUED'] %}
+                                                <button class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                                        onclick="confirmDelete('{{ cert.certificate_arn }}', '{{ cert.domain_name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-certificate fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No hay certificados</h4>
+                            <p class="text-muted">Aún no has solicitado ningún certificado SSL/TLS.</p>
+                            <a href="{{ url_for('acm.request_certificate') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Solicitar Tu Primer Certificado
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar certificado -->
+<div class="modal fade" id="deleteCertificateModal" tabindex="-1" aria-labelledby="deleteCertificateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCertificateModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el certificado para <strong id="domainName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <strong>Advertencia:</strong> Esta acción no se puede deshacer. El certificado será eliminado permanentemente.
+                </div>
+                <div class="alert alert-info">
+                    <strong>Nota:</strong> Solo puedes eliminar certificados que no estén siendo utilizados por otros servicios de AWS.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar Certificado</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(certificateArn, domainName) {
+    document.getElementById('domainName').textContent = domainName;
+    document.getElementById('deleteForm').action = '{{ url_for("acm.delete_certificate", certificate_arn="PLACEHOLDER") }}'.replace('PLACEHOLDER', encodeURIComponent(certificateArn));
+
+    new bootstrap.Modal(document.getElementById('deleteCertificateModal')).show();
+}
+</script>
+{% endblock %}

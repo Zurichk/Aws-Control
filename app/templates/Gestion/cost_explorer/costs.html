@@ -1,0 +1,141 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Costos de AWS - Cost Explorer&lt;/title&gt;
+    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+    &lt;link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body class="bg-light"&gt;
+    &lt;div class="container-fluid py-4"&gt;
+        &lt;div class="row"&gt;
+            &lt;div class="col-12"&gt;
+                &lt;nav aria-label="breadcrumb"&gt;
+                    &lt;ol class="breadcrumb"&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('main.index') }}" class="text-decoration-none"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('cost_explorer.cost_explorer_dashboard') }}" class="text-decoration-none"&gt;Cost Explorer&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item active" aria-current="page"&gt;Costos&lt;/li&gt;
+                    &lt;/ol&gt;
+                &lt;/nav&gt;
+
+                &lt;div class="d-flex justify-content-between align-items-center mb-4"&gt;
+                    &lt;h1 class="h3 mb-0"&gt;&lt;i class="fas fa-dollar-sign text-primary me-2"&gt;&lt;/i&gt;Costos de AWS&lt;/h1&gt;
+                    &lt;a href="{{ url_for('cost_explorer.cost_explorer_dashboard') }}" class="btn btn-outline-secondary"&gt;
+                        &lt;i class="fas fa-arrow-left me-2"&gt;&lt;/i&gt;Volver
+                    &lt;/a&gt;
+                &lt;/div&gt;
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            &lt;div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert"&gt;
+                                {{ message }}
+                                &lt;button type="button" class="btn-close" data-bs-dismiss="alert"&gt;&lt;/button&gt;
+                            &lt;/div&gt;
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                &lt;div class="card shadow-sm"&gt;
+                    &lt;div class="card-header bg-primary text-white"&gt;
+                        &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-search me-2"&gt;&lt;/i&gt;Consultar Costos&lt;/h5&gt;
+                    &lt;/div&gt;
+                    &lt;div class="card-body"&gt;
+                        &lt;form method="POST" class="row g-3"&gt;
+                            &lt;div class="col-md-5"&gt;
+                                &lt;label for="start_date" class="form-label"&gt;&lt;i class="fas fa-calendar-start me-1"&gt;&lt;/i&gt;Fecha Inicio *&lt;/label&gt;
+                                &lt;input type="date" class="form-control" id="start_date" name="start_date"
+                                       value="{{ start_date }}" required&gt;
+                                &lt;div class="form-text"&gt;Fecha de inicio del período de análisis&lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div class="col-md-5"&gt;
+                                &lt;label for="end_date" class="form-label"&gt;&lt;i class="fas fa-calendar-end me-1"&gt;&lt;/i&gt;Fecha Fin *&lt;/label&gt;
+                                &lt;input type="date" class="form-control" id="end_date" name="end_date"
+                                       value="{{ end_date }}" required&gt;
+                                &lt;div class="form-text"&gt;Fecha de fin del período de análisis&lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div class="col-md-2 d-flex align-items-end"&gt;
+                                &lt;button type="submit" class="btn btn-primary w-100"&gt;
+                                    &lt;i class="fas fa-search me-2"&gt;&lt;/i&gt;Buscar
+                                &lt;/button&gt;
+                            &lt;/div&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                {% if costs %}
+                &lt;div class="card shadow-sm mt-4"&gt;
+                    &lt;div class="card-header bg-success text-white d-flex justify-content-between align-items-center"&gt;
+                        &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-chart-line me-2"&gt;&lt;/i&gt;Resultados de Costos&lt;/h5&gt;
+                        &lt;span class="badge bg-light text-dark"&gt;{{ costs|length }} períodos&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div class="card-body"&gt;
+                        &lt;div class="table-responsive"&gt;
+                            &lt;table class="table table-striped table-hover"&gt;
+                                &lt;thead class="table-dark"&gt;
+                                    &lt;tr&gt;
+                                        &lt;th&gt;&lt;i class="fas fa-calendar me-1"&gt;&lt;/i&gt;Período&lt;/th&gt;
+                                        &lt;th&gt;&lt;i class="fas fa-dollar-sign me-1"&gt;&lt;/i&gt;Costo&lt;/th&gt;
+                                        &lt;th&gt;&lt;i class="fas fa-coins me-1"&gt;&lt;/i&gt;Moneda&lt;/th&gt;
+                                    &lt;/tr&gt;
+                                &lt;/thead&gt;
+                                &lt;tbody&gt;
+                                    {% for cost in costs %}
+                                    &lt;tr&gt;
+                                        &lt;td&gt;&lt;strong&gt;{{ cost.period }}&lt;/strong&gt;&lt;/td&gt;
+                                        &lt;td&gt;
+                                            &lt;span class="badge bg-primary fs-6"&gt;
+                                                ${{ "%.2f"|format(cost.amount|float) }}
+                                            &lt;/span&gt;
+                                        &lt;/td&gt;
+                                        &lt;td&gt;&lt;code&gt;{{ cost.unit }}&lt;/code&gt;&lt;/td&gt;
+                                    &lt;/tr&gt;
+                                    {% endfor %}
+                                &lt;/tbody&gt;
+                            &lt;/table&gt;
+                        &lt;/div&gt;
+
+                        {% if costs %}
+                        &lt;div class="mt-4"&gt;
+                            {% set total_cost = costs|sum(attribute='amount')|float %}
+                            {% set avg_cost = total_cost / costs|length %}
+
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-md-4"&gt;
+                                    &lt;div class="card text-center border-primary"&gt;
+                                        &lt;div class="card-body"&gt;
+                                            &lt;h5 class="card-title text-primary"&gt;${{ "%.2f"|format(total_cost) }}&lt;/h5&gt;
+                                            &lt;p class="card-text small"&gt;Costo Total&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-md-4"&gt;
+                                    &lt;div class="card text-center border-info"&gt;
+                                        &lt;div class="card-body"&gt;
+                                            &lt;h5 class="card-title text-info"&gt;${{ "%.2f"|format(avg_cost) }}&lt;/h5&gt;
+                                            &lt;p class="card-text small"&gt;Costo Promedio&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-md-4"&gt;
+                                    &lt;div class="card text-center border-success"&gt;
+                                        &lt;div class="card-body"&gt;
+                                            &lt;h5 class="card-title text-success"&gt;{{ costs|length }}&lt;/h5&gt;
+                                            &lt;p class="card-text small"&gt;Períodos Analizados&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        {% endif %}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                {% endif %}
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cluster EKS - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.index') }}">EKS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.clusters') }}">Clusters</a></li>
+                    <li class="breadcrumb-item active">Crear Cluster</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Crear Nuevo Cluster EKS</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cluster_name" class="form-label">Nombre del Cluster *</label>
+                                    <input type="text" class="form-control" id="cluster_name" name="cluster_name"
+                                           placeholder="mi-cluster-eks" required>
+                                    <div class="form-text">Solo letras minúsculas, números y guiones. Debe comenzar y terminar con letra o número.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="kubernetes_version" class="form-label">Versión de Kubernetes</label>
+                                    <select class="form-select" id="kubernetes_version" name="kubernetes_version">
+                                        <option value="1.28">1.28 (recomendado)</option>
+                                        <option value="1.27">1.27</option>
+                                        <option value="1.26">1.26</option>
+                                        <option value="1.25">1.25</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role_arn" class="form-label">ARN del Rol IAM *</label>
+                            <input type="text" class="form-control" id="role_arn" name="role_arn"
+                                   placeholder="arn:aws:iam::123456789012:role/eks-service-role" required>
+                            <div class="form-text">El rol debe tener la política AmazonEKSClusterPolicy adjunta.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vpc_id" class="form-label">ID de VPC (opcional)</label>
+                            <input type="text" class="form-control" id="vpc_id" name="vpc_id"
+                                   placeholder="vpc-12345678">
+                            <div class="form-text">Si no se especifica, se usará la VPC por defecto.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subnet-0" class="form-label">Subnets *</label>
+                            <div id="subnet-container">
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="subnet-0" name="subnet_ids[]"
+                                           placeholder="subnet-12345678" required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="addSubnet()">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-text">Al menos 2 subnets en diferentes zonas de disponibilidad.</div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Información importante</h6>
+                            <ul class="mb-0">
+                                <li>La creación del cluster puede tomar de 10-15 minutos</li>
+                                <li>Asegúrate de que el rol IAM tenga los permisos necesarios</li>
+                                <li>Las subnets deben estar en la misma VPC</li>
+                                <li>Después de crear el cluster, necesitarás configurar node groups o Fargate profiles</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-aws">
+                                <i class="fas fa-play"></i> Crear Cluster
+                            </button>
+                            <a href="{{ url_for('eks.clusters') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Requisitos Previos</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Rol IAM requerido:</h6>
+                    <div class="mb-3">
+                        <code class="d-block">AmazonEKSClusterPolicy</code>
+                    </div>
+
+                    <h6>Permisos de red:</h6>
+                    <ul class="small">
+                        <li>Subnets en al menos 2 AZs</li>
+                        <li>Security groups apropiados</li>
+                        <li>Acceso a internet (NAT Gateway)</li>
+                    </ul>
+
+                    <h6>Próximos pasos:</h6>
+                    <ol class="small">
+                        <li>Crear node groups o Fargate profiles</li>
+                        <li>Configurar kubectl</li>
+                        <li>Instalar add-ons (CNI, CoreDNS, etc.)</li>
+                        <li>Desplegar aplicaciones</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addSubnet() {
+            const container = document.getElementById('subnet-container');
+            const newInput = document.createElement('div');
+            newInput.className = 'input-group mb-2';
+            newInput.innerHTML = `
+                <input type="text" class="form-control" name="subnet_ids[]" placeholder="subnet-12345678" required>
+                <button type="button" class="btn btn-outline-danger" onclick="removeSubnet(this)">
+                    <i class="fas fa-minus"></i>
+                </button>
+            `;
+            container.appendChild(newInput);
+        }
+
+        function removeSubnet(button) {
+            button.closest('.input-group').remove();
+        }
+    </script>
+    {% endblock %}
+</body>
+</html>

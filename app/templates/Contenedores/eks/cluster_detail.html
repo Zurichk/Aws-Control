@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Cluster {{ cluster.name }} - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.index') }}">EKS</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('eks.clusters') }}">Clusters</a></li>
+                    <li class="breadcrumb-item active">{{ cluster.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>{{ cluster.name }}</h2>
+            <span class="badge bg-{{ 'success' if cluster.status == 'ACTIVE' else 'warning' if cluster.status == 'CREATING' else 'danger' }} fs-6">
+                {{ cluster.status }}
+            </span>
+        </div>
+        <div>
+            <a href="{{ url_for('eks.nodegroups', cluster_name=cluster.name) }}" class="btn btn-outline-primary">
+                <i class="fas fa-server"></i> Gestionar Node Groups
+            </a>
+            <form method="POST" action="{{ url_for('eks.delete_cluster', cluster_name=cluster.name) }}" class="d-inline"
+                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar el cluster {{ cluster.name }}? Esta acción no se puede deshacer.')">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="fas fa-trash"></i> Eliminar Cluster
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Información del Cluster</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Nombre:</dt>
+                                <dd class="col-sm-8">{{ cluster.name }}</dd>
+
+                                <dt class="col-sm-4">ARN:</dt>
+                                <dd class="col-sm-8"><small class="text-break">{{ cluster.arn }}</small></dd>
+
+                                <dt class="col-sm-4">Versión:</dt>
+                                <dd class="col-sm-8">{{ cluster.version }}</dd>
+
+                                <dt class="col-sm-4">Estado:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-{{ 'success' if cluster.status == 'ACTIVE' else 'warning' if cluster.status == 'CREATING' else 'danger' }}">
+                                        {{ cluster.status }}
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Creado:</dt>
+                                <dd class="col-sm-8">{{ cluster.createdAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+
+                                <dt class="col-sm-4">Endpoint:</dt>
+                                <dd class="col-sm-8"><small class="text-break">{{ cluster.endpoint or 'N/A' }}</small></dd>
+
+                                <dt class="col-sm-4">VPC:</dt>
+                                <dd class="col-sm-8">{{ cluster.resourcesVpcConfig.vpcId or 'N/A' }}</dd>
+
+                                <dt class="col-sm-4">Región:</dt>
+                                <dd class="col-sm-8">{{ cluster.arn.split(':')[3] }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Node Groups -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Node Groups ({{ nodegroups|length }})</h5>
+                    <a href="{{ url_for('eks.create_nodegroup', cluster_name=cluster.name) }}" class="btn btn-sm btn-aws">
+                        <i class="fas fa-plus"></i> Agregar Node Group
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if nodegroups %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Instancias</th>
+                                        <th>Versión</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ng in nodegroups %}
+                                    <tr>
+                                        <td>{{ ng.nodegroupName }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if ng.status == 'ACTIVE' else 'warning' if ng.status == 'CREATING' else 'danger' }}">
+                                                {{ ng.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ ng.instanceTypes[0] if ng.instanceTypes else 'N/A' }}</td>
+                                        <td>{{ ng.version }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" disabled>
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No hay node groups configurados.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fargate Profiles -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Fargate Profiles ({{ fargate_profiles|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if fargate_profiles %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Namespaces</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fp in fargate_profiles %}
+                                    <tr>
+                                        <td>{{ fp.fargateProfileName }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if fp.status == 'ACTIVE' else 'warning' if fp.status == 'CREATING' else 'danger' }}">
+                                                {{ fp.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ fp.selectors|length }} selectors</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" disabled>
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No hay Fargate profiles configurados.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Configuración de Red</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">VPC:</dt>
+                        <dd class="col-sm-7"><small>{{ cluster.resourcesVpcConfig.vpcId or 'N/A' }}</small></dd>
+
+                        <dt class="col-sm-5">Subnets:</dt>
+                        <dd class="col-sm-7"><small>{{ cluster.resourcesVpcConfig.subnetIds|length }} subnets</small></dd>
+
+                        <dt class="col-sm-5">IP Público:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-{{ 'success' if cluster.resourcesVpcConfig.endpointPublicAccess else 'secondary' }}">
+                                {{ 'Habilitado' if cluster.resourcesVpcConfig.endpointPublicAccess else 'Deshabilitado' }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5">IP Privado:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-{{ 'success' if cluster.resourcesVpcConfig.endpointPrivateAccess else 'secondary' }}">
+                                {{ 'Habilitado' if cluster.resourcesVpcConfig.endpointPrivateAccess else 'Deshabilitado' }}
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

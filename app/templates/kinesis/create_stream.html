@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Stream Kinesis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus-circle text-primary"></i>
+                        Crear Nuevo Stream Kinesis
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('kinesis.create_stream') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="stream_name" class="form-label">
+                                        <i class="fas fa-stream text-info"></i>
+                                        Nombre del Stream *
+                                    </label>
+                                    <input type="text" class="form-control" id="stream_name" name="stream_name"
+                                           placeholder="mi-stream-kinesis" required>
+                                    <div class="form-text">Nombre único para el stream de datos</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="shard_count" class="form-label">
+                                        <i class="fas fa-layer-group text-warning"></i>
+                                        Número de Shards
+                                    </label>
+                                    <input type="number" class="form-control" id="shard_count" name="shard_count"
+                                           value="1" min="1" max="500">
+                                    <div class="form-text">Número de shards para el stream (1-500)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="region" class="form-label">
+                                        <i class="fas fa-globe text-success"></i>
+                                        Región AWS
+                                    </label>
+                                    <select class="form-select" id="region" name="region">
+                                        <option value="us-east-1">US East (N. Virginia)</option>
+                                        <option value="us-west-2">US West (Oregon)</option>
+                                        <option value="eu-west-1">EU (Ireland)</option>
+                                        <option value="eu-central-1">EU (Frankfurt)</option>
+                                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                        <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                                        <option value="sa-east-1">South America (São Paulo)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('kinesis.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus-circle"></i> Crear Stream
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

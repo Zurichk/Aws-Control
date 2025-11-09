@@ -1,0 +1,64 @@
+/* AWS-inspired color scheme */
+:root {
+    --aws-orange: #FF9900;
+    --aws-blue: #232F3E;
+    --aws-light-blue: #146EB4;
+    --aws-grey: #F8F8F8;
+    --aws-dark-grey: #545B64;
+    --aws-white: #FFFFFF;
+}
+
+.bg-aws-blue {
+    background-color: var(--aws-blue) !important;
+}
+
+.text-aws-orange {
+    color: var(--aws-orange) !important;
+}
+
+.btn-aws {
+    background-color: var(--aws-orange);
+    border-color: var(--aws-orange);
+    color: var(--aws-white);
+}
+
+.btn-aws:hover {
+    background-color: #e6890a;
+    border-color: #e6890a;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: var(--aws-grey);
+    border-bottom: 1px solid var(--aws-dark-grey);
+}
+
+.table th {
+    background-color: var(--aws-grey);
+    border-color: var(--aws-dark-grey);
+}
+
+.service-description {
+    background-color: var(--aws-light-blue);
+    color: var(--aws-white);
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.service-explanation {
+    background-color: var(--aws-grey);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+/* Logo styling */
+.navbar-brand img {
+    filter: brightness(0) invert(1);
+    /* Esto convierte la imagen a blanco sobre el fondo azul */
+}

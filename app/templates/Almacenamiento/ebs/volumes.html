@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Volúmenes EBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ebs.index') }}">EBS</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Volúmenes</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-hdd me-2"></i>
+                        Volúmenes EBS
+                    </h5>
+                    <a href="{{ url_for('ebs.create_volume') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>
+                        Crear Volumen
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if volumes %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID del Volumen</th>
+                                        <th>Tamaño</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Zona</th>
+                                        <th>Adjunto a</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for volume in volumes %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('ebs.volume_detail', volume_id=volume.VolumeId) }}">
+                                                <code>{{ volume.VolumeId }}</code>
+                                            </a>
+                                        </td>
+                                        <td>{{ volume.Size }} GB</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ volume.VolumeType }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if volume.State == 'available' else 'warning' if volume.State == 'in-use' else 'secondary' }}">
+                                                {{ volume.State }}
+                                            </span>
+                                        </td>
+                                        <td>{{ volume.AvailabilityZone }}</td>
+                                        <td>
+                                            {% if volume.Attachments %}
+                                                {% for attachment in volume.Attachments %}
+                                                    <small>
+                                                        Instancia: <code>{{ attachment.InstanceId }}</code><br>
+                                                        Dispositivo: {{ attachment.Device }}
+                                                    </small>
+                                                {% endfor %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                {% if volume.State == 'available' %}
+                                                    <a href="{{ url_for('ebs.attach_volume', volume_id=volume.VolumeId) }}"
+                                                       class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-link"></i>
+                                                    </a>
+                                                {% elif volume.State == 'in-use' %}
+                                                    <form method="POST"
+                                                          action="{{ url_for('ebs.detach_volume', volume_id=volume.VolumeId) }}"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('¿Estás seguro de que deseas desadjuntar este volumen?')">
+                                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                                            <i class="fas fa-unlink"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                                <form method="POST"
+                                                      action="{{ url_for('ebs.delete_volume', volume_id=volume.VolumeId) }}"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar este volumen? Esta acción no se puede deshacer.')">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>No hay volúmenes EBS</h6>
+                            <p>No se encontraron volúmenes EBS en esta cuenta.</p>
+                            <a href="{{ url_for('ebs.create_volume') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Crear Primer Volumen
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

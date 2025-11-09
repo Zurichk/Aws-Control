@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modificar Instancia EC2 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/ec2">EC2</a></li>
+                    <li class="breadcrumb-item"><a href="/ec2/instances">Instancias</a></li>
+                    <li class="breadcrumb-item active">Modificar Instancia</li>
+                </ol>
+            </nav>
+            <h2>Modificar Instancia EC2</h2>
+            <p class="text-muted">Cambia el tipo de instancia, grupos de seguridad y otros atributos de tu instancia EC2.</p>
+        </div>
+    </div>
+
+    {% if instance %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Modificar Instancia: {{ instance.InstanceId }}</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Instance Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Información Actual</h6>
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Propiedad</th>
+                                        <th scope="col">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>ID:</strong></td>
+                                        <td>{{ instance.InstanceId }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tipo:</strong></td>
+                                        <td>{{ instance.InstanceType }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estado:</strong></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if instance.State.Name == 'running' else 'warning' if instance.State.Name == 'stopped' else 'danger' }}">
+                                                {{ instance.State.Name }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Zona:</strong></td>
+                                        <td>{{ instance.Placement.AvailabilityZone }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Grupos de Seguridad</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for sg in instance.SecurityGroups %}
+                                <li class="list-group-item px-0">{{ sg.GroupName }} ({{ sg.GroupId }})</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Modification Forms -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-server me-2"></i>Cambiar Tipo de Instancia
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="changeInstanceTypeForm">
+                                        <div class="mb-3">
+                                            <label for="newInstanceType" class="form-label">Nuevo Tipo de Instancia</label>
+                                            <select class="form-select" id="newInstanceType" name="instance_type" required>
+                                                <option value="">Seleccionar tipo...</option>
+                                                {% for it in instance_types %}
+                                                <option value="{{ it.InstanceType }}" {{ 'selected' if it.InstanceType == instance.InstanceType else '' }}>
+                                                    {{ it.InstanceType }} - {{ it.VCpuInfo.DefaultVCpus }} vCPUs, {{ (it.MemoryInfo.SizeInMiB / 1024)|round(1) }} GiB RAM
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <strong>Nota:</strong> La instancia debe estar detenida para cambiar el tipo.
+                                            {% if instance.State.Name != 'stopped' %}
+                                            Se detendrá automáticamente y se reiniciará después del cambio.
+                                            {% endif %}
+                                        </div>
+                                        <button type="button" class="btn btn-primary" onclick="changeInstanceType()">
+                                            <i class="fas fa-exchange-alt me-2"></i>Cambiar Tipo
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-shield-alt me-2"></i>Modificar Grupos de Seguridad
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="changeSecurityGroupsForm">
+                                        <div class="mb-3">
+                                            <label for="securityGroupsContainer" class="form-label">Grupos de Seguridad</label>
+                                            <div id="securityGroupsContainer" data-initial-count="{% if instance %}{{ instance.SecurityGroups|length }}{% else %}0{% endif %}">
+                                                {% for sg in instance.SecurityGroups %}
+                                                <div class="input-group mb-2">
+                                                    <input type="text" class="form-control" value="{{ sg.GroupId }}" readonly>
+                                                    <button class="btn btn-outline-danger" type="button" onclick="removeSecurityGroup(this)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addSecurityGroup()">
+                                                <i class="fas fa-plus me-1"></i>Agregar Grupo
+                                            </button>
+                                        </div>
+                                        <button type="button" class="btn btn-success" onclick="changeSecurityGroups()">
+                                            <i class="fas fa-save me-2"></i>Actualizar Grupos
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información Importante
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Consejos</h6>
+                        <ul class="mb-0 small">
+                            <li>Los cambios se aplican inmediatamente</li>
+                            <li>Verifica compatibilidad antes de cambiar tipos</li>
+                            <li>Los grupos de seguridad controlan el acceso</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Consideraciones</h6>
+                        <ul class="mb-0 small">
+                            <li>Cambio de tipo requiere detener la instancia</li>
+                            <li>Puede haber costos adicionales</li>
+                            <li>Verifica límites de cuenta</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Historial de Cambios
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="changeHistory" class="small text-muted">
+                        No hay cambios recientes
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+            <h5 class="text-muted">Instancia no encontrada</h5>
+            <p class="text-muted">La instancia especificada no existe o no tienes permisos para acceder a ella.</p>
+            <a href="/ec2/instances" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Instancias
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    <script>
+    let securityGroupCount = parseInt(document.getElementById('securityGroupsContainer').dataset.initialCount) || 0;
+
+    function addSecurityGroup() {
+        securityGroupCount++;
+        const container = document.getElementById('securityGroupsContainer');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `
+            <input type="text" class="form-control" name="security_group_${securityGroupCount}" placeholder="sg-xxxxxxxxx">
+            <button class="btn btn-outline-danger" type="button" onclick="removeSecurityGroup(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    }
+
+    function removeSecurityGroup(button) {
+        button.closest('.input-group').remove();
+    }
+
+    async function changeInstanceType() {
+        const form = document.getElementById('changeInstanceTypeForm');
+        const formData = new FormData(form);
+        const instanceType = formData.get('instance_type');
+
+        if (!instanceType) {
+            alert('Por favor selecciona un tipo de instancia');
+            return;
+        }
+
+        if (!confirm(`¿Estás seguro de cambiar el tipo de instancia a ${instanceType}?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/ec2/modify-instance/{{ instance.InstanceId }}/type`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ instance_type: instanceType })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Tipo de instancia cambiado exitosamente');
+                location.reload();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error de conexión: ' + error.message);
+        }
+    }
+
+    async function changeSecurityGroups() {
+        const container = document.getElementById('securityGroupsContainer');
+        const inputs = container.querySelectorAll('input[type="text"]');
+        const securityGroups = Array.from(inputs).map(input => input.value).filter(value => value.trim());
+
+        if (securityGroups.length === 0) {
+            alert('Debes tener al menos un grupo de seguridad');
+            return;
+        }
+
+        if (!confirm('¿Estás seguro de actualizar los grupos de seguridad?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/ec2/modify-instance/{{ instance.InstanceId }}/security-groups`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ security_groups: securityGroups })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Grupos de seguridad actualizados exitosamente');
+                location.reload();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error de conexión: ' + error.message);
+        }
+    }
+    </script>
+</body>
+</html>

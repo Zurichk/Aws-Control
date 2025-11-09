@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudWatch - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>Amazon CloudWatch</h2>
+        <p>CloudWatch es un servicio de monitoreo y observabilidad que proporciona datos e información procesable para AWS, aplicaciones híbridas y aplicaciones on-premise.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>Funcionalidades de CloudWatch:</h4>
+        <ul>
+            <li><strong>Métricas:</strong> Recopila y monitorea métricas de recursos</li>
+            <li><strong>Alarmas:</strong> Notificaciones automáticas basadas en métricas</li>
+            <li><strong>Logs:</strong> Almacenamiento y análisis de logs centralizados</li>
+            <li><strong>Dashboard:</strong> Visualización personalizada de métricas</li>
+            <li><strong>Insights:</strong> Análisis avanzado de logs y métricas</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Monitoreo con CloudWatch</h3>
+                <a href="{{ url_for('cloudwatch.alarms') }}" class="btn btn-aws">Ver Alarmas</a>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

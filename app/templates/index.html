@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Panel de Control AWS</h1>
+            <p class="lead">Gestiona todos tus servicios de Amazon Web Services desde una interfaz web intuitiva y moderna.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Computo</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Gestiona instancias EC2, funciones Lambda y otros servicios de computo.</p>
+                    <a href="/ec2" class="btn btn-aws">Ver EC2</a>
+                    <a href="/lambda_service" class="btn btn-outline-primary ms-2">Ver Lambda</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Almacenamiento</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Administra buckets S3, EBS y otros servicios de almacenamiento.</p>
+                    <a href="/s3" class="btn btn-aws">Ver S3</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Base de Datos</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Controla instancias RDS, DynamoDB, Neptune, DocumentDB y otros servicios de base de datos.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/rds" class="btn btn-aws">RDS</a>
+                        <a href="/dynamodb" class="btn btn-outline-primary">DynamoDB</a>
+                        <a href="/elasticache" class="btn btn-outline-warning">ElastiCache</a>
+                        <a href="/neptune" class="btn btn-outline-success">Neptune</a>
+                        <a href="/documentdb" class="btn btn-outline-info">DocumentDB</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Redes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Configura VPC, Security Groups, Route 53, Load Balancers y servicios de red.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/vpc" class="btn btn-outline-primary">VPC</a>
+                        <a href="/security-groups" class="btn btn-outline-success">Security Groups</a>
+                        <a href="/route53" class="btn btn-outline-primary">Route 53</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Gestión e Identidad</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Administra usuarios, roles y políticas con IAM.</p>
+                    <a href="/iam" class="btn btn-aws">Ver IAM</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Monitoreo</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Supervisa recursos con CloudWatch y gestiona infraestructura con CloudFormation.</p>
+                    <a href="/cloudwatch" class="btn btn-outline-primary">CloudWatch</a>
+                    <a href="/cloudformation" class="btn btn-outline-primary ms-2">CloudFormation</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">IA y Machine Learning</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Utiliza modelos de IA con Bedrock y análisis de imágenes con Rekognition.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/bedrock" class="btn btn-outline-primary">Bedrock</a>
+                        <a href="/rekognition" class="btn btn-outline-success">Rekognition</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Procesamiento de datos en tiempo real con Kinesis, consultas SQL con Athena y ETL con Glue.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/kinesis" class="btn btn-outline-primary">Kinesis</a>
+                        <a href="/athena" class="btn btn-outline-success">Athena</a>
+                        <a href="/glue" class="btn btn-outline-warning">Glue</a>
+                        <a href="/emr" class="btn btn-outline-info">EMR</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Alias Lambda - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service/functions">Funciones</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service/function-versions/{{ function_name }}">Versiones</a></li>
+                    <li class="breadcrumb-item active">Crear Alias</li>
+                </ol>
+            </nav>
+            <h2>Crear Alias para {{ function_name }}</h2>
+            <p class="text-muted">Crea un alias que apunte a una versión específica de la función.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Configuración del Alias</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="alias_name" class="form-label">Nombre del Alias *</label>
+                            <input type="text" class="form-control" id="alias_name" name="alias_name" required>
+                            <div class="form-text">Nombre único para el alias (ej: production, staging, dev)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="function_version" class="form-label">Versión de la Función *</label>
+                            <select class="form-control" id="function_version" name="function_version" required>
+                                <option value="">Selecciona una versión</option>
+                                {% for version in versions %}
+                                {% if version.Version != '$LATEST' %}
+                                <option value="{{ version.Version }}">
+                                    Versión {{ version.Version }} - {{ version.LastModified.strftime('%Y-%m-%d %H:%M') }}
+                                    {% if version.Description %}
+                                    ({{ version.Description }})
+                                    {% endif %}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">El alias apuntará a esta versión específica</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descripción</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                            <div class="form-text">Descripción opcional del alias</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-aws">
+                                <i class="fas fa-tag me-2"></i>Crear Alias
+                            </button>
+                            <a href="{{ url_for('lambda_bp.function_versions', function_name=function_name) }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Información sobre Aliases</h6>
+                </div>
+                <div class="card-body">
+                    <h6>¿Qué es un Alias?</h6>
+                    <p>Un alias es un puntero a una versión específica de una función Lambda.
+                    Permite referenciar versiones por nombre en lugar de por número.</p>
+
+                    <h6 class="mt-3">Casos de Uso Comunes:</h6>
+                    <ul>
+                        <li><strong>Production:</strong> Apunta a una versión probada</li>
+                        <li><strong>Staging:</strong> Para pruebas antes de producción</li>
+                        <li><strong>Dev:</strong> Para desarrollo continuo</li>
+                        <li><strong>Blue/Green:</strong> Despliegues sin downtime</li>
+                    </ul>
+
+                    <h6 class="mt-3">Beneficios:</h6>
+                    <ul>
+                        <li>Actualizaciones sin cambiar el código cliente</li>
+                        <li>Rollbacks instantáneos</li>
+                        <li>Versionado semántico</li>
+                        <li>Aislamiento de entornos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

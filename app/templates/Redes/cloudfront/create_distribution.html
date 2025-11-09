@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Distribución CloudFront{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Crear Distribución CloudFront</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="origin_domain" class="form-label">Dominio de Origen <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="origin_domain" name="origin_domain" required
+                                           placeholder="ejemplo.com o bucket.s3.amazonaws.com">
+                                    <div class="form-text">
+                                        Dominio del servidor de origen (sitio web, API, bucket S3, etc.)
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Comentario</label>
+                                    <input type="text" class="form-control" id="comment" name="comment"
+                                           placeholder="Descripción de la distribución">
+                                    <div class="form-text">Comentario opcional para identificar la distribución</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="enabled" name="enabled" checked>
+                                        <label class="form-check-label" for="enabled">
+                                            Habilitar distribución
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Marque para habilitar la distribución inmediatamente</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="price_class" class="form-label">Clase de Precio</label>
+                                    <select class="form-select" id="price_class" name="price_class">
+                                        <option value="PriceClass_All">Todas las ubicaciones (recomendado)</option>
+                                        <option value="PriceClass_200">Solo EE.UU., Canadá y Europa</option>
+                                        <option value="PriceClass_100">Solo EE.UU. y Canadá</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Selecciona las ubicaciones de edge donde se distribuirá el contenido
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Información</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>¿Qué es CloudFront?</h6>
+                                        <p class="small text-muted">
+                                            CloudFront es una red de entrega de contenido (CDN) que acelera la distribución de contenido estático y dinámico.
+                                        </p>
+
+                                        <h6>Configuración por defecto:</h6>
+                                        <ul class="small">
+                                            <li><strong>Protocolo:</strong> HTTPS obligatorio</li>
+                                            <li><strong>Cache:</strong> Comportamiento por defecto</li>
+                                            <li><strong>Origen único:</strong> Configurado arriba</li>
+                                            <li><strong>SSL:</strong> TLS 1.2</li>
+                                        </ul>
+
+                                        <div class="alert alert-info small">
+                                            <strong>Nota:</strong> Esta es una configuración básica. Para configuraciones avanzadas, usa la consola de AWS.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('cloudfront.distributions') }}" class="btn btn-secondary">Cancelar</a>
+                                    <button type="submit" class="btn btn-success">Crear Distribución</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del dominio de origen
+document.getElementById('origin_domain').addEventListener('blur', function() {
+    const domain = this.value.trim();
+    if (domain) {
+        // Validación básica de dominio
+        const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!domainRegex.test(domain)) {
+            this.setCustomValidity('Por favor ingresa un dominio válido');
+            this.classList.add('is-invalid');
+        } else {
+            this.setCustomValidity('');
+            this.classList.remove('is-invalid');
+        }
+    }
+});
+</script>
+{% endblock %}

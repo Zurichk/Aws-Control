@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}VPC Peerings - VPC{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">VPC Peering Connections</h3>
+                    <a href="{{ url_for('vpc.create_vpc_peering') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear VPC Peering
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Status</th>
+                                    <th>Requester VPC</th>
+                                    <th>Accepter VPC</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for peering in vpc_peerings %}
+                                <tr>
+                                    <td><code>{{ peering.id }}</code></td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if peering.status == 'active' else 'warning' if peering.status == 'pending-acceptance' else 'secondary' }}">
+                                            {{ peering.status }}
+                                        </span>
+                                    </td>
+                                    <td><code>{{ peering.requester_vpc }}</code></td>
+                                    <td><code>{{ peering.accepter_vpc }}</code></td>
+                                    <td>
+                                        {% if peering.status == 'pending-acceptance' %}
+                                        <form method="post" action="{{ url_for('vpc.accept_vpc_peering', peering_id=peering.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-check"></i> Aceptar
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not vpc_peerings %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay VPC peerings disponibles</h5>
+                        <p class="text-muted">Crea tu primera conexión VPC peering para conectar VPCs.</p>
+                        <a href="{{ url_for('vpc.create_vpc_peering') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Crear primer VPC Peering
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

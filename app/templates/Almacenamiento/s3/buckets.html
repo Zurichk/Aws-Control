@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buckets S3 - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/s3">S3</a></li>
+                    <li class="breadcrumb-item active">Buckets</li>
+                </ol>
+            </nav>
+            <h2>Buckets S3</h2>
+            <p class="text-muted">Lista todos los buckets S3 en tu cuenta AWS. Cada bucket es un contenedor para tus objetos (archivos).</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Buckets Disponibles</h5>
+            <button class="btn btn-aws btn-sm" disabled>Crear Nuevo Bucket</button>
+        </div>
+        <div class="card-body">
+            {% if buckets %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Bucket</th>
+                            <th>Fecha de Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bucket in buckets %}
+                        <tr>
+                            <td><code>{{ bucket.name }}</code></td>
+                            <td>{{ bucket.creation_date }}</td>
+                            <td>
+                                <a href="{{ url_for('s3.bucket_detail', bucket_name=bucket.name) }}" class="btn btn-primary btn-sm">Ver Contenido</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h5>No se encontraron buckets S3</h5>
+                <p>No tienes buckets S3 en tu cuenta AWS, o no tienes permisos para verlos.</p>
+                <p><strong>Nota:</strong> Asegúrate de que tus credenciales AWS estén configuradas correctamente y que tengas los permisos necesarios (s3:ListAllMyBuckets).</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Información sobre Buckets S3</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Reglas de Nomenclatura:</h6>
+                            <ul>
+                                <li>Deben ser únicos globalmente</li>
+                                <li>Entre 3 y 63 caracteres</li>
+                                <li>Solo letras minúsculas, números, guiones y puntos</li>
+                                <li>No pueden empezar ni terminar con guiones o puntos</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Mejores Prácticas:</h6>
+                            <ul>
+                                <li>Habilita el versionado para evitar pérdida de datos</li>
+                                <li>Configura políticas de ciclo de vida</li>
+                                <li>Usa encriptación por defecto</li>
+                                <li>Configura logging de acceso</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

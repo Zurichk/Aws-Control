@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Política - {{ bucket_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}">{{ bucket_name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.get_bucket_policy', bucket_name=bucket_name) }}">Política</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Editar</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Política del Bucket: {{ bucket_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Advertencia</h6>
+                        <p>Las políticas de bucket S3 son documentos JSON sensibles. Asegúrate de que la sintaxis sea correcta antes de guardar. Una política mal configurada puede bloquear el acceso al bucket.</p>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="policy" class="form-label">
+                                <i class="fas fa-code me-1"></i>
+                                Política JSON *
+                            </label>
+                            <textarea class="form-control" id="policy" name="policy" rows="20"
+                                      placeholder='Ejemplo de política básica:
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::{{ bucket_name }}/*"
+    }
+  ]
+}' required>{{ current_policy }}</textarea>
+                            <div class="form-text">
+                                Ingresa la política del bucket en formato JSON válido.
+                                <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-policies.html"
+                                   target="_blank" rel="noopener noreferrer">
+                                    Documentación de políticas S3
+                                    <i class="fas fa-external-link-alt ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('s3.get_bucket_policy', bucket_name=bucket_name) }}"
+                               class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Guardar Política
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Validación básica de JSON
+document.querySelector('form').addEventListener('submit', function(e) {
+    const policyTextarea = document.getElementById('policy');
+    try {
+        JSON.parse(policyTextarea.value);
+    } catch (error) {
+        e.preventDefault();
+        alert('Error de sintaxis JSON: ' + error.message);
+        policyTextarea.focus();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

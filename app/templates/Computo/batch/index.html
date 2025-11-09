@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Batch - Panel de Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">AWS Batch</h2>
+                        <small class="text-muted">Procesamiento por lotes completamente administrado</small>
+                    </div>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Acerca de AWS Batch</h6>
+                        <p class="mb-2">
+                            AWS Batch permite ejecutar trabajos por lotes en contenedores de forma eficiente y escalable.
+                            Es ideal para procesamiento de datos, análisis científicos, y cargas de trabajo computacionales intensivas.
+                        </p>
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-server fa-2x text-primary mb-2"></i>
+                                    <h6>Escalado Automático</h6>
+                                    <small class="text-muted">Ajusta recursos según demanda</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-clock fa-2x text-success mb-2"></i>
+                                    <h6>Procesamiento Eficiente</h6>
+                                    <small class="text-muted">Optimizado para lotes</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-dollar-sign fa-2x text-warning mb-2"></i>
+                                    <h6>Costo-Optimizado</h6>
+                                    <small class="text-muted">Paga solo por lo que usas</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-cogs fa-2x text-info mb-2"></i>
+                                    <h6>Integración Completa</h6>
+                                    <small class="text-muted">Con ECS, ECR, CloudWatch</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel de acciones principales -->
+                    <div class="row g-3 mt-4">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-tasks fa-3x text-primary mb-3"></i>
+                                    <h5>Trabajos</h5>
+                                    <p class="text-muted">Gestionar trabajos por lotes</p>
+                                    <div class="btn-group-vertical w-100">
+                                        <a href="{{ url_for('batch.list_jobs') }}" class="btn btn-primary">
+                                            <i class="fas fa-list"></i> Ver Trabajos
+                                        </a>
+                                        <a href="{{ url_for('batch.submit_job') }}" class="btn btn-success">
+                                            <i class="fas fa-plus"></i> Enviar Trabajo
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-microchip fa-3x text-success mb-3"></i>
+                                    <h5>Entornos de Cómputo</h5>
+                                    <p class="text-muted">Configurar capacidad computacional</p>
+                                    <div class="btn-group-vertical w-100">
+                                        <a href="{{ url_for('batch.list_compute_environments') }}" class="btn btn-primary">
+                                            <i class="fas fa-list"></i> Ver Entornos
+                                        </a>
+                                        <a href="{{ url_for('batch.create_compute_environment') }}" class="btn btn-success">
+                                            <i class="fas fa-plus"></i> Crear Entorno
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-cog fa-3x text-warning mb-3"></i>
+                                    <h5>Configuración</h5>
+                                    <p class="text-muted">Colas y definiciones de trabajo</p>
+                                    <div class="btn-group-vertical w-100">
+                                        <a href="#" class="btn btn-outline-secondary disabled" title="Próximamente">
+                                            <i class="fas fa-stream"></i> Colas de Trabajo
+                                        </a>
+                                        <a href="#" class="btn btn-outline-secondary disabled" title="Próximamente">
+                                            <i class="fas fa-file-code"></i> Definiciones
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Componentes de AWS Batch</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6><i class="fas fa-tasks text-primary"></i> Trabajos</h6>
+                                            <p class="small text-muted">
+                                                Unidades de trabajo ejecutables que se envían a AWS Batch.
+                                                Pueden ser contenedores Docker o scripts.
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="fas fa-stream text-success"></i> Colas de Trabajo</h6>
+                                            <p class="small text-muted">
+                                                Organizan trabajos por prioridad y tipo.
+                                                Las colas están asociadas a entornos de cómputo.
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="fas fa-microchip text-warning"></i> Entornos de Cómputo</h6>
+                                            <p class="small text-muted">
+                                                Grupos de instancias EC2 que ejecutan los trabajos.
+                                                Se escalan automáticamente según la demanda.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

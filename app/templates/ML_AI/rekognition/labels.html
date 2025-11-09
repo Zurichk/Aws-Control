@@ -1,0 +1,173 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Detectar Etiquetas - Rekognition&lt;/title&gt;
+    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+    &lt;link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body class="bg-light"&gt;
+    &lt;div class="container-fluid py-4"&gt;
+        &lt;div class="row"&gt;
+            &lt;div class="col-12"&gt;
+                &lt;nav aria-label="breadcrumb"&gt;
+                    &lt;ol class="breadcrumb"&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('main.index') }}" class="text-decoration-none"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('rekognition.rekognition_dashboard') }}" class="text-decoration-none"&gt;Rekognition&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item active" aria-current="page"&gt;Etiquetas&lt;/li&gt;
+                    &lt;/ol&gt;
+                &lt;/nav&gt;
+
+                &lt;div class="d-flex justify-content-between align-items-center mb-4"&gt;
+                    &lt;h1 class="h3 mb-0"&gt;&lt;i class="fas fa-tags text-primary me-2"&gt;&lt;/i&gt;Detectar Etiquetas&lt;/h1&gt;
+                    &lt;a href="{{ url_for('rekognition.rekognition_dashboard') }}" class="btn btn-outline-secondary"&gt;
+                        &lt;i class="fas fa-arrow-left me-2"&gt;&lt;/i&gt;Volver
+                    &lt;/a&gt;
+                &lt;/div&gt;
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            &lt;div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert"&gt;
+                                {{ message }}
+                                &lt;button type="button" class="btn-close" data-bs-dismiss="alert"&gt;&lt;/button&gt;
+                            &lt;/div&gt;
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                &lt;div class="row"&gt;
+                    &lt;div class="col-lg-6"&gt;
+                        &lt;div class="card shadow-sm"&gt;
+                            &lt;div class="card-header bg-primary text-white"&gt;
+                                &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-upload me-2"&gt;&lt;/i&gt;Subir Imagen&lt;/h5&gt;
+                            &lt;/div&gt;
+                            &lt;div class="card-body"&gt;
+                                &lt;form method="POST" enctype="multipart/form-data" id="uploadForm"&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="region" class="form-label"&gt;&lt;i class="fas fa-globe me-1"&gt;&lt;/i&gt;Región *&lt;/label&gt;
+                                        &lt;select class="form-select" id="region" name="region" required&gt;
+                                            &lt;option value="us-east-1" {{ 'selected' if region == 'us-east-1' else '' }}&gt;US East (N. Virginia)&lt;/option&gt;
+                                            &lt;option value="us-west-2" {{ 'selected' if region == 'us-west-2' else '' }}&gt;US West (Oregon)&lt;/option&gt;
+                                            &lt;option value="eu-west-1" {{ 'selected' if region == 'eu-west-1' else '' }}&gt;EU West (Ireland)&lt;/option&gt;
+                                            &lt;option value="ap-southeast-1" {{ 'selected' if region == 'ap-southeast-1' else '' }}&gt;Asia Pacific (Singapore)&lt;/option&gt;
+                                        &lt;/select&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="image_file" class="form-label"&gt;&lt;i class="fas fa-image me-1"&gt;&lt;/i&gt;Imagen *&lt;/label&gt;
+                                        &lt;input type="file" class="form-control" id="image_file" name="image_file" 
+                                               accept="image/*" required&gt;
+                                        &lt;div class="form-text"&gt;Formatos soportados: JPG, PNG, máximo 5MB&lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="max_labels" class="form-label"&gt;&lt;i class="fas fa-hashtag me-1"&gt;&lt;/i&gt;Máximo de Etiquetas&lt;/label&gt;
+                                        &lt;input type="number" class="form-control" id="max_labels" name="max_labels" 
+                                               value="10" min="1" max="50"&gt;
+                                        &lt;div class="form-text"&gt;Número máximo de etiquetas a detectar (1-50)&lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="min_confidence" class="form-label"&gt;&lt;i class="fas fa-percentage me-1"&gt;&lt;/i&gt;Confianza Mínima&lt;/label&gt;
+                                        &lt;input type="number" class="form-control" id="min_confidence" name="min_confidence" 
+                                               value="70" min="0" max="100" step="1"&gt;
+                                        &lt;div class="form-text"&gt;Confianza mínima para considerar una etiqueta (%)&lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;button type="submit" class="btn btn-primary w-100"&gt;
+                                        &lt;i class="fas fa-search me-2"&gt;&lt;/i&gt;Analizar Imagen
+                                    &lt;/button&gt;
+                                &lt;/form&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+
+                    &lt;div class="col-lg-6"&gt;
+                        {% if image_data %}
+                        &lt;div class="card shadow-sm"&gt;
+                            &lt;div class="card-header bg-success text-white"&gt;
+                                &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-image me-2"&gt;&lt;/i&gt;Imagen Analizada&lt;/h5&gt;
+                            &lt;/div&gt;
+                            &lt;div class="card-body text-center"&gt;
+                                &lt;img src="data:image/jpeg;base64,{{ image_data }}" 
+                                     class="img-fluid rounded shadow-sm" alt="Imagen analizada" 
+                                     style="max-height: 400px;"&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        {% else %}
+                        &lt;div class="card shadow-sm"&gt;
+                            &lt;div class="card-header bg-light"&gt;
+                                &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-image me-2"&gt;&lt;/i&gt;Vista Previa&lt;/h5&gt;
+                            &lt;/div&gt;
+                            &lt;div class="card-body text-center text-muted"&gt;
+                                &lt;i class="fas fa-camera fa-4x mb-3"&gt;&lt;/i&gt;
+                                &lt;p&gt;Sube una imagen para ver la vista previa&lt;/p&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        {% endif %}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                {% if labels %}
+                &lt;div class="card shadow-sm mt-4"&gt;
+                    &lt;div class="card-header bg-success text-white d-flex justify-content-between align-items-center"&gt;
+                        &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-tags me-2"&gt;&lt;/i&gt;Etiquetas Detectadas&lt;/h5&gt;
+                        &lt;span class="badge bg-light text-dark"&gt;{{ labels|length }} etiquetas&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div class="card-body"&gt;
+                        &lt;div class="row"&gt;
+                            {% for label in labels %}
+                            &lt;div class="col-md-6 col-lg-4 mb-3"&gt;
+                                &lt;div class="card h-100 border-primary"&gt;
+                                    &lt;div class="card-body"&gt;
+                                        &lt;h6 class="card-title text-primary"&gt;
+                                            &lt;i class="fas fa-tag me-1"&gt;&lt;/i&gt;{{ label.Name }}
+                                        &lt;/h6&gt;
+                                        &lt;div class="progress mb-2" style="height: 8px;"&gt;
+                                            &lt;div class="progress-bar bg-primary" role="progressbar" 
+                                                 style="width: {{ label.Confidence }}%" 
+                                                 aria-valuenow="{{ label.Confidence }}" 
+                                                 aria-valuemin="0" aria-valuemax="100"&gt;&lt;/div&gt;
+                                        &lt;/div&gt;
+                                        &lt;small class="text-muted"&gt;
+                                            Confianza: {{ "%.1f"|format(label.Confidence) }}%
+                                        &lt;/small&gt;
+                                        {% if label.Instances %}
+                                        &lt;br&gt;&lt;small class="text-success"&gt;
+                                            &lt;i class="fas fa-map-marker-alt me-1"&gt;&lt;/i&gt;{{ label.Instances|length }} instancia(s)
+                                        &lt;/small&gt;
+                                        {% endif %}
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            {% endfor %}
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                {% endif %}
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        // Vista previa de imagen
+        document.getElementById('image_file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validar tamaño (5MB máximo)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('La imagen es demasiado grande. Máximo 5MB.');
+                    e.target.value = '';
+                    return;
+                }
+
+                // Validar tipo
+                if (!file.type.startsWith('image/')) {
+                    alert('Por favor selecciona un archivo de imagen válido.');
+                    e.target.value = '';
+                    return;
+                }
+            }
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;

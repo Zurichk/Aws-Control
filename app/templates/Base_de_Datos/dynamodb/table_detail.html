@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de Tabla - {{ table.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Detalle de Tabla</h2>
+                        <small class="text-muted">{{ table.name }}</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('dynamodb.update_table', table_name=table.name) }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Actualizar
+                        </a>
+                        <a href="{{ url_for('dynamodb.tables') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Información básica -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ table.item_count | default(0) }}</h5>
+                                    <p class="card-text">Items</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ table.size_bytes | default(0) | filesizeformat }}</h5>
+                                    <p class="card-text">Tamaño</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ table.status }}</h5>
+                                    <p class="card-text">Estado</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ table.billing_mode }}</h5>
+                                    <p class="card-text">Modo de Facturación</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Esquema de claves -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Esquema de Claves</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre del Atributo</th>
+                                            <th>Tipo de Clave</th>
+                                            <th>Tipo de Datos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for key in table.key_schema %}
+                                        <tr>
+                                            <td><code>{{ key.name }}</code></td>
+                                            <td>
+                                                {% if key.type == 'HASH' %}
+                                                <span class="badge bg-primary">Partition Key</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Sort Key</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% for attr in table.attributes %}
+                                                {% if attr.name == key.name %}
+                                                {{ attr.type }}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Atributos -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Atributos Definidos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre del Atributo</th>
+                                            <th>Tipo de Datos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for attr in table.attributes %}
+                                        <tr>
+                                            <td><code>{{ attr.name }}</code></td>
+                                            <td>{{ attr.type }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuración adicional -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configuración Adicional</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Streams Habilitados:</strong>
+                                    {% if table.stream_enabled %}
+                                    <span class="badge bg-success">Sí</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Creada:</strong> {{ table.created }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Operaciones con Items</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('dynamodb.table_items', table_name=table.name) }}" class="btn btn-primary w-100">
+                                        <i class="fas fa-list"></i> Ver Items
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('dynamodb.scan_items', table_name=table.name) }}" class="btn btn-info w-100">
+                                        <i class="fas fa-search"></i> Escanear
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('dynamodb.query_items', table_name=table.name) }}" class="btn btn-success w-100">
+                                        <i class="fas fa-filter"></i> Consultar
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('dynamodb.put_item', table_name=table.name) }}" class="btn btn-warning w-100">
+                                        <i class="fas fa-plus"></i> Insertar Item
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

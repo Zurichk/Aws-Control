@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Batch - Lista de Trabajos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Trabajos de AWS Batch</h2>
+                        <small class="text-muted">Lista de trabajos por lotes activos y completados</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('batch.submit_job') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Enviar Trabajo
+                        </a>
+                        <a href="{{ url_for('batch.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% if jobs %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID del Trabajo</th>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Cola</th>
+                                        <th>Entorno de Cómputo</th>
+                                        <th>Fecha de Creación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in jobs %}
+                                        <tr>
+                                            <td>
+                                                <code class="small">{{ job.job_id }}</code>
+                                            </td>
+                                            <td>
+                                                <strong>{{ job.job_name }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge
+                                                    {% if job.status == 'SUCCEEDED' %}bg-success
+                                                    {% elif job.status == 'FAILED' %}bg-danger
+                                                    {% elif job.status == 'RUNNING' %}bg-primary
+                                                    {% elif job.status == 'PENDING' %}bg-warning
+                                                    {% elif job.status == 'SUBMITTED' %}bg-info
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {{ job.status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small>{{ job.job_queue or 'N/A' }}</small>
+                                            </td>
+                                            <td>
+                                                <small>{{ job.compute_environment or 'N/A' }}</small>
+                                            </td>
+                                            <td>
+                                                <small>{{ job.created_at.strftime('%Y-%m-%d %H:%M') if job.created_at else 'N/A' }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('batch.job_detail', job_id=job.job_id) }}"
+                                                       class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-eye"></i> Ver
+                                                    </a>
+                                                    {% if job.status in ['RUNNING', 'PENDING', 'SUBMITTED'] %}
+                                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                                onclick="terminateJob('{{ job.job_id }}', '{{ job.job_name }}')">
+                                                            <i class="fas fa-stop"></i> Terminar
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        {% if jobs|length >= 100 %}
+                            <div class="d-flex justify-content-center mt-3">
+                                <nav aria-label="Paginación de trabajos">
+                                    <ul class="pagination">
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Anterior</span>
+                                        </li>
+                                        <li class="page-item active">
+                                            <span class="page-link">1</span>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">2</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">Siguiente</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-tasks fa-4x text-muted mb-3"></i>
+                            <h4>No hay trabajos</h4>
+                            <p class="text-muted">No se encontraron trabajos por lotes en esta cuenta.</p>
+                            <a href="{{ url_for('batch.submit_job') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Enviar tu primer trabajo
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para terminar trabajo -->
+<div class="modal fade" id="terminateJobModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    Terminar Trabajo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres terminar el trabajo <strong id="jobName"></strong>?</p>
+                <p class="text-muted small">
+                    Esta acción no se puede deshacer. El trabajo se detendrá inmediatamente.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="terminateForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-stop"></i> Terminar Trabajo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function terminateJob(jobId, jobName) {
+    document.getElementById('jobName').textContent = jobName;
+    document.getElementById('terminateForm').action = '{{ url_for("batch.terminate_job", job_id="PLACEHOLDER") }}'.replace('PLACEHOLDER', jobId);
+    new bootstrap.Modal(document.getElementById('terminateJobModal')).show();
+}
+</script>
+{% endblock %}

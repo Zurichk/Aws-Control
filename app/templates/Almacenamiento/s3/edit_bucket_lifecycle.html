@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Lifecycle - {{ bucket_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.buckets') }}">S3</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.bucket_detail', bucket_name=bucket_name) }}">{{ bucket_name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('s3.get_bucket_lifecycle', bucket_name=bucket_name) }}">Lifecycle</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Editar</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Lifecycle del Bucket: {{ bucket_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Advertencia</h6>
+                        <p>Las reglas de lifecycle determinan automáticamente el ciclo de vida de los objetos. Una configuración incorrecta puede causar pérdida de datos. Revisa la documentación antes de aplicar cambios.</p>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="lifecycle" class="form-label">
+                                <i class="fas fa-code me-1"></i>
+                                Configuración JSON *
+                            </label>
+                            <textarea class="form-control" id="lifecycle" name="lifecycle" rows="20"
+                                      placeholder='Ejemplo de regla básica:
+[
+  {
+    "ID": "MoveToIA",
+    "Status": "Enabled",
+    "Filter": {
+      "Prefix": ""
+    },
+    "Transitions": [
+      {
+        "Days": 30,
+        "StorageClass": "STANDARD_IA"
+      }
+    ]
+  }
+]' required>{{ current_lifecycle }}</textarea>
+                            <div class="form-text">
+                                Ingresa la configuración de lifecycle en formato JSON válido.
+                                <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-configuration-examples.html"
+                                   target="_blank" rel="noopener noreferrer">
+                                    Ejemplos de lifecycle
+                                    <i class="fas fa-external-link-alt ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('s3.get_bucket_lifecycle', bucket_name=bucket_name) }}"
+                               class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Guardar Lifecycle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Validación básica de JSON
+document.querySelector('form').addEventListener('submit', function(e) {
+    const lifecycleTextarea = document.getElementById('lifecycle');
+    try {
+        JSON.parse(lifecycleTextarea.value);
+    } catch (error) {
+        e.preventDefault();
+        alert('Error de sintaxis JSON: ' + error.message);
+        lifecycleTextarea.focus();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Claves de Acceso{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-key text-warning me-2"></i>
+                        Claves de Acceso
+                    </h1>
+                    <p class="text-muted mt-1">Gestionar claves de acceso para el usuario: <strong>{{ user_name }}</strong></p>
+                </div>
+                <div>
+                    <a href="{{ url_for('iam.users') }}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Usuarios
+                    </a>
+                    <button type="button" class="btn btn-warning" onclick="createAccessKey()">
+                        <i class="fas fa-plus me-2"></i>Crear Clave de Acceso
+                    </button>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-key me-2"></i>
+                                Claves de Acceso Activas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if access_keys %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th><i class="fas fa-hashtag me-2"></i>ID de Clave</th>
+                                                <th><i class="fas fa-calendar me-2"></i>Creada</th>
+                                                <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                                                <th><i class="fas fa-calendar-check me-2"></i>Último Uso</th>
+                                                <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key in access_keys %}
+                                                <tr>
+                                                    <td>
+                                                        <code class="small">{{ key.AccessKeyId }}</code>
+                                                    </td>
+                                                    <td>
+                                                        {% if key.CreateDate %}
+                                                            <span title="{{ key.CreateDate.strftime('%Y-%m-%d %H:%M:%S UTC') }}">
+                                                                {{ key.CreateDate.strftime('%d/%m/%Y') }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if key.Status == 'Active' %}
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check me-1"></i>Activa
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="fas fa-times me-1"></i>Inactiva
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-muted">No disponible</span>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                onclick="confirmDeleteKey('{{ key.AccessKeyId }}')" title="Eliminar Clave">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-key fa-2x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No hay claves de acceso</h6>
+                                    <p class="text-muted small">Este usuario no tiene claves de acceso activas.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Información de Seguridad
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Importante:</strong> Las claves de acceso proporcionan acceso programático completo a tu cuenta AWS.
+                            </div>
+
+                            <h6>Mejores Prácticas:</h6>
+                            <ul class="small">
+                                <li><i class="fas fa-check text-success me-2"></i>Usa roles IAM en lugar de claves cuando sea posible</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Rota las claves regularmente</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Elimina claves no utilizadas</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Monitorea el uso de las claves</li>
+                            </ul>
+
+                            <hr>
+
+                            <div class="d-grid">
+                                <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html"
+                                   class="btn btn-outline-info btn-sm" target="_blank">
+                                    <i class="fas fa-external-link-alt me-2"></i>Documentación AWS
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar clave -->
+<div class="modal fade" id="deleteKeyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar la clave de acceso <strong id="deleteKeyId"></strong>?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Advertencia:</strong> Esta acción no se puede deshacer. Cualquier aplicación o script que use esta clave dejará de funcionar.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteKeyForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Eliminar Clave
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mostrar nueva clave creada -->
+<div class="modal fade" id="newKeyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-key text-warning me-2"></i>
+                    Nueva Clave de Acceso Creada
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>¡IMPORTANTE!</strong> Esta es la única vez que verás la clave secreta. Copia y guarda estos valores de forma segura.
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4">
+                        <label for="newAccessKeyId" class="form-label fw-bold">ID de Clave de Acceso:</label>
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="input-group">
+                            <input type="text" class="form-control font-monospace" id="newAccessKeyId" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('newAccessKeyId')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-sm-4">
+                        <label for="newSecretKey" class="form-label fw-bold">Clave Secreta:</label>
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="input-group">
+                            <input type="password" class="form-control font-monospace" id="newSecretKey" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="toggleSecretKey()">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('newSecretKey')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Nota:</strong> Para usar esta clave, configúrala en tus aplicaciones usando AWS CLI, SDK, o variables de entorno.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-2"></i>Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteKey(accessKeyId) {
+    document.getElementById('deleteKeyId').textContent = accessKeyId;
+    document.getElementById('deleteKeyForm').action = '{{ url_for("iam.delete_access_key") }}?user_name={{ user_name }}&access_key_id=' + encodeURIComponent(accessKeyId);
+    new bootstrap.Modal(document.getElementById('deleteKeyModal')).show();
+}
+
+function createAccessKey() {
+    // Redirigir a la ruta de creación de clave de acceso
+    window.location.href = '{{ url_for("iam.create_access_key") }}?user_name={{ user_name }}';
+}
+
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    document.execCommand('copy');
+
+    // Mostrar feedback visual
+    const button = element.nextElementSibling;
+    const originalIcon = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+
+    setTimeout(() => {
+        button.innerHTML = originalIcon;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+
+function toggleSecretKey() {
+    const input = document.getElementById('newSecretKey');
+    const icon = document.getElementById('toggleIcon');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+// Función para mostrar nueva clave (llamada desde el backend si se creó una)
+function showNewKey(accessKeyId, secretKey) {
+    document.getElementById('newAccessKeyId').value = accessKeyId;
+    document.getElementById('newSecretKey').value = secretKey;
+    new bootstrap.Modal(document.getElementById('newKeyModal')).show();
+}
+</script>
+
+{% endblock %}

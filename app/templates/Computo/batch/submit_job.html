@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Batch - Enviar Trabajo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Enviar Trabajo por Lotes</h2>
+                        <small class="text-muted">Configurar y enviar un nuevo trabajo a AWS Batch</small>
+                    </div>
+                    <a href="{{ url_for('batch.list_jobs') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Trabajos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="submitJobForm">
+                        <div class="row">
+                            <!-- Configuración básica del trabajo -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Configuración Básica</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="job_name" class="form-label">
+                                                Nombre del Trabajo <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="job_name" name="job_name"
+                                                   required maxlength="128"
+                                                   placeholder="Ej: procesamiento-datos-2024">
+                                            <div class="form-text">
+                                                Nombre único para identificar el trabajo (máx. 128 caracteres)
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="job_queue" class="form-label">
+                                                Cola de Trabajo <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="job_queue" name="job_queue" required>
+                                                <option value="">Seleccionar cola...</option>
+                                                {% for queue in job_queues %}
+                                                    <option value="{{ queue.queue_arn }}">{{ queue.queue_name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <div class="form-text">
+                                                Cola donde se ejecutará el trabajo
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="job_definition" class="form-label">
+                                                Definición del Trabajo <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="job_definition" name="job_definition" required>
+                                                <option value="">Seleccionar definición...</option>
+                                                {% for definition in job_definitions %}
+                                                    <option value="{{ definition.job_definition_arn }}">
+                                                        {{ definition.job_definition_name }} ({{ definition.revision }})
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            <div class="form-text">
+                                                Plantilla que define cómo ejecutar el trabajo
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Configuración del contenedor -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Configuración del Contenedor</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="image" class="form-label">
+                                                Imagen de Docker <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="image" name="image"
+                                                   required placeholder="Ej: busybox:latest">
+                                            <div class="form-text">
+                                                URI de la imagen Docker (ECR o Docker Hub)
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="vcpus" class="form-label">vCPUs</label>
+                                                    <input type="number" class="form-control" id="vcpus" name="vcpus"
+                                                           min="0.25" max="96" step="0.25" value="1">
+                                                    <div class="form-text">Unidades de CPU virtuales</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="memory" class="form-label">Memoria (MiB)</label>
+                                                    <input type="number" class="form-control" id="memory" name="memory"
+                                                           min="4" max="30720" value="512">
+                                                    <div class="form-text">Memoria en MiB</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="command" class="form-label">Comando</label>
+                                            <input type="text" class="form-control" id="command" name="command"
+                                                   placeholder="Ej: echo 'Hello World'">
+                                            <div class="form-text">
+                                                Comando a ejecutar (opcional, separado por espacios)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parámetros del trabajo -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Parámetros del Trabajo</h5>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addParameter()">
+                                            <i class="fas fa-plus"></i> Agregar Parámetro
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="parameters-container">
+                                            <!-- Los parámetros se agregarán aquí dinámicamente -->
+                                        </div>
+                                        <div class="form-text">
+                                            Parámetros personalizados que se pasan al trabajo (opcional)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Variables de entorno -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Variables de Entorno</h5>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addEnvironmentVariable()">
+                                            <i class="fas fa-plus"></i> Agregar Variable
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="environment-container">
+                                            <!-- Las variables de entorno se agregarán aquí dinámicamente -->
+                                        </div>
+                                        <div class="form-text">
+                                            Variables de entorno para el contenedor (opcional)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ url_for('batch.list_jobs') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-paper-plane"></i> Enviar Trabajo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let parameterCount = 0;
+let envVarCount = 0;
+
+function addParameter() {
+    parameterCount++;
+    const container = document.getElementById('parameters-container');
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <input type="text" class="form-control" name="param_key_${parameterCount}" placeholder="Nombre del parámetro" required>
+        <input type="text" class="form-control" name="param_value_${parameterCount}" placeholder="Valor del parámetro" required>
+        <button type="button" class="btn btn-outline-danger" onclick="removeElement(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function addEnvironmentVariable() {
+    envVarCount++;
+    const container = document.getElementById('environment-container');
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <input type="text" class="form-control" name="env_key_${envVarCount}" placeholder="Nombre de la variable" required>
+        <input type="text" class="form-control" name="env_value_${envVarCount}" placeholder="Valor de la variable" required>
+        <button type="button" class="btn btn-outline-danger" onclick="removeElement(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function removeElement(button) {
+    button.closest('.input-group').remove();
+}
+
+// Validación del formulario
+document.getElementById('submitJobForm').addEventListener('submit', function(e) {
+    const jobName = document.getElementById('job_name').value.trim();
+    if (!jobName) {
+        e.preventDefault();
+        alert('El nombre del trabajo es obligatorio.');
+        return;
+    }
+
+    if (jobName.length > 128) {
+        e.preventDefault();
+        alert('El nombre del trabajo no puede exceder 128 caracteres.');
+        return;
+    }
+
+    // Mostrar indicador de carga
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+});
+</script>
+{% endblock %}

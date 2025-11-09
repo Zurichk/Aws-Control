@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Security Groups - Panel de Control AWS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Security Groups</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">Los Security Groups actúan como firewalls virtuales para tus instancias EC2, controlando el tráfico de entrada y salida.</p>
+
+                    <div class="row">
+                        <!-- List Security Groups -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-shield-alt fa-2x text-primary mb-3"></i>
+                                    <h5 class="card-title">Security Groups</h5>
+                                    <p class="card-text">Listar y gestionar grupos de seguridad</p>
+                                    <a href="{{ url_for('security_groups.list_security_groups') }}" class="btn btn-outline-primary">Ver Security Groups</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Authorize Ingress -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-sign-in-alt fa-2x text-success mb-3"></i>
+                                    <h5 class="card-title">Autorizar Entrada</h5>
+                                    <p class="card-text">Agregar reglas de entrada (ingress)</p>
+                                    <button class="btn btn-outline-success" disabled>Seleccionar SG primero</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revoke Ingress -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-ban fa-2x text-warning mb-3"></i>
+                                    <h5 class="card-title">Revocar Entrada</h5>
+                                    <p class="card-text">Eliminar reglas de entrada (ingress)</p>
+                                    <button class="btn btn-outline-warning" disabled>Seleccionar SG primero</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Authorize Egress -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-sign-out-alt fa-2x text-info mb-3"></i>
+                                    <h5 class="card-title">Autorizar Salida</h5>
+                                    <p class="card-text">Agregar reglas de salida (egress)</p>
+                                    <button class="btn btn-outline-info" disabled>Seleccionar SG primero</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revoke Egress -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-times-circle fa-2x text-danger mb-3"></i>
+                                    <h5 class="card-title">Revocar Salida</h5>
+                                    <p class="card-text">Eliminar reglas de salida (egress)</p>
+                                    <button class="btn btn-outline-danger" disabled>Seleccionar SG primero</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delete Security Group -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-trash-alt fa-2x text-danger mb-3"></i>
+                                    <h5 class="card-title">Eliminar Security Group</h5>
+                                    <p class="card-text">Eliminar un grupo de seguridad</p>
+                                    <button class="btn btn-outline-danger" disabled>Seleccionar SG primero</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

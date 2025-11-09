@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Función Lambda - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service/functions">Funciones</a></li>
+                    <li class="breadcrumb-item active">Crear Función</li>
+                </ol>
+            </nav>
+            <h2>Crear Nueva Función Lambda</h2>
+            <p class="text-muted">Crea una nueva función Lambda con código personalizado.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Configuración de la Función</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="function_name" class="form-label">Nombre de la Función *</label>
+                                    <input type="text" class="form-control" id="function_name" name="function_name" required>
+                                    <div class="form-text">Nombre único para la función Lambda</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="runtime" class="form-label">Runtime *</label>
+                                    <select class="form-control" id="runtime" name="runtime" required>
+                                        <option value="python3.9">Python 3.9</option>
+                                        <option value="python3.8">Python 3.8</option>
+                                        <option value="python3.7">Python 3.7</option>
+                                        <option value="nodejs16.x">Node.js 16.x</option>
+                                        <option value="nodejs14.x">Node.js 14.x</option>
+                                        <option value="java11">Java 11</option>
+                                        <option value="java8">Java 8</option>
+                                        <option value="dotnet6">.NET 6</option>
+                                        <option value="go1.x">Go 1.x</option>
+                                        <option value="ruby2.7">Ruby 2.7</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role_arn" class="form-label">ARN del Rol IAM *</label>
+                            <input type="text" class="form-control" id="role_arn" name="role_arn"
+                                   placeholder="arn:aws:iam::123456789012:role/lambda-role" required>
+                            <div class="form-text">El rol debe tener permisos para ejecutar funciones Lambda</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="handler" class="form-label">Handler *</label>
+                            <input type="text" class="form-control" id="handler" name="handler"
+                                   placeholder="lambda_function.lambda_handler" required>
+                            <div class="form-text">Función de entrada (archivo.función)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="code_zip" class="form-label">Código de la Función (ZIP) *</label>
+                            <input type="file" class="form-control" id="code_zip" name="code_zip" accept=".zip" required>
+                            <div class="form-text">Archivo ZIP con el código de la función</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="timeout" class="form-label">Timeout (segundos)</label>
+                                    <input type="number" class="form-control" id="timeout" name="timeout" value="30" min="1" max="900">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="memory_size" class="form-label">Memoria (MB)</label>
+                                    <input type="number" class="form-control" id="memory_size" name="memory_size" value="128" min="128" max="3008" step="64">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descripción</label>
+                                    <input type="text" class="form-control" id="description" name="description">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-aws">
+                                <i class="fas fa-plus me-2"></i>Crear Función
+                            </button>
+                            <a href="{{ url_for('lambda_bp.functions') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Información de Lambda</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Requisitos del Código:</h6>
+                    <ul class="small">
+                        <li>Debe estar en un archivo ZIP</li>
+                        <li>Incluir todas las dependencias</li>
+                        <li>El handler debe existir</li>
+                        <li>Tamaño máximo: 50MB (comprimido)</li>
+                    </ul>
+
+                    <h6 class="mt-3">Runtimes Soportados:</h6>
+                    <ul class="small">
+                        <li>Python: 3.7, 3.8, 3.9</li>
+                        <li>Node.js: 14.x, 16.x</li>
+                        <li>Java: 8, 11</li>
+                        <li>.NET: 6</li>
+                        <li>Go: 1.x</li>
+                        <li>Ruby: 2.7</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

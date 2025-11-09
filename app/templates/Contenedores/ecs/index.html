@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Control AWS - ECS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-cubes text-primary me-2"></i>
+                        Elastic Container Service (ECS)
+                    </h1>
+                    <p class="text-muted mt-1">Gestiona tus clusters, servicios y tareas de Amazon ECS</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClusterModal">
+                        <i class="fas fa-plus me-2"></i>Crear Cluster
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>Acerca de Amazon ECS
+                    </h5>
+                    <p class="card-text">
+                        Amazon Elastic Container Service (ECS) es un servicio de orquestación de contenedores completamente administrado que facilita el despliegue, gestión y escalado de aplicaciones contenerizadas.
+                        Se integra profundamente con el resto de la plataforma AWS para proporcionar una solución segura y fácil de usar para ejecutar cargas de trabajo de contenedores en la nube.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-docker fa-2x text-info mb-2"></i>
+                                <h6>Soporte Docker</h6>
+                                <small class="text-muted">Integración nativa con Docker</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-expand-arrows-alt fa-2x text-success mb-2"></i>
+                                <h6>Escalado automático</h6>
+                                <small class="text-muted">Escalado automático</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                                <h6>Seguro</h6>
+                                <small class="text-muted">Integración con IAM</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-plug fa-2x text-warning mb-2"></i>
+                                <h6>Integración con AWS</h6>
+                                <small class="text-muted">Funciona con ALB, VPC</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clusters List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Clusters ECS ({{ clusters|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if clusters %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre del Cluster</th>
+                                        <th>Estado</th>
+                                        <th>Tareas en Ejecución</th>
+                                        <th>Tareas Pendientes</th>
+                                        <th>Instancias Registradas</th>
+                                        <th>Servicios</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cluster in clusters %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ cluster.ClusterName }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">ACTIVE</span>
+                                        </td>
+                                        <td>{{ cluster.RunningTasksCount or 0 }}</td>
+                                        <td>{{ cluster.PendingTasksCount or 0 }}</td>
+                                        <td>{{ cluster.RegisteredContainerInstancesCount or 0 }}</td>
+                                        <td>{{ cluster.ActiveServicesCount or 0 }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" title="Ver Servicios">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-success" title="Ejecutar Tarea">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning" title="Escalar">
+                                                    <i class="fas fa-expand"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-cubes fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No se encontraron clusters ECS</h5>
+                            <p class="text-muted">Crea tu primer cluster para comenzar a ejecutar aplicaciones contenerizadas.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClusterModal">
+                                <i class="fas fa-plus me-2"></i>Crea Tu Primer Cluster
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Cluster Modal -->
+<div class="modal fade" id="createClusterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Crear Cluster ECS
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createClusterForm">
+                    <div class="mb-3">
+                        <label for="clusterName" class="form-label">Nombre del Cluster *</label>
+                        <input type="text" class="form-control" id="clusterName" required>
+                        <div class="form-text">Un nombre para tu cluster.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Configuración del Cluster</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="clusterType" id="ec2" value="EC2" checked>
+                            <label class="form-check-label" for="ec2">
+                                EC2 Linux + Redes - Cluster ECS tradicional con instancias EC2
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="clusterType" id="fargate" value="FARGATE">
+                            <label class="form-check-label" for="fargate">
+                                Solo redes - Cluster sin servidor usando AWS Fargate
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enableContainerInsights" checked>
+                            <label class="form-check-label" for="enableContainerInsights">
+                                Habilitar Container Insights para monitoreo mejorado
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createCluster()">
+                    <i class="fas fa-plus me-2"></i>Crear Cluster
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function createCluster() {
+    // Implementation for creating cluster would go here
+    alert('Cluster creation functionality would be implemented here');
+}
+</script>
+{% endblock %}

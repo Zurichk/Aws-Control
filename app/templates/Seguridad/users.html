@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Usuarios IAM{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-users text-primary me-2"></i>
+                        Usuarios IAM
+                    </h1>
+                    <p class="text-muted mt-1">Gestionar usuarios de AWS Identity and Access Management</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('iam.create_user') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                    </a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                <div class="card-body">
+                    {% if users %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-user me-2"></i>Usuario</th>
+                                        <th><i class="fas fa-id-card me-2"></i>ARN</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Creado</th>
+                                        <th><i class="fas fa-key me-2"></i>Claves de Acceso</th>
+                                        <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-primary text-white me-3">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>{{ user.UserName }}</strong>
+                                                        {% if user.UserId %}
+                                                            <br><small class="text-muted">{{ user.UserId }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <code class="small">{{ user.Arn }}</code>
+                                            </td>
+                                            <td>
+                                                {% if user.CreateDate %}
+                                                    <span title="{{ user.CreateDate.strftime('%Y-%m-%d %H:%M:%S UTC') }}">
+                                                        {{ user.CreateDate.strftime('%d/%m/%Y') }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('iam.user_access_keys', user_name=user.UserName) }}"
+                                                   class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-key me-1"></i>Ver Claves
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ url_for('iam.user_access_keys', user_name=user.UserName) }}"
+                                                       class="btn btn-sm btn-outline-primary" title="Gestionar Claves de Acceso">
+                                                        <i class="fas fa-key"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="confirmDeleteUser('{{ user.UserName }}')" title="Eliminar Usuario">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if users|length >= 100 %}
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Mostrando los primeros 100 usuarios. Para ver más, implemente paginación.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay usuarios IAM</h5>
+                            <p class="text-muted">Crea tu primer usuario para comenzar a gestionar el acceso a AWS.</p>
+                            <a href="{{ url_for('iam.create_user') }}" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Crear Primer Usuario
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar usuario -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que quieres eliminar el usuario <strong id="deleteUserName"></strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Advertencia:</strong> Esta acción no se puede deshacer. Se eliminarán todas las claves de acceso asociadas al usuario.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteUserForm" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Eliminar Usuario
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteUser(userName) {
+    document.getElementById('deleteUserName').textContent = userName;
+    document.getElementById('deleteUserForm').action = '/iam/user/' + encodeURIComponent(userName) + '/delete';
+    new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
+}
+</script>
+
+{% endblock %}

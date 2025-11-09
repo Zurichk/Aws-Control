@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Invalidación CloudFront{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Crear Invalidación</h2>
+                    <small class="text-muted">Distribución: {{ distribution_id }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="paths" class="form-label">Rutas a Invalidar <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="paths" name="paths" rows="6" required
+                                              placeholder="/index.html&#10;/css/*&#10;/js/app.js&#10;/images/*"></textarea>
+                                    <div class="form-text">
+                                        Una ruta por línea. Ejemplos:
+                                        <br>• <code>/index.html</code> - Archivo específico
+                                        <br>• <code>/css/*</code> - Todos los archivos en /css/
+                                        <br>• <code>/*</code> - Todos los archivos (no recomendado)
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> ¿Qué hace una invalidación?</h6>
+                                    <p class="mb-0 small">
+                                        Una invalidación elimina los archivos especificados del caché de CloudFront.
+                                        Los archivos se volverán a solicitar al origen la próxima vez que se acceda a ellos.
+                                    </p>
+                                </div>
+
+                                <div class="alert alert-warning">
+                                    <h6><i class="fas fa-exclamation-triangle"></i> Consideraciones importantes</h6>
+                                    <ul class="mb-0 small">
+                                        <li>Las invalidaciones tienen costo (aprox. $0.005 por ruta)</li>
+                                        <li>Pueden tardar hasta 5 minutos en propagarse</li>
+                                        <li>Usa wildcards (*) para invalidar múltiples archivos</li>
+                                        <li>Evita invalidar <code>/*</code> frecuentemente</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Ejemplos de Rutas</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>Archivos específicos:</h6>
+                                        <div class="mb-3">
+                                            <code class="small d-block">/index.html</code>
+                                            <code class="small d-block">/about.html</code>
+                                            <code class="small d-block">/contact.html</code>
+                                        </div>
+
+                                        <h6>Directorios completos:</h6>
+                                        <div class="mb-3">
+                                            <code class="small d-block">/css/*</code>
+                                            <code class="small d-block">/js/*</code>
+                                            <code class="small d-block">/images/*</code>
+                                        </div>
+
+                                        <h6>Patrones avanzados:</h6>
+                                        <div class="mb-3">
+                                            <code class="small d-block">/blog/*.html</code>
+                                            <code class="small d-block">/api/v1/*</code>
+                                        </div>
+
+                                        <div class="alert alert-danger small">
+                                            <strong>⚠️ No uses:</strong> <code>/*</code> (invalida todo)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('cloudfront.distributions') }}" class="btn btn-secondary">Cancelar</a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-sync"></i> Crear Invalidación
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const paths = document.getElementById('paths').value.trim();
+
+    if (!paths) {
+        alert('Por favor especifica al menos una ruta para invalidar.');
+        e.preventDefault();
+        return;
+    }
+
+    const pathLines = paths.split('\n').filter(line => line.trim());
+    if (pathLines.length === 0) {
+        alert('Por favor especifica al menos una ruta válida.');
+        e.preventDefault();
+        return;
+    }
+
+    // Verificar que no use /* (invalidar todo)
+    if (pathLines.includes('/*')) {
+        if (!confirm('⚠️ Has incluido "/*" que invalidará TODOS los archivos.\n\nEsto puede ser costoso y afectar el rendimiento.\n\n¿Estás seguro de continuar?')) {
+            e.preventDefault();
+            return;
+        }
+    }
+
+    // Confirmación final
+    const count = pathLines.length;
+    if (!confirm(`¿Crear invalidación para ${count} ruta(s)?\n\nEsto tendrá costo y puede tardar unos minutos.`)) {
+        e.preventDefault();
+    }
+});
+
+// Auto-formateo de rutas
+document.getElementById('paths').addEventListener('blur', function() {
+    const paths = this.value.trim();
+    if (paths) {
+        // Asegurar que cada línea comience con /
+        const formattedPaths = paths.split('\n')
+            .map(line => line.trim())
+            .filter(line => line)
+            .map(line => line.startsWith('/') ? line : '/' + line)
+            .join('\n');
+
+        this.value = formattedPaths;
+    }
+});
+</script>
+{% endblock %}

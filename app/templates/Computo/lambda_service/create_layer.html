@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Lambda Layer - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service">Lambda</a></li>
+                    <li class="breadcrumb-item"><a href="/lambda_service/layers">Layers</a></li>
+                    <li class="breadcrumb-item active">Crear Layer</li>
+                </ol>
+            </nav>
+            <h2>Crear Nuevo Lambda Layer</h2>
+            <p class="text-muted">Crea un layer para compartir código y dependencias entre múltiples funciones Lambda.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Configuración del Layer</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="layer_name" class="form-label">Nombre del Layer *</label>
+                            <input type="text" class="form-control" id="layer_name" name="layer_name" required>
+                            <div class="form-text">Nombre único para el layer</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descripción</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                            <div class="form-text">Descripción opcional del contenido del layer</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Runtimes Compatibles *</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="compatible_runtimes" value="python3.9" id="py39">
+                                        <label class="form-check-label" for="py39">Python 3.9</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="compatible_runtimes" value="python3.8" id="py38">
+                                        <label class="form-check-label" for="py38">Python 3.8</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="compatible_runtimes" value="python3.7" id="py37">
+                                        <label class="form-check-label" for="py37">Python 3.7</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="compatible_runtimes" value="nodejs16.x" id="node16">
+                                        <label class="form-check-label" for="node16">Node.js 16.x</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="compatible_runtimes" value="nodejs14.x" id="node14">
+                                        <label class="form-check-label" for="node14">Node.js 14.x</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="compatible_runtimes" value="java11" id="java11">
+                                        <label class="form-check-label" for="java11">Java 11</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-text">Selecciona al menos un runtime compatible con este layer</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="layer_zip" class="form-label">Archivo ZIP del Layer *</label>
+                            <input type="file" class="form-control" id="layer_zip" name="layer_zip" accept=".zip" required>
+                            <div class="form-text">
+                                Archivo ZIP con las librerías y dependencias. Tamaño máximo: 50MB.
+                                La estructura debe seguir las convenciones del runtime seleccionado.
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Cada vez que publiques un layer, se crea una nueva versión.
+                            Las funciones pueden especificar qué versión del layer usar.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-aws">
+                                <i class="fas fa-plus me-2"></i>Crear Layer
+                            </button>
+                            <a href="{{ url_for('lambda_bp.layers') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Estructura de Layers</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Python:</h6>
+                    <pre class="small bg-light p-2 mb-3">layer.zip
+├── python/
+│   ├── lib/
+│   │   └── python3.x/
+│   │       └── site-packages/
+│   └── requirements.txt</pre>
+
+                    <h6>Node.js:</h6>
+                    <pre class="small bg-light p-2 mb-3">layer.zip
+├── nodejs/
+│   └── node_modules/</pre>
+
+                    <h6>Java:</h6>
+                    <pre class="small bg-light p-2">layer.zip
+├── java/
+│   └── lib/</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

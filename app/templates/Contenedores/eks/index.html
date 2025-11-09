@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EKS - Panel de Control AWS</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="service-description">
+        <h2>Amazon Elastic Kubernetes Service (EKS)</h2>
+        <p>EKS es un servicio de Kubernetes completamente administrado que facilita la ejecución de Kubernetes en AWS sin necesidad de instalar, operar y mantener tu propio plano de control de Kubernetes. EKS está certificado conforme a Kubernetes, por lo que puedes usar todas las herramientas y plugins existentes de la comunidad de Kubernetes.</p>
+    </div>
+
+    <div class="service-explanation">
+        <h4>¿Qué puedes hacer con EKS?</h4>
+        <ul>
+            <li><strong>Kubernetes administrado:</strong> AWS gestiona el plano de control de Kubernetes.</li>
+            <li><strong>Escalado automático:</strong> Ajusta automáticamente los nodos del cluster.</li>
+            <li><strong>Integración nativa:</strong> Funciona perfectamente con otros servicios de AWS.</li>
+            <li><strong>Seguridad avanzada:</strong> IAM integration y políticas de red.</li>
+            <li><strong>Actualizaciones automáticas:</strong> Mantiene tu cluster actualizado con las últimas versiones.</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Clusters EKS</h3>
+                <a href="{{ url_for('eks.create_cluster') }}" class="btn btn-aws">Crear Nuevo Cluster</a>
+            </div>
+            <div class="mb-3">
+                <a href="{{ url_for('eks.clusters') }}" class="btn btn-outline-primary">Ver Todos los Clusters</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Modos de Computo</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            EC2 Managed Node Groups
+                            <span class="badge bg-primary">Control total</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Fargate Profiles
+                            <span class="badge bg-success">Serverless</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            EKS Auto Mode
+                            <span class="badge bg-info">Totalmente administrado</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Características Avanzadas</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Funcionalidades de EKS:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>🔄 Cluster Autoscaler:</strong> Escalado automático de nodos</li>
+                        <li><strong>🌐 VPC CNI:</strong> Networking avanzado con VPC</li>
+                        <li><strong>🔒 IAM Roles for Service Accounts:</strong> Gestión de permisos granular</li>
+                        <li><strong>📊 CloudWatch Container Insights:</strong> Monitoreo detallado</li>
+                        <li><strong>🔐 AWS Load Balancer Controller:</strong> Balanceadores de carga nativos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

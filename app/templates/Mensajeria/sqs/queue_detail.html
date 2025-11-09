@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - Detalles de la Cola{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-queue text-warning me-2"></i>
+                        Cola: {{ queue.name }}
+                    </h1>
+                    <p class="text-muted mt-1">Detalles y configuración de la cola SQS</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sqs.send_message', queue_name=queue.name) }}" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+                    </a>
+                    <a href="{{ url_for('sqs.receive_messages', queue_name=queue.name) }}" class="btn btn-info">
+                        <i class="fas fa-download me-2"></i>Recibir Mensajes
+                    </a>
+                    <a href="{{ url_for('sqs.queues') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Queue Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Información de la Cola
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Nombre:</strong> {{ queue.name }}</p>
+                                    <p><strong>URL:</strong></p>
+                                    <code class="d-block mb-2 small">{{ queue.url }}</code>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Mensajes Aproximados:</strong> {{ queue.attributes.get('ApproximateNumberOfMessages', '0') }}</p>
+                                    <p><strong>Mensajes No Visibles:</strong> {{ queue.attributes.get('ApproximateNumberOfMessagesNotVisible', '0') }}</p>
+                                    <p><strong>Mensajes Retrasados:</strong> {{ queue.attributes.get('ApproximateNumberOfMessagesDelayed', '0') }}</p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Tiempo de Visibilidad:</strong> {{ queue.attributes.get('VisibilityTimeout', 'N/A') }} segundos</p>
+                                    <p><strong>Tiempo de Retención:</strong> {{ queue.attributes.get('MessageRetentionPeriod', 'N/A') }} segundos</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Tamaño Máximo:</strong> {{ queue.attributes.get('MaximumMessageSize', 'N/A') }} bytes</p>
+                                    <p><strong>Tiempo de Espera:</strong> {{ queue.attributes.get('ReceiveMessageWaitTimeSeconds', 'N/A') }} segundos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Quick Actions -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('sqs.send_message', queue_name=queue.name) }}" class="btn btn-success">
+                                    <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+                                </a>
+                                <a href="{{ url_for('sqs.receive_messages', queue_name=queue.name) }}" class="btn btn-info">
+                                    <i class="fas fa-download me-2"></i>Recibir Mensajes
+                                </a>
+                                <form method="post" action="{{ url_for('sqs.delete_queue', queue_name=queue.name) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta cola?')">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash me-2"></i>Eliminar Cola
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Queue Stats -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="h4 mb-0">{{ queue.attributes.get('ApproximateNumberOfMessages', '0') }}</div>
+                                    <small class="text-muted">Mensajes</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="h4 mb-0">{{ queue.attributes.get('ApproximateNumberOfMessagesNotVisible', '0') }}</div>
+                                    <small class="text-muted">En Proceso</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

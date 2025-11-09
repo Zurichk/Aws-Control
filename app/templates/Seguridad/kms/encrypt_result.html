@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado de Encriptación - KMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">Resultado de Encriptación</h2>
+                        <small class="text-muted">Clave: {{ key_id }}</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('kms.encrypt_data', key_id=key_id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-encrypt"></i> Encriptar Más Datos
+                        </a>
+                        <a href="{{ url_for('kms.decrypt_data', key_id=key_id) }}" class="btn btn-outline-success">
+                            <i class="fas fa-lock-open"></i> Desencriptar
+                        </a>
+                        <a href="{{ url_for('kms.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a Claves
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> Datos encriptados exitosamente</h5>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-file-alt"></i> Datos Originales</h6>
+                                </div>
+                                <div class="card-body">
+                                    <pre class="bg-white p-3 border rounded">{{ plaintext }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-lock"></i> Datos Encriptados (Hex)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group">
+                                        <textarea class="form-control" rows="6" readonly id="ciphertext">{{ ciphertext }}</textarea>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
+                                            <i class="fas fa-copy"></i> Copiar
+                                        </button>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">
+                                        Mantén estos datos seguros. Los necesitarás para desencriptar.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle"></i> Información de Seguridad</h6>
+                                <ul class="mb-0">
+                                    <li>Los datos encriptados solo pueden ser desencriptados con la misma clave KMS</li>
+                                    <li>Guarda el ciphertext de forma segura para poder recuperar los datos originales</li>
+                                    <li>La clave KMS debe estar habilitada para poder desencriptar</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const textarea = document.getElementById('ciphertext');
+    textarea.select();
+    document.execCommand('copy');
+
+    // Mostrar feedback visual
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+</script>
+{% endblock %}

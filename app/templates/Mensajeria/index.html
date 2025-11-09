@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Control Panel - SNS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-bell text-info me-2"></i>
+                        Simple Notification Service (SNS)
+                    </h1>
+                    <p class="text-muted mt-1">Gestiona tus temas y suscripciones de Amazon SNS</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTopicModal">
+                        <i class="fas fa-plus me-2"></i>Create Topic
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>Acerca de Amazon SNS
+                    </h5>
+                    <p class="card-text">
+                        Amazon Simple Notification Service (SNS) es un servicio de mensajería completamente administrado tanto para comunicación aplicación-a-aplicación (A2A) como aplicación-a-persona (A2P).
+                        Proporciona temas para mensajería push-based de alto rendimiento, muchos-a-muchos entre sistemas distribuidos, microservicios y aplicaciones sin servidor basadas en eventos.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-broadcast-tower fa-2x text-primary mb-2"></i>
+                                <h6>Modelo Pub/Sub</h6>
+                                <small class="text-muted">Mensajería publicar-suscribir</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+                                <h6>Múltiples Protocolos</h6>
+                                <small class="text-muted">SMS, Email, HTTP/S, SQS</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-expand-arrows-alt fa-2x text-warning mb-2"></i>
+                                <h6>Escalable</h6>
+                                <small class="text-muted">Maneja millones de mensajes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-shield-alt fa-2x text-danger mb-2"></i>
+                                <h6>Seguro</h6>
+                                <small class="text-muted">Endpoints VPC y cifrado</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topics List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Temas SNS ({{ topics|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if topics %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre del Tema</th>
+                                        <th>ARN del Tema</th>
+                                        <th>Suscripciones</th>
+                                        <th>Política de Entrega</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for topic in topics %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ topic.TopicArn.split(':')[-1] }}</strong>
+                                        </td>
+                                        <td>
+                                            <code class="small">{{ topic.TopicArn }}</code>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ topic.SubscriptionsConfirmed or 0 }}</span>
+                                        </td>
+                                        <td>
+                                            {% if topic.EffectiveDeliveryPolicy %}
+                                                <i class="fas fa-check text-success"></i> Configured
+                                            {% else %}
+                                                <i class="fas fa-times text-muted"></i> Default
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" title="Ver Suscripciones">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-success" title="Publicar Mensaje">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No se encontraron temas SNS</h5>
+                            <p class="text-muted">Crea tu primer tema para comenzar a enviar notificaciones.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTopicModal">
+                                <i class="fas fa-plus me-2"></i>Crea Tu Primer Tema
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Topic Modal -->
+<div class="modal fade" id="createTopicModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Crear Tema SNS
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createTopicForm">
+                    <div class="mb-3">
+                        <label for="topicName" class="form-label">Nombre del Tema *</label>
+                        <input type="text" class="form-control" id="topicName" required>
+                        <div class="form-text">Los nombres de los temas deben ser únicos dentro de tu cuenta AWS.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="displayName" class="form-label">Nombre para Mostrar (Opcional)</label>
+                        <input type="text" class="form-control" id="displayName">
+                        <div class="form-text">Un nombre para mostrar que se utilizará para entregas SMS.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createTopic()">
+                    <i class="fas fa-plus me-2"></i>Crear Tema
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function createTopic() {
+    // Implementation for creating topic would go here
+    alert('Topic creation functionality would be implemented here');
+}
+</script>
+{% endblock %}

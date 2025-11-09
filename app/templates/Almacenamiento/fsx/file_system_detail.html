@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle del File System FSx{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('fsx.index') }}">FSx</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('fsx.file_systems') }}">File Systems</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ file_system.FileSystemId }}</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-server me-2"></i>
+                        Detalle del File System: <code>{{ file_system.FileSystemId }}</code>
+                    </h5>
+                    <form method="POST"
+                          action="{{ url_for('fsx.delete_file_system', file_system_id=file_system.FileSystemId) }}"
+                          class="d-inline"
+                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar este file system? Esta acción no se puede deshacer.')">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <thead class="visually-hidden">
+                                    <tr>
+                                        <th>Propiedad</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>ID del File System:</strong></td>
+                                        <td><code>{{ file_system.FileSystemId }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tipo:</strong></td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ file_system.FileSystemType }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estado:</strong></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if file_system.Lifecycle == 'AVAILABLE' else 'warning' if file_system.Lifecycle == 'CREATING' else 'danger' }}">
+                                                {{ file_system.Lifecycle }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Capacidad de Almacenamiento:</strong></td>
+                                        <td>{{ file_system.StorageCapacity }} GB</td>
+                                    </tr>
+                                    {% if file_system.DNSName %}
+                                    <tr>
+                                        <td><strong>DNS Name:</strong></td>
+                                        <td><code>{{ file_system.DNSName }}</code></td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td><strong>Creado:</strong></td>
+                                        <td>{{ file_system.CreationTime.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    </tr>
+                                    {% if file_system.KmsKeyId %}
+                                    <tr>
+                                        <td><strong>KMS Key ID:</strong></td>
+                                        <td><code>{{ file_system.KmsKeyId }}</code></td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Configuración Específica</h6>
+                            {% if file_system.FileSystemType == 'LUSTRE' and file_system.LustreConfiguration %}
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">Configuración Lustre</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm table-borderless">
+                                            <thead class="visually-hidden">
+                                                <tr>
+                                                    <th>Propiedad</th>
+                                                    <th>Valor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Tipo de Despliegue:</strong></td>
+                                                    <td>{{ file_system.LustreConfiguration.DeploymentType }}</td>
+                                                </tr>
+                                                {% if file_system.LustreConfiguration.PerUnitStorageThroughput %}
+                                                <tr>
+                                                    <td><strong>Throughput por Unidad:</strong></td>
+                                                    <td>{{ file_system.LustreConfiguration.PerUnitStorageThroughput }} MB/s/TiB</td>
+                                                </tr>
+                                                {% endif %}
+                                                {% if file_system.LustreConfiguration.DataRepositoryConfiguration %}
+                                                <tr>
+                                                    <td><strong>Repositorio de Datos:</strong></td>
+                                                    <td>Configurado</td>
+                                                </tr>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {% elif file_system.FileSystemType == 'WINDOWS' and file_system.WindowsConfiguration %}
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">Configuración Windows</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm table-borderless">
+                                            <thead class="visually-hidden">
+                                                <tr>
+                                                    <th>Propiedad</th>
+                                                    <th>Valor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if file_system.WindowsConfiguration.ActiveDirectoryId %}
+                                                <tr>
+                                                    <td><strong>Active Directory ID:</strong></td>
+                                                    <td><code>{{ file_system.WindowsConfiguration.ActiveDirectoryId }}</code></td>
+                                                </tr>
+                                                {% endif %}
+                                                {% if file_system.WindowsConfiguration.ThroughputCapacity %}
+                                                <tr>
+                                                    <td><strong>Capacidad de Throughput:</strong></td>
+                                                    <td>{{ file_system.WindowsConfiguration.ThroughputCapacity }} MB/s</td>
+                                                </tr>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Configuración del Sistema</h6>
+                                    <p>Configuración específica disponible para el tipo de sistema de archivos {{ file_system.FileSystemType }}.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if file_system.NetworkInterfaceIds %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Interfaces de Red</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Network Interface ID</th>
+                                            <th>Subnet ID</th>
+                                            <th>Security Groups</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ni_id in file_system.NetworkInterfaceIds %}
+                                        <tr>
+                                            <td><code>{{ ni_id }}</code></td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
