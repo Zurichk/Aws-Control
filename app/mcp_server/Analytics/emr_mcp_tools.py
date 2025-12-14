@@ -1,6 +1,6 @@
 import boto3
 from typing import Dict, List, Any, Optional
-from botocore.exceptions import ClientError, BotoCoreError
+from botocore.exceptions import ClientError, BotoCoreError, NoRegionError
 import json
 import logging
 
@@ -14,7 +14,10 @@ class EMRMCPTools:
     """
 
     def __init__(self):
-        self.client = boto3.client('emr')
+        try:
+            self.client = boto3.client('emr')
+        except NoRegionError:
+            self.client = boto3.client('emr', region_name='us-east-1')
 
     def list_emr_clusters(self, region: Optional[str] = None) -> Dict[str, Any]:
         """

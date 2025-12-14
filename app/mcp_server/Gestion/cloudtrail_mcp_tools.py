@@ -5,14 +5,17 @@ CloudTrail MCP Tools - Herramientas para gestión de auditoría y monitoreo
 import boto3
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoRegionError
 
 
 class CloudTrailMCPTools:
     """Herramientas MCP para AWS CloudTrail"""
 
     def __init__(self):
-        self.client = boto3.client('cloudtrail')
+        try:
+            self.client = boto3.client('cloudtrail')
+        except NoRegionError:
+            self.client = boto3.client('cloudtrail', region_name='us-east-1')
         self.tools = [
             {
                 "name": "cloudtrail_list_trails",

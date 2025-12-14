@@ -1,5 +1,10 @@
-from app.app import create_app
 import os
+
+# Ensure default region is set to avoid NoRegionError during imports
+if 'AWS_DEFAULT_REGION' not in os.environ:
+    os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
+
+from app.app import create_app
 
 app = create_app()
 
