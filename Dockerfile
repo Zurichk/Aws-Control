@@ -26,6 +26,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el código de la aplicación
 COPY . .
 
+# Limpiar caché de Python y archivos .pyc para evitar conflictos
+RUN find /app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -type f -name "*.pyc" -delete 2>/dev/null || true
+
 # Crear usuario no-root para mayor seguridad
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
