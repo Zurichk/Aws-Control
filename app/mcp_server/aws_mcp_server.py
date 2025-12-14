@@ -52,7 +52,7 @@ from .Gestion.autoscaling_mcp_tools import AutoScalingMCPTools
 from .Gestion.systems_manager_mcp_tools import SystemsManagerMCPTools
 from .Gestion.cloudtrail_mcp_tools import CloudTrailMCPTools
 from .Integracion.cloudformation_mcp_tools import CloudFormationMCPTools
-from .Config.config_mcp_tools import ConfigMCPTools
+from .AWSConfig.config_mcp_tools import ConfigMCPTools
 from .AI_Assistant.ai_assistant_mcp_tools import AIAssistantMCPTools
 
 load_dotenv()

@@ -12,7 +12,7 @@ from app.mcp_server.Contenedores.ecs_mcp_tools import ECS_MCP_TOOLS
 from app.mcp_server.Seguridad.secretsmanager_mcp_tools import SecretsManagerMCPTools
 from app.mcp_server.Seguridad.acm_mcp_tools import AcmMCPTools
 from app.mcp_server.Gestion.cloudwatch_mcp_tools import CLOUDWATCH_MCP_TOOLS
-from app.mcp_server.Config.config_mcp_tools import CONFIG_MCP_TOOLS
+from app.mcp_server.AWSConfig.config_mcp_tools import CONFIG_MCP_TOOLS
 from app.mcp_server.Gestion.cost_explorer_mcp_tools import COST_EXPLORER_MCP_TOOLS
 from app.mcp_server.ML_AI.bedrock_mcp_tools import BedrockMCPTools
 from app.mcp_server.ML_AI.rekognition_mcp_tools import RekognitionMCPTools
