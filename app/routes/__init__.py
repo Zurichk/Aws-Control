@@ -64,7 +64,7 @@ from .Gestion.systems_manager import systems_manager_bp as systems_manager
 from .Gestion.cloudtrail import cloudtrail_bp as cloudtrail
 
 # Config
-from .Config.config import config_bp as config
+from .AWSConfig.config import config_bp as config
 
 # Configuracion
 from .Setup.setup import setup_bp as setup
