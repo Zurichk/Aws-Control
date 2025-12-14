@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Amazon Bedrock - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+            <li class="breadcrumb-item active">Bedrock</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-brain text-primary me-2"></i>Amazon Bedrock
+        </h1>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <!-- Información de Bedrock -->
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Amazon Bedrock</strong> es un servicio completamente administrado que ofrece modelos de lenguaje de alta calidad 
+        de empresas líderes en IA como AI21 Labs, Anthropic, Cohere, Meta, Stability AI y Amazon.
+    </div>
+
+    <!-- Tarjetas de funcionalidades -->
+    <div class="row g-4">
+        <!-- Modelos Foundation -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-robot fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Modelos Foundation</h5>
+                    <p class="card-text text-muted">
+                        Explora y lista los modelos de IA disponibles en Bedrock
+                    </p>
+                    <a href="{{ url_for('bedrock.list_foundation_models') }}" class="btn btn-primary">
+                        <i class="fas fa-list me-2"></i>Ver Modelos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invocar Modelo -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-comment-dots fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">Invocar Modelo</h5>
+                    <p class="card-text text-muted">
+                        Ejecuta prompts con modelos de Bedrock (Claude, Llama, etc.)
+                    </p>
+                    <a href="{{ url_for('bedrock.invoke_model') }}" class="btn btn-success">
+                        <i class="fas fa-play me-2"></i>Invocar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personalización -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-cogs fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Personalización</h5>
+                    <p class="card-text text-muted">
+                        Crea trabajos de fine-tuning para modelos personalizados
+                    </p>
+                    <a href="{{ url_for('bedrock.create_model_customization_job') }}" class="btn btn-warning">
+                        <i class="fas fa-wrench me-2"></i>Personalizar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Características Principales -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-star text-warning me-2"></i>Características Principales
+            </h4>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-shield-alt text-primary me-2"></i>Privacidad
+                    </h6>
+                    <p class="card-text small">
+                        Tus datos no se usan para entrenar modelos base. Control total sobre tus datos.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-sliders-h text-success me-2"></i>Personalización
+                    </h6>
+                    <p class="card-text small">
+                        Fine-tuning y RAG (Retrieval Augmented Generation) para casos específicos.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-server text-warning me-2"></i>Serverless
+                    </h6>
+                    <p class="card-text small">
+                        No necesitas gestionar infraestructura. Escala automáticamente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modelos Disponibles -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-cube text-info me-2"></i>Proveedores de Modelos
+            </h4>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="badge bg-primary p-3 w-100">
+                        <i class="fas fa-brain me-2"></i>Anthropic (Claude)
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="badge bg-info p-3 w-100">
+                        <i class="fas fa-robot me-2"></i>Meta (Llama)
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="badge bg-success p-3 w-100">
+                        <i class="fas fa-comments me-2"></i>Cohere
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="badge bg-warning p-3 w-100">
+                        <i class="fas fa-image me-2"></i>Stability AI
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}

@@ -3,6 +3,7 @@ import json
 import uuid
 import logging
 import google.generativeai as genai
+from openai import OpenAI
 from flask import Blueprint, render_template, request, jsonify, session
 from app.utils.aws_client import get_aws_client
 from app.mcp_server import get_mcp_server
@@ -47,14 +48,30 @@ def make_serializable(obj):
     except:
         return repr(obj)
 
-# Configure Gemini AI
+# Configure AI providers
+AI_PROVIDER = os.environ.get('AI_PROVIDER', 'gemini').lower()
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-if not GEMINI_API_KEY:
-    logger.error("¡ADVERTENCIA! No se encontró GEMINI_API_KEY en las variables de entorno")
+DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
+
+# Configure Gemini
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+    logger.info(f"Gemini API Key configurada: {GEMINI_API_KEY[:10]}...")
 else:
-    logger.info(f"API Key de Gemini configurada: {GEMINI_API_KEY[:10]}...")
-    
-genai.configure(api_key=GEMINI_API_KEY)
+    logger.warning("No se encontró GEMINI_API_KEY en las variables de entorno")
+
+# Configure DeepSeek
+if DEEPSEEK_API_KEY:
+    deepseek_client = OpenAI(
+        api_key=DEEPSEEK_API_KEY,
+        base_url="https://api.deepseek.com"
+    )
+    logger.info(f"DeepSeek API Key configurada: {DEEPSEEK_API_KEY[:10]}...")
+else:
+    logger.warning("No se encontró DEEPSEEK_API_KEY en las variables de entorno")
+    deepseek_client = None
+
+logger.info(f"Proveedor de IA activo: {AI_PROVIDER.upper()}")
 
 # Almacenar historiales de chat en memoria (para producción usar Redis o base de datos)
 chat_sessions = {}
@@ -231,6 +248,19 @@ def index():
         session['chat_session_id'] = str(uuid.uuid4())
     return render_template('AI_Assistant/chat/index.html', session_id=session['chat_session_id'])
 
+@bp.route('/get_ai_provider', methods=['GET'])
+def get_ai_provider():
+    """Obtener el proveedor de IA actual"""
+    try:
+        current_provider = session.get('ai_provider', AI_PROVIDER)
+        return jsonify({
+            'status': 'success',
+            'provider': current_provider,
+            'available_providers': ['gemini', 'deepseek']
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
 @bp.route('/clear_history', methods=['POST'])
 def clear_history():
     """Limpiar el historial de chat"""
@@ -312,6 +342,166 @@ def get_tools():
         logger.error(f"Error obteniendo herramientas: {str(e)}")
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
+
+def process_with_deepseek(user_message, session_id, tools_definition, mcp_server):
+    """Procesa un mensaje usando DeepSeek API"""
+    try:
+        if not deepseek_client:
+            return {
+                'error': 'DeepSeek no está configurado. Por favor configura DEEPSEEK_API_KEY.',
+                'response': '',
+                'tool_results': [],
+                'status': 'error'
+            }
+        
+        # Convertir herramientas a formato OpenAI
+        tools_for_deepseek = []
+        for tool in tools_definition:
+            tool_schema = {
+                'type': 'function',
+                'function': {
+                    'name': tool['name'],
+                    'description': tool['description'],
+                    'parameters': {
+                        'type': 'object',
+                        'properties': {},
+                        'required': []
+                    }
+                }
+            }
+            
+            # Agregar parámetros si existen
+            if 'parameters' in tool and 'properties' in tool['parameters']:
+                tool_schema['function']['parameters']['properties'] = tool['parameters']['properties']
+                if 'required' in tool['parameters']:
+                    tool_schema['function']['parameters']['required'] = tool['parameters']['required']
+            
+            tools_for_deepseek.append(tool_schema)
+        
+        # Recuperar o crear historial
+        if session_id not in chat_sessions:
+            chat_sessions[session_id] = [
+                {
+                    'role': 'system',
+                    'content': SYSTEM_PROMPT
+                }
+            ]
+        
+        # Limitar historial
+        MAX_HISTORY_MESSAGES = 10
+        history = chat_sessions[session_id]
+        if len(history) > MAX_HISTORY_MESSAGES + 1:  # +1 por el system message
+            history = [history[0]] + history[-(MAX_HISTORY_MESSAGES):]
+            chat_sessions[session_id] = history
+        
+        # Agregar mensaje del usuario
+        messages = history + [{'role': 'user', 'content': user_message}]
+        
+        # Llamar a DeepSeek
+        response = deepseek_client.chat.completions.create(
+            model='deepseek-chat',
+            messages=messages,
+            tools=tools_for_deepseek if tools_for_deepseek else None,
+            tool_choice='auto' if tools_for_deepseek else None,
+            temperature=0.7,
+            max_tokens=4000
+        )
+        
+        # Procesar respuesta
+        final_response = ""
+        tool_results = []
+        max_iterations = 5
+        iteration = 0
+        
+        while iteration < max_iterations:
+            iteration += 1
+            
+            message = response.choices[0].message
+            
+            # Si hay texto en la respuesta
+            if message.content:
+                final_response += message.content
+            
+            # Si hay tool calls
+            if message.tool_calls:
+                # Agregar el mensaje del asistente al historial
+                messages.append({
+                    'role': 'assistant',
+                    'content': message.content,
+                    'tool_calls': [
+                        {
+                            'id': tc.id,
+                            'type': 'function',
+                            'function': {
+                                'name': tc.function.name,
+                                'arguments': tc.function.arguments
+                            }
+                        } for tc in message.tool_calls
+                    ]
+                })
+                
+                # Ejecutar cada tool call
+                for tool_call in message.tool_calls:
+                    function_name = tool_call.function.name
+                    function_args = json.loads(tool_call.function.arguments)
+                    
+                    logger.info(f"DeepSeek function call: {function_name} with args: {function_args}")
+                    
+                    # Ejecutar la herramienta
+                    result = mcp_server.execute_tool(function_name, function_args)
+                    serializable_result = make_serializable(result)
+                    
+                    # Guardar resultado
+                    tool_results.append({
+                        'tool': function_name,
+                        'args': function_args,
+                        'result': serializable_result
+                    })
+                    
+                    # Agregar resultado al historial
+                    messages.append({
+                        'role': 'tool',
+                        'tool_call_id': tool_call.id,
+                        'content': json.dumps(serializable_result)
+                    })
+                
+                # Llamar de nuevo con los resultados
+                response = deepseek_client.chat.completions.create(
+                    model='deepseek-chat',
+                    messages=messages,
+                    tools=tools_for_deepseek if tools_for_deepseek else None,
+                    tool_choice='auto' if tools_for_deepseek else None,
+                    temperature=0.7,
+                    max_tokens=4000
+                )
+            else:
+                # No hay más tool calls, terminar
+                messages.append({
+                    'role': 'assistant',
+                    'content': message.content
+                })
+                break
+        
+        # Actualizar historial (solo últimos mensajes sin tool calls para simplificar)
+        simplified_history = [msg for msg in messages if msg['role'] in ['system', 'user', 'assistant'] and 'tool_calls' not in msg]
+        chat_sessions[session_id] = simplified_history
+        
+        return {
+            'response': final_response,
+            'tool_results': tool_results,
+            'status': 'success'
+        }
+        
+    except Exception as e:
+        logger.error(f"Error en DeepSeek: {str(e)}")
+        import traceback
+        return {
+            'error': f'Error con DeepSeek: {str(e)}',
+            'traceback': traceback.format_exc(),
+            'status': 'error'
+        }
+
+
 @bp.route('/send_message', methods=['POST'])
 def send_message():
     try:
@@ -359,6 +549,18 @@ def send_message():
         logger.info(f"Herramientas filtradas: {len(tools_definition)} de {len(all_tools)} totales")
         logger.info(f"Herramientas disponibles: {[t['name'] for t in tools_definition]}")
         
+        # Determinar qué proveedor usar (permitir override desde sesión)
+        current_provider = session.get('ai_provider', AI_PROVIDER)
+        logger.info(f"Usando proveedor de IA: {current_provider.upper()}")
+        
+        # Si se selecciona DeepSeek, usar la función auxiliar
+        if current_provider == 'deepseek':
+            result = process_with_deepseek(user_message, session_id, tools_definition, mcp_server)
+            if result['status'] == 'error':
+                return jsonify(result), 500
+            return jsonify(result)
+        
+        # Si se llega aquí, usar Gemini (comportamiento por defecto)
         # Convertir herramientas a formato simple para Gemini
         tools_for_gemini = []
         for tool in tools_definition:

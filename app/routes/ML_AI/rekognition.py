@@ -7,12 +7,12 @@ from PIL import Image
 
 rekognition = Blueprint('rekognition', __name__)
 
-@rekognition.route('/rekognition')
+@rekognition.route('/')
 def rekognition_dashboard():
     """Dashboard principal de Amazon Rekognition"""
     return render_template('ML_AI/rekognition/index.html')
 
-@rekognition.route('/rekognition/labels', methods=['GET', 'POST'])
+@rekognition.route('/labels', methods=['GET', 'POST'])
 def detect_labels():
     """Detectar etiquetas en una imagen"""
     if request.method == 'POST':
@@ -70,7 +70,7 @@ def detect_labels():
                          max_labels=10,
                          min_confidence=70.0)
 
-@rekognition.route('/rekognition/faces', methods=['GET', 'POST'])
+@rekognition.route('/faces', methods=['GET', 'POST'])
 def detect_faces():
     """Detectar rostros en una imagen"""
     if request.method == 'POST':
@@ -131,7 +131,7 @@ def detect_faces():
                          image_b64=None,
                          region='us-east-1')
 
-@rekognition.route('/rekognition/compare', methods=['GET', 'POST'])
+@rekognition.route('/compare', methods=['GET', 'POST'])
 def compare_faces():
     """Comparar rostros entre dos imágenes"""
     if request.method == 'POST':
@@ -201,7 +201,7 @@ def compare_faces():
                          region='us-east-1',
                          similarity_threshold=80.0)
 
-@rekognition.route('/rekognition/text', methods=['GET', 'POST'])
+@rekognition.route('/text', methods=['GET', 'POST'])
 def detect_text():
     """Detectar texto en una imagen"""
     if request.method == 'POST':

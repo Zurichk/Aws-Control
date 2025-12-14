@@ -11,6 +11,9 @@
                     <h1 class="h3 mb-0">
                         <i class="fas fa-robot text-primary me-2"></i>
                         AI Assistant
+                        <span id="ai-provider-badge" class="badge bg-info ms-2" style="font-size: 0.6em; vertical-align: middle;">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando...
+                        </span>
                     </h1>
                     <p class="text-muted mt-1">Tu guía experto en AWS - obtén ayuda y consejos personalizados</p>
                 </div>
@@ -305,7 +308,53 @@ let sendButton = document.getElementById('sendButton');
 // Cargar herramientas disponibles al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     loadAvailableTools();
+    loadAIProvider();
 });
+
+// Función para cargar el proveedor de IA actual
+function loadAIProvider() {
+    fetch('/chat/get_ai_provider')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateAIProviderBadge(data.provider);
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar proveedor de IA:', error);
+            updateAIProviderBadge('unknown');
+        });
+}
+
+// Función para actualizar el badge del proveedor
+function updateAIProviderBadge(provider) {
+    const badge = document.getElementById('ai-provider-badge');
+    if (!badge) return;
+    
+    const providerInfo = {
+        'gemini': {
+            icon: 'fas fa-google',
+            text: 'Gemini',
+            class: 'bg-primary'
+        },
+        'deepseek': {
+            icon: 'fas fa-brain',
+            text: 'DeepSeek',
+            class: 'bg-success'
+        },
+        'unknown': {
+            icon: 'fas fa-question',
+            text: 'Desconocido',
+            class: 'bg-secondary'
+        }
+    };
+    
+    const info = providerInfo[provider] || providerInfo['unknown'];
+    badge.className = `badge ${info.class} ms-2`;
+    badge.style.fontSize = '0.6em';
+    badge.style.verticalAlign = 'middle';
+    badge.innerHTML = `<i class="${info.icon}"></i> ${info.text}`;
+}
 
 // Función para cargar las herramientas disponibles
 function loadAvailableTools() {

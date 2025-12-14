@@ -1,3 +1,30 @@
+# Framework web
 Flask==2.3.3
+Werkzeug==2.3.7
+
+# AWS SDK
 boto3==1.28.25
+botocore>=1.31.0
+
+# Variables de entorno
 python-dotenv==1.0.0
+
+# IA y ML
+google-generativeai>=0.3.0
+openai>=1.0.0
+
+# Utilidades
+requests>=2.31.0
+urllib3>=2.0.0
+
+# Procesamiento de imágenes (para Rekognition)
+Pillow>=10.0.0
+
+# JSON y validación
+jsonschema>=4.0.0
+
+# Logging mejorado
+colorama>=0.4.6
+
+# Seguridad
+cryptography>=41.0.0

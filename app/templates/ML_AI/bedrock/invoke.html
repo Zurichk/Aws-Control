@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Invocar Modelo - Bedrock{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('bedrock.bedrock_dashboard') }}">Bedrock</a></li>
+            <li class="breadcrumb-item active">Invocar Modelo</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-comment-dots text-success me-2"></i>Invocar Modelo de IA
+        </h1>
+        <a href="{{ url_for('bedrock.bedrock_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Formulario -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-cog me-2"></i>Configuración del Prompt
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="model_id" class="form-label">
+                                <i class="fas fa-robot me-1"></i>Modelo
+                            </label>
+                            <select name="model_id" id="model_id" class="form-select" required>
+                                <optgroup label="Anthropic (Claude)">
+                                    <option value="anthropic.claude-v2:1" {% if model_id == 'anthropic.claude-v2:1' %}selected{% endif %}>Claude 2.1</option>
+                                    <option value="anthropic.claude-v2" {% if model_id == 'anthropic.claude-v2' %}selected{% endif %}>Claude 2.0</option>
+                                    <option value="anthropic.claude-instant-v1" {% if model_id == 'anthropic.claude-instant-v1' %}selected{% endif %}>Claude Instant</option>
+                                </optgroup>
+                                <optgroup label="Meta (Llama)">
+                                    <option value="meta.llama2-70b-chat-v1" {% if model_id == 'meta.llama2-70b-chat-v1' %}selected{% endif %}>Llama 2 70B Chat</option>
+                                    <option value="meta.llama2-13b-chat-v1" {% if model_id == 'meta.llama2-13b-chat-v1' %}selected{% endif %}>Llama 2 13B Chat</option>
+                                </optgroup>
+                                <optgroup label="Amazon">
+                                    <option value="amazon.titan-text-express-v1" {% if model_id == 'amazon.titan-text-express-v1' %}selected{% endif %}>Titan Text Express</option>
+                                    <option value="amazon.titan-text-lite-v1" {% if model_id == 'amazon.titan-text-lite-v1' %}selected{% endif %}>Titan Text Lite</option>
+                                </optgroup>
+                            </select>
+                            <div class="form-text">Selecciona el modelo de IA que deseas usar</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prompt" class="form-label">
+                                <i class="fas fa-keyboard me-1"></i>Prompt
+                            </label>
+                            <textarea name="prompt" id="prompt" class="form-control" rows="6" required placeholder="Escribe tu pregunta o instrucción aquí...">{{ prompt if prompt }}</textarea>
+                            <div class="form-text">La pregunta o instrucción para el modelo de IA</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="region" class="form-label">
+                                    <i class="fas fa-globe me-1"></i>Región
+                                </label>
+                                <select name="region" id="region" class="form-select">
+                                    <option value="us-east-1" {% if region == 'us-east-1' %}selected{% endif %}>US East (N. Virginia)</option>
+                                    <option value="us-west-2" {% if region == 'us-west-2' %}selected{% endif %}>US West (Oregon)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="max_tokens" class="form-label">
+                                    <i class="fas fa-sliders-h me-1"></i>Max Tokens
+                                </label>
+                                <input type="number" name="max_tokens" id="max_tokens" class="form-control" 
+                                       value="{{ max_tokens if max_tokens else 256 }}" min="1" max="4096" step="1">
+                                <div class="form-text">Longitud máxima de la respuesta</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-play me-2"></i>Ejecutar Prompt
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Respuesta -->
+        <div class="col-lg-6">
+            {% if response %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>Respuesta del Modelo
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light border">
+                        <h6 class="mb-2">
+                            <i class="fas fa-info-circle text-primary me-2"></i>Modelo usado:
+                        </h6>
+                        <code>{{ model_id }}</code>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>
+                            <i class="fas fa-question-circle text-info me-2"></i>Tu prompt:
+                        </h6>
+                        <div class="bg-light p-3 rounded border">
+                            <p class="mb-0" style="white-space: pre-wrap;">{{ prompt }}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h6>
+                            <i class="fas fa-comment-dots text-success me-2"></i>Respuesta:
+                        </h6>
+                        <div class="bg-white p-3 rounded border">
+                            <p class="mb-0" style="white-space: pre-wrap;">{{ response }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-primary" onclick="copyResponse()">
+                            <i class="fas fa-copy me-1"></i>Copiar Respuesta
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow-sm border-dashed">
+                <div class="card-body text-center text-muted py-5">
+                    <i class="fas fa-robot fa-4x mb-3"></i>
+                    <p class="mb-0">La respuesta del modelo aparecerá aquí después de ejecutar el prompt</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if response %}
+<script>
+function copyResponse() {
+    const responseText = {{ response|tojson }};
+    
+    // Verificación de disponibilidad de API Clipboard (requiere HTTPS o localhost)
+    if (!navigator.clipboard) {
+        // Fallback para entornos no seguros (HTTP)
+        const textArea = document.createElement("textarea");
+        textArea.value = responseText;
+        
+        // Asegurar que el elemento no sea visible visualmente pero sea seleccionable
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert('Respuesta copiada al portapapeles');
+            } else {
+                alert('No se pudo copiar el texto automáticamente');
+            }
+        } catch (err) {
+            console.error('Error al copiar (fallback):', err);
+            alert('Error al intentar copiar el texto');
+        }
+        
+        document.body.removeChild(textArea);
+        return;
+    }
+
+    // Método moderno
+    navigator.clipboard.writeText(responseText).then(() => {
+        alert('Respuesta copiada al portapapeles');
+    }).catch(function(err) {
+        console.error('Error al copiar:', err);
+        alert('Error al copiar: ' + err);
+    });
+}
+</script>
+{% endif %}
+
+<style>
+.border-dashed {
+    border: 2px dashed #dee2e6 !important;
+}
+</style>
+{% endblock %}

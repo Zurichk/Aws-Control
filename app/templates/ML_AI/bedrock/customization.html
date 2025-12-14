@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Personalización de Modelo - Bedrock{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('bedrock.bedrock_dashboard') }}">Bedrock</a></li>
+            <li class="breadcrumb-item active">Personalización</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-cogs text-warning me-2"></i>Personalización de Modelo
+        </h1>
+        <a href="{{ url_for('bedrock.bedrock_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Fine-tuning:</strong> Crea un modelo personalizado entrenando un modelo base con tus propios datos.
+        Los datos deben estar en S3 en formato JSONL.
+    </div>
+
+    <div class="row">
+        <!-- Formulario -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-wrench me-2"></i>Configurar Trabajo de Personalización
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="base_model_id" class="form-label">
+                                <i class="fas fa-robot me-1"></i>Modelo Base
+                            </label>
+                            <select name="base_model_id" id="base_model_id" class="form-select" required>
+                                <option value="anthropic.claude-v2">Claude 2.0</option>
+                                <option value="anthropic.claude-instant-v1">Claude Instant</option>
+                                <option value="amazon.titan-text-express-v1">Titan Text Express</option>
+                            </select>
+                            <div class="form-text">Modelo base para personalizar</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job_name" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Nombre del Trabajo
+                            </label>
+                            <input type="text" name="job_name" id="job_name" class="form-control" 
+                                   placeholder="mi-modelo-personalizado" required>
+                            <div class="form-text">Identificador único para este trabajo</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role_arn" class="form-label">
+                                <i class="fas fa-shield-alt me-1"></i>IAM Role ARN
+                            </label>
+                            <input type="text" name="role_arn" id="role_arn" class="form-control" 
+                                   placeholder="arn:aws:iam::123456789012:role/BedrockCustomizationRole" required>
+                            <div class="form-text">Rol de IAM con permisos para Bedrock y S3</div>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3">
+                            <i class="fas fa-database me-2"></i>Datos de Entrenamiento
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="training_data_uri" class="form-label">
+                                <i class="fas fa-folder-open me-1"></i>URI de Datos de Entrenamiento
+                            </label>
+                            <input type="text" name="training_data_uri" id="training_data_uri" class="form-control" 
+                                   placeholder="s3://mi-bucket/training-data/" required>
+                            <div class="form-text">Ubicación S3 con archivos JSONL de entrenamiento</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="validation_data_uri" class="form-label">
+                                <i class="fas fa-check-circle me-1"></i>URI de Datos de Validación (Opcional)
+                            </label>
+                            <input type="text" name="validation_data_uri" id="validation_data_uri" class="form-control" 
+                                   placeholder="s3://mi-bucket/validation-data/">
+                            <div class="form-text">Datos para validar el entrenamiento (opcional)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="output_data_uri" class="form-label">
+                                <i class="fas fa-save me-1"></i>URI de Salida
+                            </label>
+                            <input type="text" name="output_data_uri" id="output_data_uri" class="form-control" 
+                                   placeholder="s3://mi-bucket/output/" required>
+                            <div class="form-text">Ubicación S3 donde se guardará el modelo personalizado</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="region" class="form-label">
+                                <i class="fas fa-globe me-1"></i>Región
+                            </label>
+                            <select name="region" id="region" class="form-select">
+                                <option value="us-east-1" {% if region == 'us-east-1' %}selected{% endif %}>US East (N. Virginia)</option>
+                                <option value="us-west-2" {% if region == 'us-west-2' %}selected{% endif %}>US West (Oregon)</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-play me-2"></i>Iniciar Personalización
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información lateral / Resultados -->
+        <div class="col-lg-4">
+            {% if job_details %}
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>Trabajo Creado
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt><i class="fas fa-tag me-1"></i>Nombre:</dt>
+                        <dd>{{ job_details.jobName }}</dd>
+
+                        <dt><i class="fas fa-barcode me-1"></i>Job ARN:</dt>
+                        <dd><code class="small">{{ job_details.jobArn }}</code></dd>
+
+                        <dt><i class="fas fa-info-circle me-1"></i>Estado:</dt>
+                        <dd><span class="badge bg-info">{{ job_details.status }}</span></dd>
+
+                        <dt><i class="fas fa-clock me-1"></i>Creado:</dt>
+                        <dd>{{ job_details.creationTime }}</dd>
+
+                        <dt><i class="fas fa-robot me-1"></i>Modelo Base:</dt>
+                        <dd><code>{{ job_details.baseModelId }}</code></dd>
+
+                        <dt><i class="fas fa-cog me-1"></i>Modelo Personalizado:</dt>
+                        <dd><code>{{ job_details.customModelName }}</code></dd>
+                    </dl>
+
+                    <div class="alert alert-warning small">
+                        <i class="fas fa-hourglass-half me-1"></i>
+                        El trabajo puede tardar varias horas. Verifica el estado en la consola de AWS.
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="fas fa-question-circle me-2"></i>Requisitos
+                </div>
+                <div class="card-body">
+                    <h6>Antes de comenzar:</h6>
+                    <ul class="small">
+                        <li>Datos en formato JSONL en S3</li>
+                        <li>IAM Role con permisos:
+                            <ul>
+                                <li>bedrock:CreateModelCustomizationJob</li>
+                                <li>s3:GetObject</li>
+                                <li>s3:PutObject</li>
+                            </ul>
+                        </li>
+                        <li>Suficiente cuota en Bedrock</li>
+                    </ul>
+
+                    <h6 class="mt-3">Formato de datos:</h6>
+                    <pre class="bg-light p-2 small rounded"><code>{"prompt": "...", "completion": "..."}
+{"prompt": "...", "completion": "..."}</code></pre>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-light">
+                    <i class="fas fa-dollar-sign me-2"></i>Costos
+                </div>
+                <div class="card-body small">
+                    <p class="mb-1">
+                        <i class="fas fa-info-circle text-info me-1"></i>
+                        La personalización tiene costos adicionales según:
+                    </p>
+                    <ul>
+                        <li>Tokens de entrenamiento</li>
+                        <li>Almacenamiento del modelo</li>
+                        <li>Inferencias posteriores</li>
+                    </ul>
+                    <p class="text-muted mb-0">Consulta la documentación de AWS Bedrock para precios actualizados.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

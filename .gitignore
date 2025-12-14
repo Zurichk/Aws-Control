@@ -1,3 +1,11 @@
+# Credenciales y archivos sensibles
+.env
+.env.example
+.env.local
+*.pem
+*.key
+aws-credentials.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

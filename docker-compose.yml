@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  aws-control:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aws-control-panel
+    restart: unless-stopped
+    
+    # Puerto (mapear host:container)
+    ports:
+      - "5041:5041"
+    
+    # Variables de entorno (IMPORTANTE: Usar archivo .env o configurar en Coolify)
+    environment:
+      - FLASK_PORT=5041
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      # AWS Credentials (mejor usar secrets en producción)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-}
+      # Flask
+      - SECRET_KEY=${SECRET_KEY}
+      # IA (opcional)
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+    
+    # Volúmenes (opcional, para logs persistentes)
+    volumes:
+      - ./logs:/app/logs
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5041/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Límites de recursos (opcional, ajustar según necesidades)
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+# Redes (opcional)
+networks:
+  default:
+    name: aws-control-network

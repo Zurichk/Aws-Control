@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Modelos Foundation - Bedrock{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('bedrock.bedrock_dashboard') }}">Bedrock</a></li>
+            <li class="breadcrumb-item active">Modelos</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-robot text-primary me-2"></i>Modelos Foundation
+        </h1>
+        <a href="{{ url_for('bedrock.bedrock_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <!-- Formulario para seleccionar región -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <i class="fas fa-globe me-2"></i>Configuración
+        </div>
+        <div class="card-body">
+            <form method="POST" class="row g-3">
+                <div class="col-md-6">
+                    <label for="region" class="form-label">Región AWS</label>
+                    <select name="region" id="region" class="form-select" required>
+                        <option value="us-east-1" {% if region == 'us-east-1' %}selected{% endif %}>US East (N. Virginia)</option>
+                        <option value="us-west-2" {% if region == 'us-west-2' %}selected{% endif %}>US West (Oregon)</option>
+                        <option value="eu-west-1" {% if region == 'eu-west-1' %}selected{% endif %}>Europe (Ireland)</option>
+                        <option value="ap-southeast-1" {% if region == 'ap-southeast-1' %}selected{% endif %}>Asia Pacific (Singapore)</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Listar Modelos
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if models is not none %}
+    <!-- Resultados -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <i class="fas fa-list me-2"></i>Modelos Disponibles ({{ models|length }})
+        </div>
+        <div class="card-body">
+            {% if models %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Modelo ID</th>
+                            <th>Nombre</th>
+                            <th>Input</th>
+                            <th>Output</th>
+                            <th>Personalización</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for model in models %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-primary">{{ model.providerName }}</span>
+                            </td>
+                            <td>
+                                <code class="small">{{ model.modelId }}</code>
+                            </td>
+                            <td>{{ model.modelName }}</td>
+                            <td>
+                                {% for modality in model.inputModalities %}
+                                <span class="badge bg-info">{{ modality }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for modality in model.outputModalities %}
+                                <span class="badge bg-success">{{ modality }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if model.customizationsSupported %}
+                                    {% for custom in model.customizationsSupported %}
+                                    <span class="badge bg-warning text-dark">{{ custom }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('bedrock.invoke_model') }}?model_id={{ model.modelId }}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="Invocar este modelo">
+                                    <i class="fas fa-play"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                No se encontraron modelos en la región <strong>{{ region }}</strong>.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

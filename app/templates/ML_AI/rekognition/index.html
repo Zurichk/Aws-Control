@@ -1,139 +1,141 @@
-&lt;!DOCTYPE html&gt;
-&lt;html lang="es"&gt;
-&lt;head&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-    &lt;title&gt;Rekognition - AWS Control&lt;/title&gt;
-    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
-    &lt;link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"&gt;
-&lt;/head&gt;
-&lt;body class="bg-light"&gt;
-    &lt;div class="container-fluid py-4"&gt;
-        &lt;div class="row"&gt;
-            &lt;div class="col-12"&gt;
-                &lt;nav aria-label="breadcrumb"&gt;
-                    &lt;ol class="breadcrumb"&gt;
-                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('main.index') }}" class="text-decoration-none"&gt;Inicio&lt;/a&gt;&lt;/li&gt;
-                        &lt;li class="breadcrumb-item active" aria-current="page"&gt;Rekognition&lt;/li&gt;
-                    &lt;/ol&gt;
-                &lt;/nav&gt;
+{% extends "base.html" %}
 
-                &lt;div class="d-flex justify-content-between align-items-center mb-4"&gt;
-                    &lt;h1 class="h3 mb-0"&gt;&lt;i class="fas fa-eye text-primary me-2"&gt;&lt;/i&gt;Amazon Rekognition&lt;/h1&gt;
-                    &lt;a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary"&gt;
-                        &lt;i class="fas fa-arrow-left me-2"&gt;&lt;/i&gt;Volver al Inicio
-                    &lt;/a&gt;
-                &lt;/div&gt;
+{% block title %}Amazon Rekognition - AWS Control{% endblock %}
 
-                &lt;div class="row g-4"&gt;
-                    &lt;div class="col-md-6 col-lg-3"&gt;
-                        &lt;div class="card h-100 shadow-sm hover-card"&gt;
-                            &lt;div class="card-body text-center"&gt;
-                                &lt;div class="mb-3"&gt;
-                                    &lt;i class="fas fa-tags fa-3x text-primary"&gt;&lt;/i&gt;
-                                &lt;/div&gt;
-                                &lt;h5 class="card-title"&gt;Detectar Etiquetas&lt;/h5&gt;
-                                &lt;p class="card-text text-muted small"&gt;Identifica objetos, escenas y conceptos en imágenes&lt;/p&gt;
-                                &lt;a href="{{ url_for('rekognition.detect_labels') }}" class="btn btn-primary btn-sm"&gt;
-                                    &lt;i class="fas fa-search me-1"&gt;&lt;/i&gt;Analizar
-                                &lt;/a&gt;
-                            &lt;/div&gt;
-                        &lt;/div&gt;
-                    &lt;/div&gt;
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+            <li class="breadcrumb-item active">Rekognition</li>
+        </ol>
+    </nav>
 
-                    &lt;div class="col-md-6 col-lg-3"&gt;
-                        &lt;div class="card h-100 shadow-sm hover-card"&gt;
-                            &lt;div class="card-body text-center"&gt;
-                                &lt;div class="mb-3"&gt;
-                                    &lt;i class="fas fa-user fa-3x text-success"&gt;&lt;/i&gt;
-                                &lt;/div&gt;
-                                &lt;h5 class="card-title"&gt;Detectar Rostros&lt;/h5&gt;
-                                &lt;p class="card-text text-muted small"&gt;Localiza y analiza rostros en imágenes&lt;/p&gt;
-                                &lt;a href="{{ url_for('rekognition.detect_faces') }}" class="btn btn-success btn-sm"&gt;
-                                    &lt;i class="fas fa-user-check me-1"&gt;&lt;/i&gt;Analizar
-                                &lt;/a&gt;
-                            &lt;/div&gt;
-                        &lt;/div&gt;
-                    &lt;/div&gt;
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-eye text-primary me-2"></i>Amazon Rekognition
+        </h1>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
 
-                    &lt;div class="col-md-6 col-lg-3"&gt;
-                        &lt;div class="card h-100 shadow-sm hover-card"&gt;
-                            &lt;div class="card-body text-center"&gt;
-                                &lt;div class="mb-3"&gt;
-                                    &lt;i class="fas fa-users fa-3x text-warning"&gt;&lt;/i&gt;
-                                &lt;/div&gt;
-                                &lt;h5 class="card-title"&gt;Comparar Rostros&lt;/h5&gt;
-                                &lt;p class="card-text text-muted small"&gt;Compara dos rostros para verificar similitud&lt;/p&gt;
-                                &lt;a href="{{ url_for('rekognition.compare_faces') }}" class="btn btn-warning btn-sm"&gt;
-                                    &lt;i class="fas fa-balance-scale me-1"&gt;&lt;/i&gt;Comparar
-                                &lt;/a&gt;
-                            &lt;/div&gt;
-                        &lt;/div&gt;
-                    &lt;/div&gt;
+    <!-- Tarjetas de funcionalidades -->
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-tags fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Detectar Etiquetas</h5>
+                    <p class="card-text text-muted small">Identifica objetos, escenas y conceptos en imágenes</p>
+                    <a href="{{ url_for('rekognition.detect_labels') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search me-1"></i>Analizar
+                    </a>
+                </div>
+            </div>
+        </div>
 
-                    &lt;div class="col-md-6 col-lg-3"&gt;
-                        &lt;div class="card h-100 shadow-sm hover-card"&gt;
-                            &lt;div class="card-body text-center"&gt;
-                                &lt;div class="mb-3"&gt;
-                                    &lt;i class="fas fa-font fa-3x text-info"&gt;&lt;/i&gt;
-                                &lt;/div&gt;
-                                &lt;h5 class="card-title"&gt;Detectar Texto&lt;/h5&gt;
-                                &lt;p class="card-text text-muted small"&gt;Extrae texto de imágenes usando OCR&lt;/p&gt;
-                                &lt;a href="{{ url_for('rekognition.detect_text') }}" class="btn btn-info btn-sm"&gt;
-                                    &lt;i class="fas fa-file-alt me-1"&gt;&lt;/i&gt;Extraer
-                                &lt;/a&gt;
-                            &lt;/div&gt;
-                        &lt;/div&gt;
-                    &lt;/div&gt;
-                &lt;/div&gt;
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">Detectar Rostros</h5>
+                    <p class="card-text text-muted small">Localiza y analiza rostros en imágenes</p>
+                    <a href="{{ url_for('rekognition.detect_faces') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-user-check me-1"></i>Analizar
+                    </a>
+                </div>
+            </div>
+        </div>
 
-                &lt;div class="row mt-5"&gt;
-                    &lt;div class="col-12"&gt;
-                        &lt;div class="card shadow-sm"&gt;
-                            &lt;div class="card-header bg-info text-white"&gt;
-                                &lt;h5 class="card-title mb-0"&gt;&lt;i class="fas fa-info-circle me-2"&gt;&lt;/i&gt;Acerca de Amazon Rekognition&lt;/h5&gt;
-                            &lt;/div&gt;
-                            &lt;div class="card-body"&gt;
-                                &lt;div class="row"&gt;
-                                    &lt;div class="col-md-6"&gt;
-                                        &lt;h6&gt;&lt;i class="fas fa-brain me-2"&gt;&lt;/i&gt;Tecnología de IA&lt;/h6&gt;
-                                        &lt;p class="small"&gt;Amazon Rekognition utiliza aprendizaje profundo para analizar imágenes y videos, proporcionando capacidades avanzadas de visión por computadora.&lt;/p&gt;
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-users fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Comparar Rostros</h5>
+                    <p class="card-text text-muted small">Compara dos rostros para verificar similitud</p>
+                    <a href="{{ url_for('rekognition.compare_faces') }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-balance-scale me-1"></i>Comparar
+                    </a>
+                </div>
+            </div>
+        </div>
 
-                                        &lt;h6&gt;&lt;i class="fas fa-shield-alt me-2"&gt;&lt;/i&gt;Privacidad y Seguridad&lt;/h6&gt;
-                                        &lt;p class="small"&gt;Las imágenes se procesan de forma segura y no se almacenan permanentemente. Cumple con estándares de privacidad y protección de datos.&lt;/p&gt;
-                                    &lt;/div&gt;
-                                    &lt;div class="col-md-6"&gt;
-                                        &lt;h6&gt;&lt;i class="fas fa-chart-line me-2"&gt;&lt;/i&gt;Casos de Uso&lt;/h6&gt;
-                                        &lt;ul class="small"&gt;
-                                            &lt;li&gt;Análisis de contenido multimedia&lt;/li&gt;
-                                            &lt;li&gt;Verificación de identidad&lt;/li&gt;
-                                            &lt;li&gt;Moderación de contenido&lt;/li&gt;
-                                            &lt;li&gt;Extracción de texto de imágenes&lt;/li&gt;
-                                            &lt;li&gt;Análisis de sentimientos faciales&lt;/li&gt;
-                                        &lt;/ul&gt;
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-font fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">Detectar Texto</h5>
+                    <p class="card-text text-muted small">Extrae texto de imágenes usando OCR</p>
+                    <a href="{{ url_for('rekognition.detect_text') }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-file-alt me-1"></i>Extraer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                        &lt;h6&gt;&lt;i class="fas fa-dollar-sign me-2"&gt;&lt;/i&gt;Costo&lt;/h6&gt;
-                                        &lt;p class="small"&gt;Pago por uso basado en el número de imágenes procesadas y las características utilizadas.&lt;/p&gt;
-                                    &lt;/div&gt;
-                                &lt;/div&gt;
-                            &lt;/div&gt;
-                        &lt;/div&gt;
-                    &lt;/div&gt;
-                &lt;/div&gt;
-            &lt;/div&gt;
-        &lt;/div&gt;
-    &lt;/div&gt;
+    <!-- Información adicional -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Acerca de Amazon Rekognition
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-brain me-2 text-primary"></i>Tecnología de IA</h6>
+                            <p class="small">
+                                Amazon Rekognition utiliza aprendizaje profundo para analizar imágenes y videos, 
+                                proporcionando capacidades avanzadas de visión por computadora.
+                            </p>
+                            
+                            <h6 class="mt-3"><i class="fas fa-shield-alt me-2 text-success"></i>Privacidad y Seguridad</h6>
+                            <p class="small">
+                                Las imágenes se procesan de forma segura y no se almacenan permanentemente. 
+                                Cumple con estándares de privacidad y protección de datos.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-chart-line me-2 text-warning"></i>Casos de Uso</h6>
+                            <ul class="small">
+                                <li>Análisis de contenido multimedia</li>
+                                <li>Verificación de identidad</li>
+                                <li>Moderación de contenido</li>
+                                <li>Extracción de texto de imágenes</li>
+                                <li>Análisis de sentimientos faciales</li>
+                            </ul>
+                            
+                            <h6><i class="fas fa-dollar-sign me-2 text-info"></i>Costo</h6>
+                            <p class="small">
+                                Pago por uso basado en el número de imágenes procesadas y las características utilizadas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    &lt;style&gt;
-        .hover-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-        }
-    &lt;/style&gt;
-
-    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+<style>
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}

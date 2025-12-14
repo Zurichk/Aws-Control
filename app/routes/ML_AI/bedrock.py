@@ -6,12 +6,12 @@ from datetime import datetime
 
 bedrock = Blueprint('bedrock', __name__)
 
-@bedrock.route('/bedrock')
+@bedrock.route('/')
 def bedrock_dashboard():
     """Dashboard principal de Amazon Bedrock"""
     return render_template('ML_AI/bedrock/index.html')
 
-@bedrock.route('/bedrock/models', methods=['GET', 'POST'])
+@bedrock.route('/models', methods=['GET', 'POST'])
 def list_foundation_models():
     """Listar modelos de foundation disponibles en Bedrock"""
     if request.method == 'POST':
@@ -46,7 +46,7 @@ def list_foundation_models():
     # GET request - mostrar formulario
     return render_template('ML_AI/bedrock/models.html', models=None, region='us-east-1')
 
-@bedrock.route('/bedrock/invoke', methods=['GET', 'POST'])
+@bedrock.route('/invoke', methods=['GET', 'POST'])
 def invoke_model():
     """Invocar un modelo de Bedrock"""
     if request.method == 'POST':
@@ -125,7 +125,7 @@ def invoke_model():
                          region='us-east-1',
                          max_tokens=256)
 
-@bedrock.route('/bedrock/customization', methods=['GET', 'POST'])
+@bedrock.route('/customization', methods=['GET', 'POST'])
 def create_model_customization_job():
     """Crear un trabajo de customización de modelo"""
     if request.method == 'POST':

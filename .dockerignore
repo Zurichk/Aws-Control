@@ -1,0 +1,69 @@
+# Archivos y directorios que no deben incluirse en la imagen Docker
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.Python
+
+# Virtual Environment (no necesario en Docker)
+venv/
+ENV/
+env/
+.venv
+
+# Credenciales y configuración sensible (usar variables de entorno en Docker)
+.env
+.env.local
+*.pem
+*.key
+aws-credentials.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+*.log
+
+# Documentación de desarrollo (opcional, comentar si quieres incluirla)
+README.md
+LICENSE
+
+# Archivos de CI/CD
+.github/
+.gitlab-ci.yml
+
+# Jupyter
+.ipynb_checkpoints
+
+# Temporal
+*.tmp
+*.temp
+temp/
+tmp/
+*.bak
+*.backup
+
+# Docker (no incluir otros Dockerfiles si existen)
+docker-compose.yml
+.dockerignore

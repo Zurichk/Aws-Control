@@ -108,3 +108,77 @@ def clear_credentials():
 
     flash('Credenciales limpiadas de la sesión', 'info')
     return redirect(url_for('setup.aws_credentials'))
+
+
+@setup_bp.route('/ai-provider', methods=['GET', 'POST'])
+@configuracion_bp.route('/ai-provider', methods=['GET', 'POST'])
+def ai_provider():
+    """Configurar proveedor de IA"""
+    if request.method == 'POST':
+        try:
+            provider = request.form.get('ai_provider', 'gemini').strip()
+            gemini_key = request.form.get('gemini_api_key', '').strip()
+            deepseek_key = request.form.get('deepseek_api_key', '').strip()
+
+            # Validar que se proporcione la API key del proveedor seleccionado
+            if provider == 'gemini' and not gemini_key:
+                flash('Debes proporcionar la API Key de Gemini', 'error')
+                return render_template('Setup/ai_provider.html')
+            
+            if provider == 'deepseek' and not deepseek_key:
+                flash('Debes proporcionar la API Key de DeepSeek', 'error')
+                return render_template('Setup/ai_provider.html')
+
+            # Guardar en sesión
+            session['ai_provider'] = provider
+            if gemini_key:
+                session['gemini_api_key'] = gemini_key
+            if deepseek_key:
+                session['deepseek_api_key'] = deepseek_key
+
+            # También actualizar el archivo .env
+            try:
+                env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
+                
+                # Leer contenido actual
+                if os.path.exists(env_path):
+                    with open(env_path, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                    
+                    # Actualizar valores
+                    with open(env_path, 'w', encoding='utf-8') as f:
+                        for line in lines:
+                            if line.startswith('AI_PROVIDER='):
+                                f.write(f'AI_PROVIDER={provider}\n')
+                            elif line.startswith('GEMINI_API_KEY=') and gemini_key:
+                                f.write(f'GEMINI_API_KEY={gemini_key}\n')
+                            elif line.startswith('DEEPSEEK_API_KEY=') and deepseek_key:
+                                f.write(f'DEEPSEEK_API_KEY={deepseek_key}\n')
+                            else:
+                                f.write(line)
+                    
+                    # Actualizar variables de entorno
+                    os.environ['AI_PROVIDER'] = provider
+                    if gemini_key:
+                        os.environ['GEMINI_API_KEY'] = gemini_key
+                    if deepseek_key:
+                        os.environ['DEEPSEEK_API_KEY'] = deepseek_key
+                
+                flash(f'✅ Proveedor de IA configurado: {provider.upper()}', 'success')
+                return redirect(url_for('setup.index'))
+                
+            except Exception as e:
+                flash(f'Advertencia: Configuración guardada en sesión pero no en .env: {str(e)}', 'warning')
+                return redirect(url_for('setup.index'))
+
+        except Exception as e:
+            flash(f'Error guardando configuración: {str(e)}', 'error')
+
+    # GET: Mostrar formulario con valores actuales
+    current_config = {
+        'ai_provider': session.get('ai_provider', os.environ.get('AI_PROVIDER', 'gemini')),
+        'gemini_api_key': session.get('gemini_api_key', os.environ.get('GEMINI_API_KEY', '')),
+        'deepseek_api_key': session.get('deepseek_api_key', os.environ.get('DEEPSEEK_API_KEY', ''))
+    }
+
+    return render_template('Setup/ai_provider.html', config=current_config)

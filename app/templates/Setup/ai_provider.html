@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Proveedor de IA - AWS Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><i class="fas fa-cogs"></i> AWS Control</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/configuracion"><i class="fas fa-cog"></i> Configuración</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/configuracion/ai-provider"><i class="fas fa-robot"></i> Proveedor de IA</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4><i class="fas fa-robot"></i> Configurar Proveedor de IA</h4>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" action="/configuracion/ai-provider">
+                            <div class="mb-4">
+                                <label class="form-label"><i class="fas fa-server"></i> Selecciona el Proveedor de IA</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="ai_provider" id="provider_gemini" value="gemini" 
+                                           {% if config.ai_provider == 'gemini' %}checked{% endif %}
+                                           onchange="toggleProviderFields()">
+                                    <label class="form-check-label" for="provider_gemini">
+                                        <strong>Google Gemini</strong>
+                                        <small class="text-muted d-block">Modelo avanzado de IA de Google con capacidades multimodales</small>
+                                    </label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="ai_provider" id="provider_deepseek" value="deepseek"
+                                           {% if config.ai_provider == 'deepseek' %}checked{% endif %}
+                                           onchange="toggleProviderFields()">
+                                    <label class="form-check-label" for="provider_deepseek">
+                                        <strong>DeepSeek</strong>
+                                        <small class="text-muted d-block">Modelo de IA de alto rendimiento con razonamiento avanzado</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Gemini API Key -->
+                            <div class="mb-3" id="gemini_fields">
+                                <label for="gemini_api_key" class="form-label">
+                                    <i class="fab fa-google"></i> API Key de Gemini
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                    <input type="password" class="form-control" id="gemini_api_key" name="gemini_api_key" 
+                                           value="{{ config.gemini_api_key }}" 
+                                           placeholder="AIza...">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('gemini_api_key')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Obtén tu API Key en <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                                </small>
+                            </div>
+
+                            <!-- DeepSeek API Key -->
+                            <div class="mb-3" id="deepseek_fields">
+                                <label for="deepseek_api_key" class="form-label">
+                                    <i class="fas fa-brain"></i> API Key de DeepSeek
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                    <input type="password" class="form-control" id="deepseek_api_key" name="deepseek_api_key" 
+                                           value="{{ config.deepseek_api_key }}" 
+                                           placeholder="sk-...">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('deepseek_api_key')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Obtén tu API Key en <a href="https://platform.deepseek.com/" target="_blank">DeepSeek Platform</a>
+                                </small>
+                            </div>
+
+                            <hr>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> <strong>Nota:</strong> 
+                                La configuración se aplicará inmediatamente al AI Assistant. 
+                                Puedes cambiar de proveedor en cualquier momento.
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Guardar Configuración
+                                </button>
+                                <a href="/configuracion" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Card de información adicional -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar"></i> Comparación de Proveedores</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fab fa-google"></i> Google Gemini</h6>
+                                <ul class="small">
+                                    <li>Modelo: gemini-2.0-flash-exp</li>
+                                    <li>Capacidades multimodales</li>
+                                    <li>Función calling nativa</li>
+                                    <li>Velocidad: Rápida</li>
+                                    <li>Contexto: 1M tokens</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-brain"></i> DeepSeek</h6>
+                                <ul class="small">
+                                    <li>Modelo: deepseek-chat</li>
+                                    <li>Razonamiento avanzado</li>
+                                    <li>Compatible con OpenAI API</li>
+                                    <li>Velocidad: Muy rápida</li>
+                                    <li>Contexto: 64K tokens</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = event.target.closest('button').querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function toggleProviderFields() {
+            const geminiSelected = document.getElementById('provider_gemini').checked;
+            const deepseekSelected = document.getElementById('provider_deepseek').checked;
+            
+            const geminiFields = document.getElementById('gemini_fields');
+            const deepseekFields = document.getElementById('deepseek_fields');
+            
+            if (geminiSelected) {
+                geminiFields.style.display = 'block';
+                deepseekFields.style.display = 'none';
+                document.getElementById('gemini_api_key').required = true;
+                document.getElementById('deepseek_api_key').required = false;
+            } else if (deepseekSelected) {
+                geminiFields.style.display = 'none';
+                deepseekFields.style.display = 'block';
+                document.getElementById('gemini_api_key').required = false;
+                document.getElementById('deepseek_api_key').required = true;
+            }
+        }
+
+        // Inicializar campos al cargar la página
+        document.addEventListener('DOMContentLoaded', toggleProviderFields);
+    </script>
+</body>
+</html>
