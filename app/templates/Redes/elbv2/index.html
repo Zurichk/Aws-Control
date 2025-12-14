@@ -1,37 +1,85 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Load Balancers - Panel de Control AWS</title>
-</head>
-<body>
-    {% extends "base.html" %}
+{% extends "base.html" %}
 
-    {% block content %}
-    <div class="service-description">
-        <h2>Elastic Load Balancing (ELB)</h2>
-        <p>ELB distribuye automáticamente el tráfico de aplicaciones entrante entre múltiples destinos, como instancias EC2, contenedores y direcciones IP.</p>
-    </div>
+{% block title %}ELBv2 - Elastic Load Balancing{% endblock %}
 
-    <div class="service-explanation">
-        <h4>Tipos de Load Balancers:</h4>
-        <ul>
-            <li><strong>Application Load Balancer (ALB):</strong> Enruta basado en contenido HTTP</li>
-            <li><strong>Network Load Balancer (NLB):</strong> Enruta basado en direcciones IP y puertos</li>
-            <li><strong>Gateway Load Balancer (GLB):</strong> Para appliances virtuales de terceros</li>
-            <li><strong>Classic Load Balancer:</strong> Generación anterior (legacy)</li>
-        </ul>
-    </div>
-
+{% block content %}
+<div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Load Balancers</h3>
-                <a href="{{ url_for('elbv2.load_balancers') }}" class="btn btn-aws">Ver Load Balancers</a>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-balance-scale me-2"></i>
+                        Elastic Load Balancing v2 (ELBv2)
+                    </h2>
+                    <small class="text-muted">Distribución automática de tráfico entre múltiples destinos</small>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-server fa-3x text-primary mb-3"></i>
+                                    <h5>Load Balancers</h5>
+                                    <p>Gestión completa de balanceadores de carga ALB, NLB y GLB</p>
+                                    <a href="{{ url_for('elbv2.load_balancers') }}" class="btn btn-primary">
+                                        <i class="fas fa-list"></i> Ver Load Balancers
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-bullseye fa-3x text-success mb-3"></i>
+                                    <h5>Target Groups</h5>
+                                    <p>Grupos de destino que reciben el tráfico balanceado</p>
+                                    <a href="{{ url_for('elbv2.target_groups') }}" class="btn btn-success">
+                                        <i class="fas fa-bullseye"></i> Ver Target Groups
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle me-2"></i>Tipos de Load Balancers</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>Application Load Balancer (ALB)</h6>
+                                        <ul class="small mb-0">
+                                            <li>Enrutamiento HTTP/HTTPS</li>
+                                            <li>Enrutamiento avanzado</li>
+                                            <li>Autenticación</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Network Load Balancer (NLB)</h6>
+                                        <ul class="small mb-0">
+                                            <li>Alto rendimiento</li>
+                                            <li>Conexiones TCP/UDP</li>
+                                            <li>Baja latencia</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Gateway Load Balancer (GLB)</h6>
+                                        <ul class="small mb-0">
+                                            <li>Appliances virtuales</li>
+                                            <li>Inspección de tráfico</li>
+                                            <li>Firewalls de terceros</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    {% endblock %}
-</body>
-</html>
+</div>
+{% endblock %}

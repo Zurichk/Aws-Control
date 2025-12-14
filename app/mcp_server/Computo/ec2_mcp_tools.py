@@ -423,12 +423,25 @@ class EC2MCPTools:
             ec2 = self._get_ec2_client()
             params = {}
 
-            if owners:
-                params['Owners'] = owners
-            if filters:
-                params['Filters'] = filters
-            if max_results:
-                params['MaxResults'] = max_results
+            # Si no se especifican owners ni filters, usar defaults seguros
+            if not owners and not filters:
+                params['Owners'] = ['amazon']
+                params['Filters'] = [
+                    {'Name': 'state', 'Values': ['available']},
+                    {'Name': 'architecture', 'Values': ['x86_64']},
+                    {'Name': 'root-device-type', 'Values': ['ebs']}
+                ]
+                params['MaxResults'] = 50  # Límite por defecto para evitar timeout
+            else:
+                if owners:
+                    params['Owners'] = owners
+                if filters:
+                    params['Filters'] = filters
+                if max_results:
+                    params['MaxResults'] = max_results
+                elif not max_results and not filters:
+                    # Si hay owners pero no max_results, limitar a 100
+                    params['MaxResults'] = 100
 
             response = ec2.describe_images(**params)
 
@@ -651,6 +664,105 @@ class EC2MCPTools:
             return {
                 'success': False,
                 'error': f'Error creando key pair: {str(e)}'
+            }
+            {
+                'name': 'ec2_describe_instance_types',
+                'description': 'Obtiene información sobre tipos de instancia EC2 disponibles',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'instance_types': {
+                            'type': 'array',
+                            'description': 'Lista específica de tipos de instancia',
+                            'items': {'type': 'string'}
+                        }
+                    }
+                },
+                'function': self.describe_instance_types
+            },
+            {
+                'name': 'ec2_modify_instance_attribute',
+                'description': 'Modifica atributos de una instancia EC2 (tipo de instancia, security groups, etc.)',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'instance_id': {'type': 'string', 'description': 'ID de la instancia EC2'},
+                        'attribute': {'type': 'string', 'description': 'Atributo a modificar (instanceType, groups, etc.)'},
+                        'value': {'type': 'string', 'description': 'Nuevo valor para el atributo'}
+                    },
+                    'required': ['instance_id', 'attribute', 'value']
+                },
+                'function': self.modify_instance_attribute
+            }
+
+    def describe_instance_types(self, instance_types: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Obtiene información sobre tipos de instancia EC2"""
+        try:
+            ec2 = self._get_ec2_client()
+
+            params = {}
+            if instance_types:
+                params['InstanceTypes'] = instance_types
+
+            response = ec2.describe_instance_types(**params)
+
+            instance_types_info = []
+            for it in response.get('InstanceTypes', []):
+                instance_types_info.append({
+                    'instance_type': it['InstanceType'],
+                    'vcpu_info': it.get('VCpuInfo', {}),
+                    'memory_info': it.get('MemoryInfo', {}),
+                    'storage_info': it.get('InstanceStorageInfo', {}),
+                    'network_info': it.get('NetworkInfo', {}),
+                    'processor_info': it.get('ProcessorInfo', {})
+                })
+
+            return {
+                'success': True,
+                'instance_types': instance_types_info,
+                'total_count': len(instance_types_info)
+            }
+
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Error obteniendo tipos de instancia: {str(e)}'
+            }
+
+    def modify_instance_attribute(self, instance_id: str, attribute: str, value: str) -> Dict[str, Any]:
+        """Modifica atributos de una instancia EC2"""
+        try:
+            ec2 = self._get_ec2_client()
+
+            # Preparar los parámetros según el atributo
+            modify_params = {'InstanceId': instance_id}
+
+            if attribute == 'instanceType':
+                modify_params['InstanceType'] = {'Value': value}
+            elif attribute == 'groups':
+                # Para security groups, esperamos una lista separada por comas
+                groups = [g.strip() for g in value.split(',')]
+                modify_params['Groups'] = groups
+            else:
+                return {
+                    'success': False,
+                    'error': f'Atributo {attribute} no soportado'
+                }
+
+            ec2.modify_instance_attribute(**modify_params)
+
+            return {
+                'success': True,
+                'message': f'Atributo {attribute} modificado exitosamente para instancia {instance_id}',
+                'instance_id': instance_id,
+                'attribute': attribute,
+                'new_value': value
+            }
+
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Error modificando atributo: {str(e)}'
             }
 
     def execute_tool(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:

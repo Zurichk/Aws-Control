@@ -3,12 +3,12 @@ from app.utils.aws_client import get_aws_client
 
 bp = Blueprint('ebs', __name__)
 
-@bp.route('/ebs')
+@bp.route('/')
 def index():
     """Página principal de EBS"""
     return render_template('Almacenamiento/ebs/index.html')
 
-@bp.route('/ebs/volumes')
+@bp.route('/volumes')
 def volumes():
     """Lista todos los volúmenes EBS"""
     try:
@@ -21,7 +21,7 @@ def volumes():
 
     return render_template('Almacenamiento/ebs/volumes.html', volumes=volumes_list)
 
-@bp.route('/ebs/volume/<volume_id>')
+@bp.route('/volume/<volume_id>')
 def volume_detail(volume_id):
     """Detalle de un volumen EBS específico"""
     try:
@@ -42,7 +42,7 @@ def volume_detail(volume_id):
 
     return render_template('Almacenamiento/ebs/volume_detail.html', volume=volume, snapshots=snapshots)
 
-@bp.route('/ebs/volumes/create', methods=['GET', 'POST'])
+@bp.route('/volumes/create', methods=['GET', 'POST'])
 def create_volume():
     """Crear un nuevo volumen EBS"""
     if request.method == 'POST':
@@ -87,7 +87,7 @@ def create_volume():
 
     return render_template('Almacenamiento/ebs/create_volume.html', availability_zones=availability_zones)
 
-@bp.route('/ebs/volume/<volume_id>/delete', methods=['POST'])
+@bp.route('/volume/<volume_id>/delete', methods=['POST'])
 def delete_volume(volume_id):
     """Eliminar un volumen EBS"""
     try:
@@ -99,7 +99,7 @@ def delete_volume(volume_id):
 
     return redirect(url_for('ebs.volumes'))
 
-@bp.route('/ebs/volume/<volume_id>/attach', methods=['GET', 'POST'])
+@bp.route('/volume/<volume_id>/attach', methods=['GET', 'POST'])
 def attach_volume(volume_id):
     """Adjuntar un volumen EBS a una instancia"""
     if request.method == 'POST':
@@ -139,7 +139,7 @@ def attach_volume(volume_id):
 
     return render_template('Almacenamiento/ebs/attach_volume.html', volume_id=volume_id, instances=instances)
 
-@bp.route('/ebs/volume/<volume_id>/detach', methods=['POST'])
+@bp.route('/volume/<volume_id>/detach', methods=['POST'])
 def detach_volume(volume_id):
     """Desadjuntar un volumen EBS de una instancia"""
     try:
@@ -151,7 +151,7 @@ def detach_volume(volume_id):
 
     return redirect(url_for('ebs.volume_detail', volume_id=volume_id))
 
-@bp.route('/ebs/snapshots')
+@bp.route('/snapshots')
 def snapshots():
     """Lista todos los snapshots EBS"""
     try:
@@ -164,7 +164,7 @@ def snapshots():
 
     return render_template('Almacenamiento/ebs/snapshots.html', snapshots=snapshots_list)
 
-@bp.route('/ebs/snapshots/create', methods=['GET', 'POST'])
+@bp.route('/snapshots/create', methods=['GET', 'POST'])
 def create_snapshot():
     """Crear un snapshot de un volumen EBS"""
     if request.method == 'POST':
@@ -196,7 +196,7 @@ def create_snapshot():
 
     return render_template('Almacenamiento/ebs/create_snapshot.html', volumes=volumes)
 
-@bp.route('/ebs/snapshot/<snapshot_id>/delete', methods=['POST'])
+@bp.route('/snapshot/<snapshot_id>/delete', methods=['POST'])
 def delete_snapshot(snapshot_id):
     """Eliminar un snapshot EBS"""
     try:

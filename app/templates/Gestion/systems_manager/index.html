@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Systems Manager - Gestión de Configuración{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-cogs"></i> AWS Systems Manager
+                    </h3>
+                    <p class="card-subtitle text-muted">Gestión centralizada de configuración, parámetros y operaciones</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-database fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Parameter Store</h5>
+                                    <p class="card-text">Almacena y administra parámetros de configuración de forma segura</p>
+                                    <a href="{{ url_for('systems_manager.parameters') }}" class="btn btn-primary">
+                                        <i class="fas fa-list"></i> Ver Parámetros
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-terminal fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Run Command</h5>
+                                    <p class="card-text">Ejecuta comandos remotamente en instancias EC2</p>
+                                    <a href="{{ url_for('systems_manager.run_command') }}" class="btn btn-success">
+                                        <i class="fas fa-play"></i> Ejecutar Comando
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-desktop fa-3x text-info mb-3"></i>
+                                    <h5 class="card-title">Session Manager</h5>
+                                    <p class="card-text">Conexiones seguras a instancias sin necesidad de SSH</p>
+                                    <a href="{{ url_for('systems_manager.start_session') }}" class="btn btn-info">
+                                        <i class="fas fa-link"></i> Iniciar Sesión
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle"></i> Información del Servicio</h5>
+                                <p>AWS Systems Manager proporciona una interfaz unificada para configurar y administrar recursos de AWS y en las instalaciones. Incluye herramientas para:</p>
+                                <ul class="mb-0">
+                                    <li><strong>Parameter Store:</strong> Almacenamiento seguro de parámetros de configuración</li>
+                                    <li><strong>Run Command:</strong> Ejecución remota de comandos en flotas de instancias</li>
+                                    <li><strong>Session Manager:</strong> Administración de sesiones interactivas seguras</li>
+                                    <li><strong>State Manager:</strong> Aplicación automática de configuraciones deseadas</li>
+                                    <li><strong>Inventory:</strong> Recopilación de metadatos sobre instancias y software</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

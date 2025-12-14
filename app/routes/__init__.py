@@ -21,6 +21,7 @@ from .Base_de_Datos.elasticache import bp as elasticache
 from .Mensajeria.sns import bp as sns
 from .Mensajeria.sqs import bp as sqs
 from .Mensajeria.kinesis import bp as kinesis
+from .Mensajeria.eventbridge import eventbridge_bp as eventbridge
 
 # Redes
 from .Redes.vpc import bp as vpc
@@ -53,14 +54,21 @@ from .Contenedores.eks import bp as eks
 from .ML_AI.sagemaker import bp as sagemaker
 from .ML_AI.bedrock import bedrock
 from .ML_AI.rekognition import rekognition
+from .ML_AI.polly_service import polly_bp
 
 # Gestión
 from .Gestion.autoscaling import bp as autoscaling
 from .Gestion.cloudwatch import bp as cloudwatch
 from .Gestion.cost_explorer import cost_explorer
+from .Gestion.systems_manager import systems_manager_bp as systems_manager
+from .Gestion.cloudtrail import cloudtrail_bp as cloudtrail
 
 # Config
-from .Config.config import bp as config
+from .Config.config import config_bp as config
+
+# Configuracion
+from .Setup.setup import setup_bp as setup
+from .Setup.setup import configuracion_bp as configuracion
 
 # AI_Assistant
-# from .AI_Assistant.chat import bp as chat  # Temporalmente comentado por error de importación
+from .AI_Assistant.chat import bp as chat

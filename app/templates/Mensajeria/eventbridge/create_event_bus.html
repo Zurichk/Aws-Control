@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Event Bus - EventBridge{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-plus text-primary"></i> Crear Event Bus
+                    </h1>
+                    <p class="text-muted">Crear un nuevo bus de eventos personalizado</p>
+                </div>
+                <a href="{{ url_for('eventbridge.list_event_buses') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de creación -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-edit"></i> Configuración del Event Bus
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="bus_name">Nombre del Event Bus *</label>
+                            <input type="text" class="form-control" id="bus_name" name="bus_name"
+                                   placeholder="mi-event-bus" required maxlength="160">
+                            <small class="form-text text-muted">
+                                Nombre único para el Event Bus (máximo 160 caracteres)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Descripción</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      rows="3" placeholder="Descripción opcional del Event Bus"></textarea>
+                            <small class="form-text text-muted">
+                                Descripción opcional para documentar el propósito del Event Bus
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Nota:</strong> El Event Bus por defecto ya existe y no puede ser eliminado.
+                                Los Event Buses personalizados permiten segmentar eventos por dominio o aplicación.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Crear Event Bus
+                        </button>
+                        <a href="{{ url_for('eventbridge.list_event_buses') }}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información lateral -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-info-circle"></i> Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>¿Qué es un Event Bus?</h6>
+                    <p>Un Event Bus es un canal que recibe eventos de diferentes fuentes y los distribuye
+                    a diferentes destinos basándose en reglas.</p>
+
+                    <h6>Event Bus por defecto:</h6>
+                    <ul>
+                        <li>Ya existe en todas las cuentas AWS</li>
+                        <li>Recibe eventos de servicios AWS</li>
+                        <li>No puede ser eliminado</li>
+                    </ul>
+
+                    <h6>Event Buses personalizados:</h6>
+                    <ul>
+                        <li>Permiten segmentar eventos</li>
+                        <li>Aislan dominios de aplicación</li>
+                        <li>Pueden tener políticas de acceso</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

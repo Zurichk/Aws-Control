@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado Invocación - AWS Control Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-check-circle"></i> Resultado de Invocación
+                    </h1>
+                    <p class="text-muted">Predicción obtenida del modelo de SageMaker</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sagemaker.invoke_endpoint') }}" class="btn btn-primary">
+                        <i class="fas fa-redo"></i> Nueva Invocación
+                    </a>
+                    <a href="{{ url_for('sagemaker.endpoints') }}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> Ver Endpoints
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-chart-line"></i> Resultado del Endpoint: {{ endpoint_name }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-arrow-right"></i> Datos de Entrada</h5>
+                            <div class="bg-light p-3 rounded">
+                                <pre class="mb-0"><code>{{ input_data }}</code></pre>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-arrow-left"></i> Predicción del Modelo</h5>
+                            <div class="bg-success text-white p-3 rounded">
+                                <pre class="mb-0"><code>{{ result }}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <h5><i class="fas fa-info-circle"></i> Información de la Invocación</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td><strong>Endpoint:</strong></td>
+                                        <td>{{ endpoint_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Timestamp:</strong></td>
+                                        <td>{{ moment().format('YYYY-MM-DD HH:mm:ss') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estado:</strong></td>
+                                        <td><span class="badge badge-success">Completado</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Consejo:</strong> Puedes usar estos resultados para validar el comportamiento de tu modelo
+                o integrar las predicciones en tu aplicación.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para copiar resultado al portapapeles
+function copyResult() {
+    const resultText = `{{ result }}`;
+    navigator.clipboard.writeText(resultText).then(function() {
+        // Mostrar notificación de éxito
+        showNotification('Resultado copiado al portapapeles', 'success');
+    });
+}
+
+function showNotification(message, type) {
+    // Crear notificación temporal
+    const notification = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>`);
+
+    $('body').prepend(notification);
+
+    // Auto-remover después de 3 segundos
+    setTimeout(function() {
+        notification.alert('close');
+    }, 3000);
+}
+</script>
+{% endblock %}

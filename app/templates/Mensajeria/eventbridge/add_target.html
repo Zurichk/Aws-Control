@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Target - {{ rule_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-plus text-info"></i> Agregar Target a "{{ rule_name }}"
+                    </h1>
+                    <p class="text-muted">Configurar destino para eventos filtrados por la regla</p>
+                </div>
+                <a href="{{ url_for('eventbridge.list_targets', rule_name=rule_name, event_bus_name=event_bus_name) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario para agregar target -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-edit"></i> Configuración del Target
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="target_id">ID del Target *</label>
+                            <input type="text" class="form-control" id="target_id" name="target_id"
+                                   placeholder="target-1" required maxlength="160">
+                            <small class="form-text text-muted">
+                                Identificador único para este target dentro de la regla
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="target_arn">ARN del Target *</label>
+                            <input type="text" class="form-control" id="target_arn" name="target_arn"
+                                   placeholder="arn:aws:lambda:region:account:function:my-function" required>
+                            <small class="form-text text-muted">
+                                ARN completo del recurso destino (Lambda, SQS, SNS, etc.)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="role_arn">IAM Role ARN (opcional)</label>
+                            <input type="text" class="form-control" id="role_arn" name="role_arn"
+                                   placeholder="arn:aws:iam::123456789012:role/EventBridgeRole">
+                            <small class="form-text text-muted">
+                                Rol IAM necesario para targets que requieren permisos adicionales
+                            </small>
+                        </div>
+
+                        <!-- Tipo de input -->
+                        <div class="form-group">
+                            <label>Tipo de Input</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="input_type" id="full_event" value="full_event" checked>
+                                <label class="form-check-label" for="full_event">
+                                    Evento completo - Enviar todo el evento al target
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="input_type" id="input_path" value="input_path">
+                                <label class="form-check-label" for="input_path">
+                                    Input Path - Extraer parte del evento usando JSONPath
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="input_type" id="custom_input" value="custom_input">
+                                <label class="form-check-label" for="custom_input">
+                                    Input personalizado - Enviar contenido personalizado
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Input Path -->
+                        <div id="input_path_section" style="display: none;">
+                            <div class="form-group">
+                                <label for="input_path">Input Path (JSONPath)</label>
+                                <input type="text" class="form-control" id="input_path" name="input_path"
+                                       placeholder="$.detail">
+                                <small class="form-text text-muted">
+                                    Expresión JSONPath para extraer parte del evento. Ej: $.detail para obtener solo el detalle
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Custom Input -->
+                        <div id="custom_input_section" style="display: none;">
+                            <div class="form-group">
+                                <label for="input">Input Personalizado (JSON)</label>
+                                <textarea class="form-control" id="input" name="input" rows="4"
+                                          placeholder='{"message": "Evento recibido", "timestamp": "2024-01-01T00:00:00Z"}'></textarea>
+                                <small class="form-text text-muted">
+                                    Contenido JSON personalizado a enviar al target en lugar del evento original
+                                </small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-save"></i> Agregar Target
+                        </button>
+                        <a href="{{ url_for('eventbridge.list_targets', rule_name=rule_name, event_bus_name=event_bus_name) }}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información lateral -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-lightbulb"></i> Targets Comunes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Lambda Functions:</h6>
+                    <code class="small">arn:aws:lambda:region:account:function:name</code>
+
+                    <h6 class="mt-3">Colas SQS:</h6>
+                    <code class="small">arn:aws:sqs:region:account:queue-name</code>
+
+                    <h6 class="mt-3">Tópicos SNS:</h6>
+                    <code class="small">arn:aws:sns:region:account:topic-name</code>
+
+                    <h6 class="mt-3">API Gateway:</h6>
+                    <code class="small">arn:aws:apigateway:region::/restapis/api-id/*</code>
+
+                    <div class="alert alert-info mt-3">
+                        <small><strong>Nota:</strong> Asegúrate de que el target tenga permisos para recibir eventos desde EventBridge.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle entre tipos de input
+$('input[name="input_type"]').change(function() {
+    $('#input_path_section').hide();
+    $('#custom_input_section').hide();
+
+    if ($(this).val() === 'input_path') {
+        $('#input_path_section').show();
+    } else if ($(this).val() === 'custom_input') {
+        $('#custom_input_section').show();
+    }
+});
+</script>
+{% endblock %}

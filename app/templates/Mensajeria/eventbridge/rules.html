@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Reglas - EventBridge{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-gavel text-success"></i> Reglas de EventBridge
+                    </h1>
+                    <p class="text-muted">Gestión de reglas para filtrado y enrutamiento de eventos</p>
+                </div>
+                <a href="{{ url_for('eventbridge.create_rule') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Crear Regla
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Reglas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-list"></i> Reglas Configuradas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if rules %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="rulesTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Event Bus</th>
+                                    <th>Pattern/Schedule</th>
+                                    <th>Descripción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rule in rules %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ rule.name }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if rule.state == 'ENABLED' %}
+                                        <span class="badge badge-success">Habilitada</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">Deshabilitada</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ rule.event_bus_name }}</td>
+                                    <td>
+                                        {% if rule.event_pattern %}
+                                        <small class="text-muted">Event Pattern</small>
+                                        {% elif rule.schedule_expression %}
+                                        <small class="text-info">{{ rule.schedule_expression }}</small>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ rule.description or 'Sin descripción' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('eventbridge.list_targets', rule_name=rule.name, event_bus_name=rule.event_bus_name) }}"
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-bullseye"></i> Targets
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-gavel fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay reglas configuradas</h5>
+                        <p class="text-muted">Crea tu primera regla para procesar eventos</p>
+                        <a href="{{ url_for('eventbridge.create_rule') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Crear Regla
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#rulesTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "order": [[ 1, "asc" ]],
+        "pageLength": 25
+    });
+});
+</script>
+{% endblock %}

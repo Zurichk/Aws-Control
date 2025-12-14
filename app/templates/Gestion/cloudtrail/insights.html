@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}CloudTrail - Insights{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> CloudTrail Insights
+                    </h3>
+                    <p class="card-subtitle text-muted">Métricas avanzadas y análisis de comportamiento inusual</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle"></i> Acerca de CloudTrail Insights</h5>
+                                <p>CloudTrail Insights utiliza machine learning para detectar actividad inusual en la cuenta AWS. Identifica automáticamente:</p>
+                                <ul class="mb-0">
+                                    <li><strong>Actividad API inusual:</strong> Cambios significativos en el volumen de llamadas a API</li>
+                                    <li><strong>Errores de API inusuales:</strong> Aumento anormal en errores de llamadas a API</li>
+                                    <li><strong>Eventos de gestión inusuales:</strong> Actividad inusual en operaciones de gestión</li>
+                                    <li><strong>Patrones de comportamiento:</strong> Detección de anomalías en el comportamiento normal de la cuenta</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-brain fa-3x text-warning mb-3"></i>
+                                    <h5 class="card-title">Estado de Insights</h5>
+                                    <p class="card-text">CloudTrail Insights está disponible para trails que cumplan con los requisitos mínimos.</p>
+                                    <div class="alert alert-warning">
+                                        <small>Requiere al menos 30 días de historial de eventos para generar insights.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Beneficios de Seguridad</h5>
+                                    <p class="card-text">Mejora la detección de amenazas y actividades sospechosas en tiempo real.</p>
+                                    <ul class="list-unstyled text-start">
+                                        <li><i class="fas fa-check text-success"></i> Detección automática de anomalías</li>
+                                        <li><i class="fas fa-check text-success"></i> Alertas proactivas</li>
+                                        <li><i class="fas fa-check text-success"></i> Integración con servicios de seguridad</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-chart-bar"></i> Métricas de Insights Disponibles
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <div class="display-4 text-primary mb-2">
+                                                        <i class="fas fa-bolt"></i>
+                                                    </div>
+                                                    <h6>Volumen de API</h6>
+                                                    <p class="text-muted small">Cambios significativos en el número de llamadas a API por hora</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <div class="display-4 text-danger mb-2">
+                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                    </div>
+                                                    <h6>Tasa de Errores</h6>
+                                                    <p class="text-muted small">Aumento anormal en errores de llamadas a API</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <div class="display-4 text-warning mb-2">
+                                                        <i class="fas fa-cogs"></i>
+                                                    </div>
+                                                    <h6>Actividad de Gestión</h6>
+                                                    <p class="text-muted small">Cambios inusuales en operaciones de gestión de recursos</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-clock"></i> Historial de Insights
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-secondary">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Nota:</strong> Los insights requieren un período de aprendizaje mínimo de 30 días.
+                                        Si no hay insights disponibles, significa que no se ha detectado actividad inusual
+                                        o que el trail no cumple con los requisitos mínimos.
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha/Hora</th>
+                                                    <th>Tipo de Insight</th>
+                                                    <th>Descripción</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted">
+                                                        <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                                        <br>
+                                                        No hay insights disponibles actualmente.
+                                                        <br>
+                                                        <small>Los insights aparecerán aquí cuando se detecte actividad inusual.</small>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-cog"></i> Configuración de Insights
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Requisitos para Insights</h6>
+                                            <ul>
+                                                <li>Trail activo por al menos 30 días</li>
+                                                <li>Historial suficiente de eventos</li>
+                                                <li>Trail configurado correctamente</li>
+                                                <li>Permisos adecuados en IAM</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Mejores Prácticas</h6>
+                                            <ul>
+                                                <li>Habilitar insights en trails críticos</li>
+                                                <li>Configurar alertas para insights importantes</li>
+                                                <li>Revisar insights regularmente</li>
+                                                <li>Integrar con servicios de monitoreo</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-dollar-sign"></i> Costos de CloudTrail Insights</h6>
+                                <p>CloudTrail Insights tiene costos adicionales:</p>
+                                <ul class="mb-0">
+                                    <li><strong>$0.35 por 100,000 eventos</strong> analizados para insights</li>
+                                    <li><strong>Costo único por insight generado</strong> (alrededor de $0.10-0.50 por insight)</li>
+                                    <li><strong>No hay costo</strong> si no se generan insights</li>
+                                    <li><strong>Período de evaluación gratuito</strong> durante los primeros 30 días</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

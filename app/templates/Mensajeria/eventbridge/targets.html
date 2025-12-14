@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Targets - {{ rule_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-bullseye text-info"></i> Targets de "{{ rule_name }}"
+                    </h1>
+                    <p class="text-muted">Destinos configurados para la regla</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('eventbridge.add_target', rule_name=rule_name, event_bus_name=event_bus_name) }}" class="btn btn-info">
+                        <i class="fas fa-plus"></i> Agregar Target
+                    </a>
+                    <a href="{{ url_for('eventbridge.list_rules') }}" class="btn btn-secondary ml-2">
+                        <i class="fas fa-arrow-left"></i> Volver a Reglas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Targets -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-list"></i> Targets Configurados
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if targets %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="targetsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>ARN del Target</th>
+                                    <th>Tipo</th>
+                                    <th>Configuración</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for target in targets %}
+                                <tr>
+                                    <td><strong>{{ target.id }}</strong></td>
+                                    <td>
+                                        <small>{{ target.arn }}</small>
+                                    </td>
+                                    <td>
+                                        {% if 'lambda' in target.arn %}
+                                        <span class="badge badge-warning">Lambda</span>
+                                        {% elif 'sns' in target.arn %}
+                                        <span class="badge badge-info">SNS</span>
+                                        {% elif 'sqs' in target.arn %}
+                                        <span class="badge badge-success">SQS</span>
+                                        {% elif 'events' in target.arn %}
+                                        <span class="badge badge-primary">EventBridge</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">Otro</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if target.input %}
+                                        <small class="text-muted">Input personalizado</small>
+                                        {% elif target.input_path %}
+                                        <small class="text-info">Input path: {{ target.input_path }}</small>
+                                        {% else %}
+                                        <small class="text-muted">Evento completo</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('eventbridge.remove_target', rule_name=rule_name, target_id=target.id) }}" style="display: inline;">
+                                            <input type="hidden" name="event_bus_name" value="{{ event_bus_name }}">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('¿Estás seguro de remover este target?')">
+                                                <i class="fas fa-trash"></i> Remover
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-bullseye fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay targets configurados</h5>
+                        <p class="text-muted">Agrega targets para definir qué hacer con los eventos filtrados por esta regla</p>
+                        <a href="{{ url_for('eventbridge.add_target', rule_name=rule_name, event_bus_name=event_bus_name) }}" class="btn btn-info">
+                            <i class="fas fa-plus"></i> Agregar Target
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#targetsTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 25
+    });
+});
+</script>
+{% endblock %}

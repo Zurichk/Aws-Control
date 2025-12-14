@@ -3,11 +3,8 @@ from app.utils.aws_client import get_aws_client
 
 bp = Blueprint('cloudformation', __name__)
 
-@bp.route('/cloudformation')
-def index():
-    return render_template('Integracion/cloudformation/index.html')
-
-@bp.route('/cloudformation/stacks')
+@bp.route('/')
+@bp.route('/stacks')
 def stacks():
     try:
         cf = get_aws_client('cloudformation')
@@ -20,12 +17,12 @@ def stacks():
                 'description': stack.get('Description', 'N/A'),
                 'creation_time': stack['CreationTime'].strftime('%Y-%m-%d %H:%M:%S')
             })
-        return render_template('Integracion/cloudformation/stacks.html', stacks=stack_list)
+        return render_template('Integracion/stacks.html', stacks=stack_list)
     except Exception as e:
         flash(f'Error obteniendo stacks de CloudFormation: {str(e)}', 'error')
-        return render_template('Integracion/cloudformation/stacks.html', stacks=[])
+        return render_template('Integracion/stacks.html', stacks=[])
 
-@bp.route('/cloudformation/stack/<stack_name>')
+@bp.route('/stack/<stack_name>')
 def stack_detail(stack_name):
     try:
         cf = get_aws_client('cloudformation')
@@ -42,13 +39,13 @@ def stack_detail(stack_name):
         resources_response = cf.describe_stack_resources(StackName=stack_name)
         resources = resources_response['StackResources']
         
-        return render_template('Integracion/cloudformation/stack_detail.html', 
+        return render_template('Integracion/stack_detail.html', 
                              stack=stack, events=events, resources=resources)
     except Exception as e:
         flash(f'Error obteniendo detalles del stack: {str(e)}', 'error')
         return redirect(url_for('cloudformation.stacks'))
 
-@bp.route('/cloudformation/create', methods=['GET', 'POST'])
+@bp.route('/create', methods=['GET', 'POST'])
 def create_stack():
     if request.method == 'POST':
         try:
@@ -88,9 +85,9 @@ def create_stack():
             flash(f'Error creando stack: {str(e)}', 'error')
             return redirect(url_for('cloudformation.create_stack'))
     
-    return render_template('Integracion/cloudformation/create_stack.html')
+    return render_template('Integracion/create_stack.html')
 
-@bp.route('/cloudformation/update/<stack_name>', methods=['GET', 'POST'])
+@bp.route('/update/<stack_name>', methods=['GET', 'POST'])
 def update_stack(stack_name):
     if request.method == 'POST':
         try:
@@ -134,12 +131,12 @@ def update_stack(stack_name):
         cf = get_aws_client('cloudformation')
         stack_response = cf.describe_stacks(StackName=stack_name)
         stack = stack_response['Stacks'][0]
-        return render_template('Integracion/cloudformation/update_stack.html', stack=stack)
+        return render_template('Integracion/update_stack.html', stack=stack)
     except Exception as e:
         flash(f'Error obteniendo stack: {str(e)}', 'error')
         return redirect(url_for('cloudformation.stacks'))
 
-@bp.route('/cloudformation/delete/<stack_name>', methods=['POST'])
+@bp.route('/delete/<stack_name>', methods=['POST'])
 def delete_stack(stack_name):
     try:
         cf = get_aws_client('cloudformation')

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Run Command - Comandos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">
+                            <i class="fas fa-terminal"></i> Run Command - Comandos Ejecutados
+                        </h3>
+                        <p class="card-subtitle text-muted">Historial de comandos ejecutados en instancias EC2</p>
+                    </div>
+                    <a href="{{ url_for('systems_manager.run_command') }}" class="btn btn-success">
+                        <i class="fas fa-play"></i> Ejecutar Nuevo Comando
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="table-responsive">
+                        <table id="commandsTable" class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID del Comando</th>
+                                    <th>Documento</th>
+                                    <th>Estado</th>
+                                    <th>Objetivos</th>
+                                    <th>Errores</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cmd in commands %}
+                                <tr>
+                                    <td>
+                                        <code class="text-truncate" style="max-width: 200px;" title="{{ cmd.command_id }}">
+                                            {{ cmd.command_id }}
+                                        </code>
+                                    </td>
+                                    <td>{{ cmd.document_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if cmd.status == 'Success' else 'warning' if cmd.status == 'Pending' else 'danger' if cmd.status == 'Failed' else 'secondary' }}">
+                                            {{ cmd.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ cmd.target_count }}</td>
+                                    <td>
+                                        {% if cmd.error_count > 0 %}
+                                            <span class="badge bg-danger">{{ cmd.error_count }}</span>
+                                        {% else %}
+                                            <span class="badge bg-success">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ cmd.requested_date_time }}</td>
+                                    <td>
+                                        <a href="{{ url_for('systems_manager.command_detail', command_id=cmd.command_id) }}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Ver Detalles
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#commandsTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 25,
+        "order": [[5, 'desc']]
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

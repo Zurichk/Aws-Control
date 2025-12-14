@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}ELBv2 - Target Groups{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-bullseye me-2"></i>
+                            Target Groups de ELBv2
+                        </h2>
+                        <small class="text-muted">Grupos de destino para balanceadores de carga</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('elbv2.create_target_group') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Crear Target Group
+                        </a>
+                        <a href="{{ url_for('elbv2.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% if target_groups %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Protocolo</th>
+                                        <th>Puerto</th>
+                                        <th>VPC ID</th>
+                                        <th>Health Check Path</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tg in target_groups %}
+                                        <tr>
+                                            <td>{{ tg.name }}</td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ tg.protocol }}</span>
+                                            </td>
+                                            <td>{{ tg.port }}</td>
+                                            <td>
+                                                <code>{{ tg.vpc_id }}</code>
+                                            </td>
+                                            <td>{{ tg.health_check_path }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('elbv2.delete_target_group', target_group_arn=tg.arn) }}" class="d-inline"
+                                                      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este Target Group?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bullseye fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No se encontraron Target Groups</h5>
+                            <p class="text-muted">Crea tu primer Target Group para comenzar</p>
+                            <a href="{{ url_for('elbv2.create_target_group') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Crear Target Group
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}CloudTrail - Eventos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history"></i> Eventos de CloudTrail
+                    </h3>
+                    <p class="card-subtitle text-muted">Historial de actividad y eventos de la cuenta AWS</p>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros de búsqueda -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-filter"></i> Filtros de Búsqueda
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="GET" id="filterForm">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="startTime" class="form-label">Fecha Inicio</label>
+                                        <input type="datetime-local" class="form-control" id="startTime" name="start_time"
+                                               value="{{ request.args.get('start_time', '') }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="endTime" class="form-label">Fecha Fin</label>
+                                        <input type="datetime-local" class="form-control" id="endTime" name="end_time"
+                                               value="{{ request.args.get('end_time', '') }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="eventName" class="form-label">Nombre del Evento</label>
+                                        <input type="text" class="form-control" id="eventName" name="event_name"
+                                               value="{{ request.args.get('event_name', '') }}"
+                                               placeholder="ej: DescribeInstances">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="userName" class="form-label">Usuario</label>
+                                        <input type="text" class="form-control" id="userName" name="user_name"
+                                               value="{{ request.args.get('user_name', '') }}"
+                                               placeholder="ej: admin@example.com">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-3">
+                                        <label for="eventSource" class="form-label">Servicio</label>
+                                        <select class="form-select" id="eventSource" name="event_source">
+                                            <option value="">Todos los servicios</option>
+                                            <option value="ec2.amazonaws.com" {{ 'selected' if request.args.get('event_source') == 'ec2.amazonaws.com' else '' }}>EC2</option>
+                                            <option value="s3.amazonaws.com" {{ 'selected' if request.args.get('event_source') == 's3.amazonaws.com' else '' }}>S3</option>
+                                            <option value="iam.amazonaws.com" {{ 'selected' if request.args.get('event_source') == 'iam.amazonaws.com' else '' }}>IAM</option>
+                                            <option value="rds.amazonaws.com" {{ 'selected' if request.args.get('event_source') == 'rds.amazonaws.com' else '' }}>RDS</option>
+                                            <option value="lambda.amazonaws.com" {{ 'selected' if request.args.get('event_source') == 'lambda.amazonaws.com' else '' }}>Lambda</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="region" class="form-label">Región</label>
+                                        <input type="text" class="form-control" id="region" name="region"
+                                               value="{{ request.args.get('region', '') }}"
+                                               placeholder="ej: us-east-1">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="maxResults" class="form-label">Máx. Resultados</label>
+                                        <select class="form-select" id="maxResults" name="max_results">
+                                            <option value="50" {{ 'selected' if request.args.get('max_results', '50') == '50' else '' }}>50</option>
+                                            <option value="100" {{ 'selected' if request.args.get('max_results') == '100' else '' }}>100</option>
+                                            <option value="200" {{ 'selected' if request.args.get('max_results') == '200' else '' }}>200</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary me-2">
+                                            <i class="fas fa-search"></i> Buscar
+                                        </button>
+                                        <a href="{{ url_for('cloudtrail.events') }}" class="btn btn-secondary">
+                                            <i class="fas fa-times"></i> Limpiar
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de eventos -->
+                    <div class="table-responsive">
+                        <table id="eventsTable" class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Evento</th>
+                                    <th>Servicio</th>
+                                    <th>Usuario</th>
+                                    <th>Región</th>
+                                    <th>Resultado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>
+                                        <small>{{ event.EventTime.strftime('%Y-%m-%d %H:%M:%S') if event.EventTime else 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ event.EventName or 'N/A' }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ event.EventSource or 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        {% set service = (event.EventSource or '').split('.')[0].upper() %}
+                                        <span class="badge bg-secondary">{{ service }}</span>
+                                    </td>
+                                    <td>
+                                        {% if event.Username %}
+                                        <code>{{ event.Username }}</code>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ event.AwsRegion or 'N/A' }}</td>
+                                    <td>
+                                        {% if event.ErrorCode %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle"></i> Error
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Éxito
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" onclick="showEventDetails('{{ event.EventId }}')">
+                                            <i class="fas fa-eye"></i> Detalles
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not events %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No se encontraron eventos con los filtros aplicados.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para detalles del evento -->
+<div class="modal fade" id="eventDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye"></i> Detalles del Evento
+                </h5>
+                <button type="close" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="eventDetailsContent" class="bg-light p-3 rounded" style="font-size: 0.8em; max-height: 400px; overflow-y: auto;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#eventsTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 50,
+        "order": [[0, "desc"]],
+        "columnDefs": [
+            { "orderable": false, "targets": 6 }
+        ]
+    });
+});
+
+function showEventDetails(eventId) {
+    // En una implementación real, aquí haríamos una llamada AJAX para obtener los detalles
+    // Por ahora, mostramos un mensaje
+    document.getElementById('eventDetailsContent').textContent =
+        'Detalles del evento ' + eventId + ':\n\n' +
+        'Para ver los detalles completos del evento, incluyendo el JSON completo,\n' +
+        'se requiere una implementación adicional con llamadas AJAX al backend.';
+    new bootstrap.Modal(document.getElementById('eventDetailsModal')).show();
+}
+</script>
+{% endblock %}
+{% endblock %}

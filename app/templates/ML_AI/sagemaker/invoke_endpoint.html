@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Invocar Endpoint SageMaker - AWS Control Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-play-circle"></i> Invocar Endpoint SageMaker
+                    </h1>
+                    <p class="text-muted">Hacer predicciones con un modelo desplegado</p>
+                </div>
+                <a href="{{ url_for('sagemaker.endpoints') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-paper-plane"></i> Invocación del Endpoint
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="endpoint_name">
+                                <i class="fas fa-tag"></i> Endpoint *
+                            </label>
+                            <select class="form-control" id="endpoint_name" name="endpoint_name" required>
+                                <option value="">Seleccionar endpoint...</option>
+                                {% for endpoint in endpoint_names %}
+                                <option value="{{ endpoint }}">{{ endpoint }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                Solo se muestran endpoints en estado "InService"
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="content_type">
+                                <i class="fas fa-file-code"></i> Tipo de Contenido
+                            </label>
+                            <select class="form-control" id="content_type" name="content_type">
+                                <option value="application/json">application/json</option>
+                                <option value="text/csv">text/csv</option>
+                                <option value="application/x-npy">application/x-npy</option>
+                                <option value="application/x-image">application/x-image</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input_data">
+                                <i class="fas fa-edit"></i> Datos de Entrada *
+                            </label>
+                            <textarea class="form-control" id="input_data" name="input_data" rows="8"
+                                      placeholder='{"instances": [{"features": [1.0, 2.0, 3.0]}]}' required></textarea>
+                            <small class="form-text text-muted">
+                                Datos en formato JSON, CSV u otro formato soportado por el modelo
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="button" class="btn btn-info" onclick="loadExample()">
+                                <i class="fas fa-magic"></i> Cargar Ejemplo
+                            </button>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane"></i> Invocar Endpoint
+                            </button>
+                            <button type="reset" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-eraser"></i> Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-question-circle"></i> Ayuda
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h5>Formatos de Datos</h5>
+                    <p class="small">
+                        El formato de los datos depende del modelo desplegado. Comúnmente se usa JSON.
+                    </p>
+
+                    <h6 class="mt-3">Ejemplos:</h6>
+                    <ul class="small">
+                        <li><strong>JSON:</strong> {"instances": [[1, 2, 3]]}</li>
+                        <li><strong>CSV:</strong> 1.0,2.0,3.0\n4.0,5.0,6.0</li>
+                        <li><strong>Imagen:</strong> bytes de imagen codificada</li>
+                    </ul>
+
+                    <h6 class="mt-3">Estados del Endpoint:</h6>
+                    <ul class="small">
+                        <li><span class="badge badge-success">InService</span>: Listo para usar</li>
+                        <li><span class="badge badge-warning">Creating</span>: En proceso</li>
+                        <li><span class="badge badge-danger">Failed</span>: Error</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadExample() {
+    const exampleData = {
+        "instances": [
+            {
+                "features": [1.0, 2.0, 3.0, 4.0]
+            }
+        ]
+    };
+    document.getElementById('input_data').value = JSON.stringify(exampleData, null, 2);
+}
+
+// Validación del formulario
+$(document).ready(function() {
+    $('form').submit(function(e) {
+        const endpointName = $('#endpoint_name').val();
+        const inputData = $('#input_data').val().trim();
+
+        if (!endpointName) {
+            e.preventDefault();
+            alert('Debes seleccionar un endpoint');
+            return false;
+        }
+
+        if (!inputData) {
+            e.preventDefault();
+            alert('Los datos de entrada son requeridos');
+            return false;
+        }
+
+        // Intentar parsear JSON si es application/json
+        const contentType = $('#content_type').val();
+        if (contentType === 'application/json') {
+            try {
+                JSON.parse(inputData);
+            } catch (error) {
+                e.preventDefault();
+                alert('Los datos JSON no son válidos: ' + error.message);
+                return false;
+            }
+        }
+
+        // Mostrar indicador de carga
+        $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Invocando...');
+    });
+});
+</script>
+{% endblock %}

@@ -56,7 +56,8 @@ class VPCMCPTools:
                         },
                         'max_results': {'type': 'integer', 'description': 'Número máximo de resultados', 'default': 100}
                     }
-                }
+                },
+                'function': self._describe_vpcs
             },
             {
                 'name': 'vpc_create_vpc',
@@ -70,7 +71,8 @@ class VPCMCPTools:
                         'tags': {'type': 'array', 'description': 'Tags para la VPC', 'items': {'type': 'object'}}
                     },
                     'required': ['cidr_block']
-                }
+                },
+                'function': self._create_vpc
             },
             {
                 'name': 'vpc_delete_vpc',
@@ -81,7 +83,8 @@ class VPCMCPTools:
                         'vpc_id': {'type': 'string', 'description': self.DESC_VPC_ID}
                     },
                     'required': ['vpc_id']
-                }
+                },
+                'function': self._delete_vpc
             },
             {
                 'name': 'vpc_describe_subnets',
@@ -108,7 +111,8 @@ class VPCMCPTools:
                         },
                         'max_results': {'type': 'integer', 'description': 'Número máximo de resultados', 'default': 100}
                     }
-                }
+                },
+                'function': self._describe_subnets
             },
             {
                 'name': 'vpc_create_subnet',
@@ -124,7 +128,8 @@ class VPCMCPTools:
                         'tags': {'type': 'array', 'description': 'Tags para la subnet', 'items': {'type': 'object'}}
                     },
                     'required': ['vpc_id', 'cidr_block']
-                }
+                },
+                'function': self._create_subnet
             },
             {
                 'name': 'vpc_delete_subnet',
@@ -135,7 +140,8 @@ class VPCMCPTools:
                         'subnet_id': {'type': 'string', 'description': self.DESC_SUBNET_ID}
                     },
                     'required': ['subnet_id']
-                }
+                },
+                'function': self._delete_subnet
             },
             {
                 'name': 'vpc_describe_security_groups',
@@ -166,7 +172,8 @@ class VPCMCPTools:
                         },
                         'max_results': {'type': 'integer', 'description': 'Número máximo de resultados', 'default': 100}
                     }
-                }
+                },
+                'function': self._describe_security_groups
             },
             {
                 'name': 'vpc_create_security_group',
@@ -180,7 +187,8 @@ class VPCMCPTools:
                         'tags': {'type': 'array', 'description': 'Tags para el security group', 'items': {'type': 'object'}}
                     },
                     'required': ['group_name', 'description']
-                }
+                },
+                'function': self._create_security_group
             },
             {
                 'name': 'vpc_authorize_security_group_ingress',
@@ -188,26 +196,76 @@ class VPCMCPTools:
                 'parameters': {
                     'type': 'object',
                     'properties': {
-                        'group_id': {'type': 'string', 'description': self.DESC_SG_ID},
+                        'group_id': {
+                            'type': 'string', 
+                            'description': self.DESC_SG_ID
+                        },
                         'ip_permissions': {
                             'type': 'array',
-                            'description': 'Permisos IP para reglas de entrada',
+                            'description': 'Lista de permisos IP. Ejemplo: [{"IpProtocol": "tcp", "FromPort": 80, "ToPort": 80, "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}]',
                             'items': {
                                 'type': 'object',
                                 'properties': {
-                                    'IpProtocol': {'type': 'string'},
-                                    'FromPort': {'type': 'integer'},
-                                    'ToPort': {'type': 'integer'},
-                                    'IpRanges': {'type': 'array', 'items': {'type': 'object'}},
-                                    'Ipv6Ranges': {'type': 'array', 'items': {'type': 'object'}},
-                                    'PrefixListIds': {'type': 'array', 'items': {'type': 'object'}},
-                                    'UserIdGroupPairs': {'type': 'array', 'items': {'type': 'object'}}
-                                }
+                                    'IpProtocol': {
+                                        'type': 'string',
+                                        'description': 'Protocolo (tcp, udp, icmp o -1 para todos)'
+                                    },
+                                    'FromPort': {
+                                        'type': 'integer',
+                                        'description': 'Puerto de inicio (ej: 80 para HTTP)'
+                                    },
+                                    'ToPort': {
+                                        'type': 'integer',
+                                        'description': 'Puerto final (ej: 80 para HTTP)'
+                                    },
+                                    'IpRanges': {
+                                        'type': 'array',
+                                        'description': 'Rangos IP IPv4',
+                                        'items': {
+                                            'type': 'object',
+                                            'properties': {
+                                                'CidrIp': {
+                                                    'type': 'string',
+                                                    'description': 'CIDR IPv4 (ej: 0.0.0.0/0)'
+                                                },
+                                                'Description': {
+                                                    'type': 'string',
+                                                    'description': 'Descripción opcional'
+                                                }
+                                            },
+                                            'required': ['CidrIp']
+                                        }
+                                    }
+                                },
+                                'required': ['IpProtocol', 'IpRanges']
                             }
                         }
                     },
                     'required': ['group_id', 'ip_permissions']
-                }
+                },
+                'function': self.authorize_security_group_ingress
+            },
+            {
+                'name': 'vpc_add_common_security_rules',
+                'description': 'Agrega reglas comunes de entrada a un security group (HTTP, HTTPS, SSH, RDP, etc.)',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'group_id': {'type': 'string', 'description': self.DESC_SG_ID},
+                        'rules': {
+                            'type': 'array',
+                            'description': 'Lista de tipos de reglas a agregar: http, https, ssh, rdp, mysql, postgres, all-traffic',
+                            'items': {'type': 'string'}
+                        },
+                        'cidr': {
+                            'type': 'string', 
+                            'description': 'CIDR para las reglas (por defecto 0.0.0.0/0 para acceso desde cualquier lugar)',
+                            'default': '0.0.0.0/0'
+                        }
+                    },
+                    'required': ['group_id', 'rules']
+                },
+                'function': self.add_common_security_rules
             },
             {
                 'name': 'vpc_describe_route_tables',
@@ -234,7 +292,8 @@ class VPCMCPTools:
                         },
                         'max_results': {'type': 'integer', 'description': 'Número máximo de resultados', 'default': 100}
                     }
-                }
+                },
+                'function': self._describe_route_tables
             },
             {
                 'name': 'vpc_describe_internet_gateways',
@@ -260,7 +319,8 @@ class VPCMCPTools:
                         },
                         'max_results': {'type': 'integer', 'description': 'Número máximo de resultados', 'default': 100}
                     }
-                }
+                },
+                'function': self._describe_internet_gateways
             },
             {
                 'name': 'vpc_create_internet_gateway',
@@ -270,7 +330,8 @@ class VPCMCPTools:
                     'properties': {
                         'tags': {'type': 'array', 'description': 'Tags para el internet gateway', 'items': {'type': 'object'}}
                     }
-                }
+                },
+                'function': self._create_internet_gateway
             },
             {
                 'name': 'vpc_attach_internet_gateway',
@@ -282,7 +343,8 @@ class VPCMCPTools:
                         'vpc_id': {'type': 'string', 'description': self.DESC_VPC_ID}
                     },
                     'required': ['internet_gateway_id', 'vpc_id']
-                }
+                },
+                'function': self._attach_internet_gateway
             },
             {
                 'name': 'vpc_describe_nat_gateways',
@@ -308,7 +370,8 @@ class VPCMCPTools:
                         },
                         'max_results': {'type': 'integer', 'description': 'Número máximo de resultados', 'default': 100}
                     }
-                }
+                },
+                'function': self._describe_nat_gateways
             }
         ]
 
@@ -333,6 +396,8 @@ class VPCMCPTools:
                 return self._create_security_group(parameters)
             elif tool_name == 'vpc_authorize_security_group_ingress':
                 return self._authorize_security_group_ingress(parameters)
+            elif tool_name == 'vpc_add_common_security_rules':
+                return self.add_common_security_rules(**parameters)
             elif tool_name == 'vpc_describe_route_tables':
                 return self._describe_route_tables(parameters)
             elif tool_name == 'vpc_describe_internet_gateways':
@@ -349,17 +414,17 @@ class VPCMCPTools:
         except Exception as e:
             return {'error': f'Error ejecutando herramienta VPC {tool_name}: {str(e)}'}
 
-    def _describe_vpcs(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_vpcs(self, **kwargs) -> Dict[str, Any]:
         """Lista VPCs"""
         client = self._get_client()
 
         vpc_params = {}
-        if 'vpc_ids' in params:
-            vpc_params['VpcIds'] = params['vpc_ids']
-        if 'filters' in params:
-            vpc_params['Filters'] = params['filters']
-        if 'max_results' in params:
-            vpc_params['MaxResults'] = params['max_results']
+        if 'vpc_ids' in kwargs:
+            vpc_params['VpcIds'] = kwargs['vpc_ids']
+        if 'filters' in kwargs:
+            vpc_params['Filters'] = kwargs['filters']
+        if 'max_results' in kwargs:
+            vpc_params['MaxResults'] = kwargs['max_results']
 
         response = client.describe_vpcs(**vpc_params)
 
@@ -382,34 +447,41 @@ class VPCMCPTools:
             'total_count': len(vpcs)
         }
 
-    def _create_vpc(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_vpc(self, **kwargs) -> Dict[str, Any]:
         """Crea una nueva VPC"""
         client = self._get_client()
 
         vpc_params = {
-            'CidrBlock': params['cidr_block']
+            'CidrBlock': kwargs['cidr_block']
         }
 
-        if 'amazon_provided_ipv6_cidr_block' in params:
-            vpc_params['AmazonProvidedIpv6CidrBlock'] = params['amazon_provided_ipv6_cidr_block']
-        if 'instance_tenancy' in params:
-            vpc_params['InstanceTenancy'] = params['instance_tenancy']
+        if 'amazon_provided_ipv6_cidr_block' in kwargs:
+            vpc_params['AmazonProvidedIpv6CidrBlock'] = kwargs['amazon_provided_ipv6_cidr_block']
+        if 'instance_tenancy' in kwargs:
+            vpc_params['InstanceTenancy'] = kwargs['instance_tenancy']
 
         response = client.create_vpc(**vpc_params)
 
         vpc_id = response['Vpc']['VpcId']
 
         # Agregar tags si se proporcionaron
-        if 'tags' in params:
-            client.create_tags(
-                Resources=[vpc_id],
-                Tags=params['tags']
-            )
+        if 'tags' in kwargs and isinstance(kwargs['tags'], list):
+            # Validar que los tags tengan el formato correcto
+            valid_tags = []
+            for tag in kwargs['tags']:
+                if isinstance(tag, dict) and 'Key' in tag and 'Value' in tag:
+                    valid_tags.append(tag)
+            
+            if valid_tags:
+                client.create_tags(
+                    Resources=[vpc_id],
+                    Tags=valid_tags
+                )
 
         return {
             'message': f'VPC {vpc_id} creada exitosamente',
             'vpc_id': vpc_id,
-            'cidr_block': params['cidr_block']
+            'cidr_block': kwargs['cidr_block']
         }
 
     def _delete_vpc(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -462,38 +534,45 @@ class VPCMCPTools:
             'total_count': len(subnets)
         }
 
-    def _create_subnet(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_subnet(self, **kwargs) -> Dict[str, Any]:
         """Crea una nueva subnet"""
         client = self._get_client()
 
         subnet_params = {
-            'VpcId': params['vpc_id'],
-            'CidrBlock': params['cidr_block']
+            'VpcId': kwargs['vpc_id'],
+            'CidrBlock': kwargs['cidr_block']
         }
 
-        if 'availability_zone' in params:
-            subnet_params['AvailabilityZone'] = params['availability_zone']
-        if 'availability_zone_id' in params:
-            subnet_params['AvailabilityZoneId'] = params['availability_zone_id']
-        if 'ipv6_cidr_block' in params:
-            subnet_params['Ipv6CidrBlock'] = params['ipv6_cidr_block']
+        if 'availability_zone' in kwargs:
+            subnet_params['AvailabilityZone'] = kwargs['availability_zone']
+        if 'availability_zone_id' in kwargs:
+            subnet_params['AvailabilityZoneId'] = kwargs['availability_zone_id']
+        if 'ipv6_cidr_block' in kwargs:
+            subnet_params['Ipv6CidrBlock'] = kwargs['ipv6_cidr_block']
 
         response = client.create_subnet(**subnet_params)
 
         subnet_id = response['Subnet']['SubnetId']
 
         # Agregar tags si se proporcionaron
-        if 'tags' in params:
-            client.create_tags(
-                Resources=[subnet_id],
-                Tags=params['tags']
-            )
+        if 'tags' in kwargs and isinstance(kwargs['tags'], list):
+            # Validar que los tags tengan el formato correcto
+            valid_tags = []
+            for tag in kwargs['tags']:
+                if isinstance(tag, dict) and 'Key' in tag and 'Value' in tag:
+                    valid_tags.append(tag)
+            
+            if valid_tags:
+                client.create_tags(
+                    Resources=[subnet_id],
+                    Tags=valid_tags
+                )
 
         return {
             'message': f'Subnet {subnet_id} creada exitosamente',
             'subnet_id': subnet_id,
-            'vpc_id': params['vpc_id'],
-            'cidr_block': params['cidr_block']
+            'vpc_id': kwargs['vpc_id'],
+            'cidr_block': kwargs['cidr_block']
         }
 
     def _delete_subnet(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -540,48 +619,193 @@ class VPCMCPTools:
             'total_count': len(security_groups)
         }
 
-    def _create_security_group(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_security_group(self, **kwargs) -> Dict[str, Any]:
         """Crea un security group"""
         client = self._get_client()
 
         sg_params = {
-            'GroupName': params['group_name'],
-            'Description': params['description']
+            'GroupName': kwargs['group_name'],
+            'Description': kwargs['description']
         }
 
-        if 'vpc_id' in params:
-            sg_params['VpcId'] = params['vpc_id']
+        if 'vpc_id' in kwargs:
+            sg_params['VpcId'] = kwargs['vpc_id']
 
         response = client.create_security_group(**sg_params)
 
         group_id = response['GroupId']
 
         # Agregar tags si se proporcionaron
-        if 'tags' in params:
-            client.create_tags(
-                Resources=[group_id],
-                Tags=params['tags']
-            )
+        if 'tags' in kwargs and isinstance(kwargs['tags'], list):
+            # Validar que los tags tengan el formato correcto
+            valid_tags = []
+            for tag in kwargs['tags']:
+                if isinstance(tag, dict) and 'Key' in tag and 'Value' in tag:
+                    valid_tags.append(tag)
+            
+            if valid_tags:
+                client.create_tags(
+                    Resources=[group_id],
+                    Tags=valid_tags
+                )
 
         return {
             'message': f'Security group {group_id} creado exitosamente',
             'group_id': group_id,
-            'group_name': params['group_name']
+            'group_name': kwargs['group_name']
         }
 
-    def _authorize_security_group_ingress(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Agrega reglas de entrada a un security group"""
-        client = self._get_client()
+    def _authorize_security_group_ingress(self, **kwargs) -> Dict[str, Any]:
+        """Agrega reglas de entrada a un security group (versión interna)"""
+        return self.authorize_security_group_ingress(**kwargs)
+    
+    def authorize_security_group_ingress(self, group_id: str, ip_permissions: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Agrega reglas de entrada a un security group.
+        
+        Args:
+            group_id: ID del security group
+            ip_permissions: Lista de permisos IP con formato AWS
+        
+        Returns:
+            Dict con resultado de la operación
+        
+        Example ip_permissions:
+        [
+            {
+                'IpProtocol': 'tcp',
+                'FromPort': 80,
+                'ToPort': 80,
+                'IpRanges': [{'CidrIp': '0.0.0.0/0', 'Description': 'Allow HTTP from anywhere'}]
+            }
+        ]
+        """
+        try:
+            client = self._get_client()
 
-        client.authorize_security_group_ingress(
-            GroupId=params['group_id'],
-            IpPermissions=params['ip_permissions']
-        )
+            # Validar y corregir formato de ip_permissions
+            valid_permissions = []
+            for perm in ip_permissions:
+                # Si es una lista de strings en lugar de un dict, ignorar
+                if not isinstance(perm, dict):
+                    continue
+                
+                # Validar que tenga los campos requeridos
+                if 'IpProtocol' not in perm:
+                    continue
+                
+                # Asegurar que IpRanges sea una lista de dicts
+                if 'IpRanges' in perm:
+                    if isinstance(perm['IpRanges'], list):
+                        valid_ranges = []
+                        for ip_range in perm['IpRanges']:
+                            if isinstance(ip_range, dict) and 'CidrIp' in ip_range:
+                                valid_ranges.append(ip_range)
+                            elif isinstance(ip_range, str):
+                                # Convertir string CIDR a formato correcto
+                                valid_ranges.append({'CidrIp': ip_range})
+                        perm['IpRanges'] = valid_ranges
+                
+                # Convertir puertos a enteros si vienen como strings
+                if 'FromPort' in perm:
+                    perm['FromPort'] = int(perm['FromPort'])
+                if 'ToPort' in perm:
+                    perm['ToPort'] = int(perm['ToPort'])
+                
+                valid_permissions.append(perm)
+            
+            if not valid_permissions:
+                return {
+                    'success': False,
+                    'error': 'No se encontraron permisos IP válidos en el formato correcto',
+                    'group_id': group_id
+                }
 
-        return {
-            'message': f'Reglas de entrada agregadas al security group {params["group_id"]}',
-            'group_id': params['group_id']
+            client.authorize_security_group_ingress(
+                GroupId=group_id,
+                IpPermissions=valid_permissions
+            )
+
+            return {
+                'success': True,
+                'message': f'Reglas de entrada agregadas al security group {group_id}',
+                'group_id': group_id,
+                'rules_added': len(valid_permissions)
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Error agregando reglas de entrada: {str(e)}',
+                'group_id': group_id
+            }
+    
+    def add_common_security_rules(self, group_id: str, rules: List[str], cidr: str = '0.0.0.0/0') -> Dict[str, Any]:
+        """
+        Agrega reglas comunes de entrada a un security group.
+        
+        Args:
+            group_id: ID del security group
+            rules: Lista de tipos de reglas (http, https, ssh, rdp, mysql, postgres, all-traffic)
+            cidr: CIDR para las reglas (por defecto 0.0.0.0/0)
+        
+        Returns:
+            Dict con resultado de la operación
+        """
+        # Definición de reglas comunes
+        common_rules = {
+            'http': {'port': 80, 'protocol': 'tcp', 'description': 'Allow HTTP'},
+            'https': {'port': 443, 'protocol': 'tcp', 'description': 'Allow HTTPS'},
+            'ssh': {'port': 22, 'protocol': 'tcp', 'description': 'Allow SSH'},
+            'rdp': {'port': 3389, 'protocol': 'tcp', 'description': 'Allow RDP'},
+            'mysql': {'port': 3306, 'protocol': 'tcp', 'description': 'Allow MySQL'},
+            'postgres': {'port': 5432, 'protocol': 'tcp', 'description': 'Allow PostgreSQL'},
+            'all-traffic': {'port': -1, 'protocol': '-1', 'description': 'Allow all traffic'}
         }
+        
+        try:
+            # Construir lista de permisos IP
+            ip_permissions = []
+            rules_added = []
+            
+            for rule in rules:
+                rule_lower = rule.lower()
+                if rule_lower in common_rules:
+                    rule_def = common_rules[rule_lower]
+                    
+                    permission = {
+                        'IpProtocol': rule_def['protocol'],
+                        'IpRanges': [{'CidrIp': cidr, 'Description': rule_def['description']}]
+                    }
+                    
+                    # Solo agregar puertos si no es all-traffic
+                    if rule_def['port'] != -1:
+                        permission['FromPort'] = rule_def['port']
+                        permission['ToPort'] = rule_def['port']
+                    
+                    ip_permissions.append(permission)
+                    rules_added.append(f"{rule_lower} (puerto {rule_def['port']})" if rule_def['port'] != -1 else rule_lower)
+            
+            if not ip_permissions:
+                return {
+                    'success': False,
+                    'error': f'No se encontraron reglas válidas. Reglas disponibles: {", ".join(common_rules.keys())}'
+                }
+            
+            # Agregar las reglas
+            result = self.authorize_security_group_ingress(group_id, ip_permissions)
+            
+            if result.get('success'):
+                result['rules_added_details'] = rules_added
+                result['cidr'] = cidr
+            
+            return result
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Error agregando reglas comunes: {str(e)}',
+                'group_id': group_id
+            }
 
     def _describe_route_tables(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Lista route tables"""

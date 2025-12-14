@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}SageMaker Endpoints - AWS Control Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-brain"></i> SageMaker Endpoints
+                    </h1>
+                    <p class="text-muted">Gestión de endpoints de machine learning</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('sagemaker.create_endpoint') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear Endpoint
+                    </a>
+                    <a href="{{ url_for('sagemaker.invoke_endpoint') }}" class="btn btn-success">
+                        <i class="fas fa-play"></i> Invocar Endpoint
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endpoints Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list"></i> Endpoints Disponibles
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="endpointsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Configuración</th>
+                                    <th>Creado</th>
+                                    <th>Última Modificación</th>
+                                    <th>ARN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for endpoint in endpoints %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ endpoint.name }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if endpoint.status == 'InService' %}
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check-circle"></i> En Servicio
+                                            </span>
+                                        {% elif endpoint.status == 'Creating' %}
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-clock"></i> Creando
+                                            </span>
+                                        {% elif endpoint.status == 'Updating' %}
+                                            <span class="badge badge-info">
+                                                <i class="fas fa-sync"></i> Actualizando
+                                            </span>
+                                        {% elif endpoint.status == 'Deleting' %}
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-trash"></i> Eliminando
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">
+                                                {{ endpoint.status }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ endpoint.config_name }}</td>
+                                    <td>{{ endpoint.creation_time }}</td>
+                                    <td>{{ endpoint.last_modified_time }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ endpoint.arn }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if endpoints|length == 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                No se encontraron endpoints de SageMaker. <a href="{{ url_for('sagemaker.create_endpoint') }}">Crear el primero</a>.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#endpointsTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "order": [[ 3, "desc" ]],
+        "pageLength": 25
+    });
+});
+</script>
+{% endblock %}

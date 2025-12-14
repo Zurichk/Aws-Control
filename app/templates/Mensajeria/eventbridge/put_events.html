@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Enviar Eventos - EventBridge{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-paper-plane text-info"></i> Enviar Eventos Personalizados
+                    </h1>
+                    <p class="text-muted">Enviar eventos personalizados al Event Bus</p>
+                </div>
+                <a href="{{ url_for('eventbridge.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario para enviar eventos -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-edit"></i> Configuración del Evento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="event_bus_name">Event Bus</label>
+                            <input type="text" class="form-control" id="event_bus_name" name="event_bus_name"
+                                   value="default" placeholder="default">
+                            <small class="form-text text-muted">
+                                Nombre del Event Bus donde enviar el evento (deja 'default' para el bus por defecto)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="source">Source *</label>
+                            <input type="text" class="form-control" id="source" name="source"
+                                   placeholder="my.application" required>
+                            <small class="form-text text-muted">
+                                Identificador de la fuente del evento (ej: my.application, aws.ec2)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="detail_type">Detail Type *</label>
+                            <input type="text" class="form-control" id="detail_type" name="detail_type"
+                                   placeholder="My Custom Event" required>
+                            <small class="form-text text-muted">
+                                Descripción del tipo de evento (ej: "User Action", "Order Created")
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="detail">Detail (JSON) *</label>
+                            <textarea class="form-control" id="detail" name="detail" rows="8" required
+                                      placeholder='{
+  "userId": "12345",
+  "action": "login",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "metadata": {
+    "ip": "192.168.1.1",
+    "userAgent": "Mozilla/5.0..."
+  }
+}'></textarea>
+                            <small class="form-text text-muted">
+                                Detalles del evento en formato JSON. Contiene la información específica del evento.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Formato del evento:</strong> Los eventos deben seguir el formato estándar de EventBridge con source, detail-type y detail.
+                                Los eventos serán procesados por las reglas configuradas en el Event Bus.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-paper-plane"></i> Enviar Evento
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary ml-2" onclick="loadExample()">
+                            <i class="fas fa-magic"></i> Cargar Ejemplo
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información lateral -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-info-circle"></i> Estructura del Evento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Campos requeridos:</h6>
+                    <ul>
+                        <li><strong>Source:</strong> Origen del evento</li>
+                        <li><strong>Detail Type:</strong> Tipo de evento</li>
+                        <li><strong>Detail:</strong> Datos del evento (JSON)</li>
+                    </ul>
+
+                    <h6>Ejemplo completo:</h6>
+                    <pre class="small"><code>{
+  "source": "my.ecommerce",
+  "detail-type": "Order Placed",
+  "detail": {
+    "orderId": "12345",
+    "customerId": "67890",
+    "total": 99.99,
+    "items": [...]
+  }
+}</code></pre>
+
+                    <div class="alert alert-warning mt-3">
+                        <small><strong>Nota:</strong> Los eventos personalizados serán procesados por las reglas que coincidan con el patrón definido.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadExample() {
+    document.getElementById('source').value = 'my.application';
+    document.getElementById('detail_type').value = 'User Action Completed';
+    document.getElementById('detail').value = JSON.stringify({
+        "userId": "12345",
+        "action": "purchase",
+        "productId": "widget-123",
+        "quantity": 2,
+        "timestamp": new Date().toISOString(),
+        "metadata": {
+            "sessionId": "sess_abc123",
+            "ipAddress": "192.168.1.100"
+        }
+    }, null, 2);
+}
+</script>
+{% endblock %}

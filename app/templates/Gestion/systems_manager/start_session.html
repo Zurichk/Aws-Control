@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Session Manager - Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-link"></i> Iniciar Nueva Sesión
+                    </h3>
+                    <p class="card-subtitle text-muted">Conexión segura a instancia EC2 sin necesidad de SSH</p>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="startSessionForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="target" class="form-label">
+                                        <i class="fas fa-server"></i> Instancia Objetivo *
+                                    </label>
+                                    <select class="form-select" id="target" name="target" required>
+                                        <option value="">Seleccionar instancia...</option>
+                                        {% for instance in instances %}
+                                        <option value="{{ instance.id }}">
+                                            {{ instance.id }}
+                                            {% if instance.name != 'N/A' %}
+                                                ({{ instance.name }})
+                                            {% endif %}
+                                            - {{ instance.state }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Solo instancias en estado 'running' están disponibles
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="document_name" class="form-label">
+                                        <i class="fas fa-file-code"></i> Documento de Sesión
+                                    </label>
+                                    <select class="form-select" id="document_name" name="document_name">
+                                        <option value="SSM-SessionManagerRunShell">SSM-SessionManagerRunShell</option>
+                                        <option value="AWS-StartSSHSession">AWS-StartSSHSession</option>
+                                        <option value="AWS-StartPortForwardingSession">AWS-StartPortForwardingSession</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Tipo de sesión a iniciar
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle"></i> Información sobre Session Manager</h5>
+                            <ul class="mb-0">
+                                <li><strong>Requisitos:</strong> La instancia debe tener el agente SSM instalado y configurado</li>
+                                <li><strong>Permisos:</strong> Se requieren permisos IAM para Session Manager</li>
+                                <li><strong>Conexión:</strong> La sesión se establece a través de HTTPS, no requiere puertos SSH abiertos</li>
+                                <li><strong>Logging:</strong> Las sesiones pueden ser registradas en CloudWatch Logs o S3</li>
+                                <li><strong>Seguridad:</strong> Soporta autenticación MFA y control de acceso basado en tags</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-info">
+                                <i class="fas fa-link"></i> Iniciar Sesión
+                            </button>
+                            <a href="{{ url_for('systems_manager.sessions') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Validación del formulario
+    $('#startSessionForm').submit(function(e) {
+        const target = $('#target').val();
+
+        if (!target) {
+            e.preventDefault();
+            alert('Debe seleccionar una instancia objetivo');
+            return false;
+        }
+    });
+
+    // Actualizar lista de instancias disponibles
+    $('#target').select2({
+        placeholder: 'Buscar instancia...',
+        allowClear: true
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

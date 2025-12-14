@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}EventBridge - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-bolt text-warning"></i> EventBridge
+                    </h1>
+                    <p class="text-muted">Gestión de buses de eventos, reglas y targets</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de navegación -->
+    <div class="row">
+        <!-- Event Buses -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Event Buses
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <i class="fas fa-bus"></i>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('eventbridge.list_event_buses') }}" class="btn btn-primary btn-circle">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rules -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Reglas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <i class="fas fa-gavel"></i>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('eventbridge.list_rules') }}" class="btn btn-success btn-circle">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Put Events -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Enviar Eventos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('eventbridge.put_events') }}" class="btn btn-info btn-circle">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crear Event Bus -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Nuevo Event Bus
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('eventbridge.create_event_bus') }}" class="btn btn-warning btn-circle">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del servicio -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Acerca de EventBridge
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p>Amazon EventBridge es un servicio de bus de eventos sin servidor que facilita la conexión de aplicaciones mediante eventos.
+                    Permite crear reglas que coincidan con eventos y enviarlos a targets como funciones Lambda, colas SQS, tópicos SNS, etc.</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Características principales:</h6>
+                            <ul>
+                                <li><strong>Event Buses:</strong> Canales para eventos personalizados</li>
+                                <li><strong>Rules:</strong> Filtros y enrutamiento de eventos</li>
+                                <li><strong>Targets:</strong> Destinos para eventos procesados</li>
+                                <li><strong>Event Patterns:</strong> Filtros avanzados de eventos</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Casos de uso comunes:</h6>
+                            <ul>
+                                <li>Arquitecturas orientadas a eventos</li>
+                                <li>Integración de microservicios</li>
+                                <li>Automatización de procesos</li>
+                                <li>Monitoreo y alertas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

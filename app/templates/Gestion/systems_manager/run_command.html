@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Run Command - Ejecutar Comando{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-play"></i> Ejecutar Comando en Instancias EC2
+                    </h3>
+                    <p class="card-subtitle text-muted">Ejecuta comandos remotamente usando AWS Systems Manager Run Command</p>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="runCommandForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="document_name" class="form-label">
+                                        <i class="fas fa-file-code"></i> Documento SSM *
+                                    </label>
+                                    <select class="form-select" id="document_name" name="document_name" required>
+                                        <option value="AWS-RunShellScript">AWS-RunShellScript</option>
+                                        <option value="AWS-RunPowerShellScript">AWS-RunPowerShellScript</option>
+                                        <option value="AWS-ConfigureAWSPackage">AWS-ConfigureAWSPackage</option>
+                                        <option value="AWS-UpdateSSMAgent">AWS-UpdateSSMAgent</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Documento que define cómo ejecutar el comando
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="timeout_seconds" class="form-label">
+                                        <i class="fas fa-clock"></i> Timeout (segundos)
+                                    </label>
+                                    <input type="number" class="form-control" id="timeout_seconds" name="timeout_seconds"
+                                           value="3600" min="30" max="172800">
+                                    <div class="form-text">
+                                        Tiempo máximo de ejecución (30 seg - 48 horas)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-server"></i> Instancias Objetivo *
+                            </label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_type" id="target_instances" value="instances" checked>
+                                            <label class="form-check-label" for="target_instances">
+                                                Seleccionar Instancias Específicas
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_type" id="target_tags" value="tags">
+                                            <label class="form-check-label" for="target_tags">
+                                                Seleccionar por Tags
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="instances_section">
+                                        <label class="form-label">Instancias EC2 Disponibles:</label>
+                                        <div class="row">
+                                            {% for instance in instances %}
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="targets[]"
+                                                           value="{{ instance.id }}" id="instance_{{ instance.id }}">
+                                                    <label class="form-check-label" for="instance_{{ instance.id }}">
+                                                        <code>{{ instance.id }}</code>
+                                                        {% if instance.name != 'N/A' %}
+                                                            ({{ instance.name }})
+                                                        {% endif %}
+                                                        <span class="badge bg-{{ 'success' if instance.state == 'running' else 'warning' }}">
+                                                            {{ instance.state }}
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                    <div id="tags_section" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="tag_key" class="form-label">Tag Key:</label>
+                                                <input type="text" class="form-control" id="tag_key" placeholder="Name">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="tag_value" class="form-label">Tag Value:</label>
+                                                <input type="text" class="form-control" id="tag_value" placeholder="web-server">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addTagTarget()">
+                                            <i class="fas fa-plus"></i> Agregar Tag Target
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="commands" class="form-label">
+                                <i class="fas fa-code"></i> Comandos a Ejecutar *
+                            </label>
+                            <textarea class="form-control" id="commands" name="commands" rows="8"
+                                      placeholder="echo 'Hello World'
+sudo yum update -y
+systemctl status httpd" required></textarea>
+                            <div class="form-text">
+                                Un comando por línea. Para scripts complejos, considera usar un documento personalizado.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-play"></i> Ejecutar Comando
+                            </button>
+                            <a href="{{ url_for('systems_manager.commands') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Cambiar entre selección de instancias y tags
+    $('input[name="target_type"]').change(function() {
+        if ($(this).val() === 'instances') {
+            $('#instances_section').show();
+            $('#tags_section').hide();
+        } else {
+            $('#instances_section').hide();
+            $('#tags_section').show();
+        }
+    });
+
+    // Validación del formulario
+    $('#runCommandForm').submit(function(e) {
+        const commands = $('#commands').val().trim();
+        const selectedInstances = $('input[name="targets[]"]:checked').length;
+        const targetType = $('input[name="target_type"]:checked').val();
+
+        if (!commands) {
+            e.preventDefault();
+            alert('Debe especificar al menos un comando');
+            return false;
+        }
+
+        if (targetType === 'instances' && selectedInstances === 0) {
+            e.preventDefault();
+            alert('Debe seleccionar al menos una instancia');
+            return false;
+        }
+
+        if (targetType === 'tags') {
+            const tagKey = $('#tag_key').val().trim();
+            const tagValue = $('#tag_value').val().trim();
+            if (!tagKey || !tagValue) {
+                e.preventDefault();
+                alert('Debe especificar key y value para el tag target');
+                return false;
+            }
+        }
+    });
+});
+
+function addTagTarget() {
+    const tagKey = $('#tag_key').val().trim();
+    const tagValue = $('#tag_value').val().trim();
+
+    if (!tagKey || !tagValue) {
+        alert('Debe especificar key y value para el tag');
+        return;
+    }
+
+    // Crear input hidden para el tag
+    const hiddenInput = $('<input>')
+        .attr('type', 'hidden')
+        .attr('name', 'targets[]')
+        .val(`tag:${tagKey}:${tagValue}`);
+
+    $('#runCommandForm').append(hiddenInput);
+
+    // Mostrar confirmación
+    alert(`Tag target agregado: ${tagKey}=${tagValue}`);
+
+    // Limpiar campos
+    $('#tag_key').val('');
+    $('#tag_value').val('');
+}
+</script>
+{% endblock %}
+{% endblock %}

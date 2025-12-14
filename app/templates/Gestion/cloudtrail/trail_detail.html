@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}CloudTrail - Detalles del Trail{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">
+                            <i class="fas fa-route"></i> Detalles del Trail: {{ trail.Name }}
+                        </h3>
+                        <p class="card-subtitle text-muted">Información completa del trail de auditoría</p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('cloudtrail.trails') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Información General
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Nombre:</dt>
+                                        <dd class="col-sm-8">{{ trail.Name }}</dd>
+
+                                        <dt class="col-sm-4">ARN:</dt>
+                                        <dd class="col-sm-8"><code>{{ trail.TrailARN }}</code></dd>
+
+                                        <dt class="col-sm-4">Región:</dt>
+                                        <dd class="col-sm-8">{{ trail.HomeRegion or 'N/A' }}</dd>
+
+                                        <dt class="col-sm-4">Estado:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if trail.LoggingEnabled %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-play"></i> Activo
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-pause"></i> Inactivo
+                                            </span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">Multi-región:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if trail.IsMultiRegionTrail %}
+                                            <span class="badge bg-primary">Sí</span>
+                                            {% else %}
+                                            <span class="badge bg-light text-dark">No</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">Organización:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if trail.IsOrganizationTrail %}
+                                            <span class="badge bg-info">Sí</span>
+                                            {% else %}
+                                            <span class="badge bg-light text-dark">No</span>
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-archive"></i> Destinos de Logs
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">S3 Bucket:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if trail.S3BucketName %}
+                                            <code>{{ trail.S3BucketName }}</code>
+                                            {% else %}
+                                            <span class="text-muted">No configurado</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">Prefijo S3:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if trail.S3KeyPrefix %}
+                                            <code>{{ trail.S3KeyPrefix }}</code>
+                                            {% else %}
+                                            <span class="text-muted">Sin prefijo</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">SNS Topic:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if trail.SnsTopicName %}
+                                            <code>{{ trail.SnsTopicName }}</code>
+                                            {% else %}
+                                            <span class="text-muted">No configurado</span>
+                                            {% endif %}
+                                        </dd>
+
+                                        <dt class="col-sm-4">CloudWatch Logs:</dt>
+                                        <dd class="col-sm-8">
+                                            {% if trail.CloudWatchLogsLogGroupArn %}
+                                            <code>{{ trail.CloudWatchLogsLogGroupArn }}</code>
+                                            {% else %}
+                                            <span class="text-muted">No configurado</span>
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-cogs"></i> Configuración Avanzada
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Eventos Incluidos</h6>
+                                            <ul class="list-unstyled">
+                                                <li>
+                                                    <i class="fas fa-check text-success"></i>
+                                                    Eventos de gestión
+                                                </li>
+                                                <li>
+                                                    {% if trail.IncludeGlobalServiceEvents %}
+                                                    <i class="fas fa-check text-success"></i>
+                                                    {% else %}
+                                                    <i class="fas fa-times text-danger"></i>
+                                                    {% endif %}
+                                                    Eventos de servicios globales
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Seguridad</h6>
+                                            <ul class="list-unstyled">
+                                                <li>
+                                                    {% if trail.LogFileValidationEnabled %}
+                                                    <i class="fas fa-check text-success"></i>
+                                                    {% else %}
+                                                    <i class="fas fa-times text-danger"></i>
+                                                    {% endif %}
+                                                    Validación de archivos de log
+                                                </li>
+                                                <li>
+                                                    <i class="fas fa-check text-success"></i>
+                                                    Encriptación SSE-KMS (si configurada)
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if trail.Status %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-chart-bar"></i> Estado del Trail
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="text-center">
+                                                <h4 class="text-primary">{{ trail.Status.LatestDeliveryTime or 'N/A' }}</h4>
+                                                <small class="text-muted">Última entrega</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-center">
+                                                <h4 class="text-success">{{ trail.Status.LatestDeliveryError or 'Sin errores' }}</h4>
+                                                <small class="text-muted">Último error</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-center">
+                                                <h4 class="text-info">{{ trail.Status.LatestNotificationTime or 'N/A' }}</h4>
+                                                <small class="text-muted">Última notificación</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-lightbulb"></i> Consejos de Uso</h6>
+                                <ul class="mb-0">
+                                    <li>Los trails multi-región capturan eventos de todas las regiones AWS</li>
+                                    <li>La validación de archivos de log asegura la integridad de los datos</li>
+                                    <li>Los trails de organización requieren permisos específicos en AWS Organizations</li>
+                                    <li>Los logs se entregan a S3 aproximadamente cada 5 minutos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

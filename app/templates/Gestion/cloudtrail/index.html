@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}AWS CloudTrail - Auditoría y Monitoreo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-search"></i> AWS CloudTrail
+                    </h3>
+                    <p class="card-subtitle text-muted">Auditoría, cumplimiento y monitoreo de actividad en AWS</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-route fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Trails</h5>
+                                    <p class="card-text">Gestión de rutas de auditoría para registrar actividad de API</p>
+                                    <a href="{{ url_for('cloudtrail.trails') }}" class="btn btn-primary">
+                                        <i class="fas fa-list"></i> Ver Trails
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-history fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Eventos</h5>
+                                    <p class="card-text">Historial de eventos y actividad de la cuenta AWS</p>
+                                    <a href="{{ url_for('cloudtrail.events') }}" class="btn btn-success">
+                                        <i class="fas fa-eye"></i> Ver Eventos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                    <h5 class="card-title">Insights</h5>
+                                    <p class="card-text">Métricas avanzadas y análisis de comportamiento inusual</p>
+                                    <a href="{{ url_for('cloudtrail.insights') }}" class="btn btn-info">
+                                        <i class="fas fa-chart-bar"></i> Ver Insights
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle"></i> Información del Servicio</h5>
+                                <p>AWS CloudTrail es un servicio de auditoría que registra, monitorea y retiene la actividad de la cuenta en AWS. Proporciona:</p>
+                                <ul class="mb-0">
+                                    <li><strong>Trails:</strong> Rutas de auditoría que entregan eventos a S3, CloudWatch Logs y más</li>
+                                    <li><strong>Eventos:</strong> Registro completo de llamadas a API, incluyendo quién, cuándo y desde dónde</li>
+                                    <li><strong>Insights:</strong> Detección automática de actividad inusual en la cuenta</li>
+                                    <li><strong>Integración:</strong> Compatible con servicios de seguridad como GuardDuty, Config y Macie</li>
+                                    <li><strong>Cumplimiento:</strong> Ayuda en auditorías SOX, PCI DSS, HIPAA y otros marcos regulatorios</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-warning">
+                                <h5><i class="fas fa-exclamation-triangle"></i> Consideraciones de Costo</h5>
+                                <p>CloudTrail tiene costos asociados:</p>
+                                <ul class="mb-0">
+                                    <li><strong>Trails adicionales:</strong> $2.00 por trail adicional por mes</li>
+                                    <li><strong>Eventos entregados:</strong> $0.10 por 100,000 eventos</li>
+                                    <li><strong>Insights:</strong> $0.35 por 100,000 eventos analizados</li>
+                                    <li><strong>Almacenamiento S3:</strong> Costos estándar de S3 para logs</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

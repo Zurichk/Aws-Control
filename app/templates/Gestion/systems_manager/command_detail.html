@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Run Command - Detalle del Comando{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">
+                            <i class="fas fa-eye"></i> Detalle del Comando
+                        </h3>
+                        <p class="card-subtitle text-muted">Información completa del comando ejecutado</p>
+                    </div>
+                    <a href="{{ url_for('systems_manager.commands') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Comandos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Información del Comando
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">ID del Comando:</dt>
+                                        <dd class="col-sm-8">
+                                            <code>{{ command.command_id }}</code>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Documento:</dt>
+                                        <dd class="col-sm-8">{{ command.document_name }}</dd>
+
+                                        <dt class="col-sm-4">Instancia:</dt>
+                                        <dd class="col-sm-8">
+                                            <code>{{ command.instance_id }}</code>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Estado:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge bg-{{ 'success' if command.status == 'Success' else 'warning' if command.status == 'Pending' else 'danger' if command.status == 'Failed' else 'secondary' }}">
+                                                {{ command.status }}
+                                            </span>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Código de Respuesta:</dt>
+                                        <dd class="col-sm-8">{{ command.response_code }}</dd>
+
+                                        <dt class="col-sm-4">Inicio de Ejecución:</dt>
+                                        <dd class="col-sm-8">{{ command.execution_start_date_time }}</dd>
+
+                                        <dt class="col-sm-4">Fin de Ejecución:</dt>
+                                        <dd class="col-sm-8">{{ command.execution_end_date_time }}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-chart-bar"></i> Estado de Ejecución
+                                    </h5>
+                                </div>
+                                    <div class="mb-3">
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar
+                                                {% if command.status == 'Success' %}bg-success{% elif command.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}
+                                                {% if command.status == 'Success' %}w-100{% elif command.status == 'Pending' %}w-50{% else %}w-0{% endif %}"
+                                                 role="progressbar">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ command.status_details }}</small>
+                                    </div>
+
+                                    {% if command.status == 'Failed' %}
+                                        <div class="alert alert-danger">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <strong>Error en la ejecución</strong>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-check-circle"></i> Salida Estándar
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if command.standard_output_content %}
+                                        <pre class="bg-light p-3 rounded" style="font-size: 0.875rem; max-height: 400px; overflow-y: auto;">
+<code>{{ command.standard_output_content }}</code>
+                                        </pre>
+                                    {% else %}
+                                        <p class="text-muted">No hay salida estándar disponible</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-exclamation-circle"></i> Salida de Error
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if command.standard_error_content %}
+                                        <pre class="bg-danger text-white p-3 rounded" style="font-size: 0.875rem; max-height: 400px; overflow-y: auto;">
+<code>{{ command.standard_error_content }}</code>
+                                        </pre>
+                                    {% else %}
+                                        <p class="text-muted">No hay errores reportados</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

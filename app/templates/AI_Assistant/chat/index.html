@@ -65,17 +65,47 @@
                 </div>
             </div>
 
-            <!-- Chat Interface -->
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+            <!-- Available Tools Section -->
+            <div class="card mb-4">
+                <div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#toolsCollapse">
                     <h5 class="mb-0">
-                        <i class="fas fa-comments me-2"></i>Conversación con AI Assistant
+                        <i class="fas fa-tools text-warning me-2"></i>
+                        Herramientas AWS Disponibles
+                        <i class="fas fa-chevron-down float-end"></i>
                     </h5>
-                    <button id="clearHistoryBtn" class="btn btn-sm btn-outline-danger" title="Limpiar historial de conversación">
-                        <i class="fas fa-trash-alt me-1"></i>Nuevo Chat
-                    </button>
                 </div>
-                <div class="card-body">
+                <div id="toolsCollapse" class="collapse">
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-info-circle me-1"></i>
+                            El AI Assistant puede ejecutar estas herramientas automáticamente para ayudarte con tus tareas en AWS.
+                        </p>
+                        <div id="toolsContainer">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="text-muted mt-2">Cargando herramientas disponibles...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface with Operations Panel -->
+            <div class="row">
+                <!-- Main Chat Column -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-comments me-2"></i>Conversación con AI Assistant
+                            </h5>
+                            <button id="clearHistoryBtn" class="btn btn-sm btn-outline-danger" title="Limpiar historial de conversación">
+                                <i class="fas fa-trash-alt me-1"></i>Nuevo Chat
+                            </button>
+                        </div>
+                        <div class="card-body">
                     <!-- Chat Messages Container -->
                     <div id="chatContainer" class="chat-container mb-3" style="height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem; background-color: #f8f9fa;">
                         <!-- Welcome Message -->
@@ -147,6 +177,27 @@
                             </button>
                         </div>
                     </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operations Panel Column -->
+                <div class="col-lg-4">
+                    <div class="card sticky-top" style="top: 20px;">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cogs me-2"></i>Pensamiento del AI
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="operationsPanel" style="height: 650px; overflow-y: auto;" class="p-3">
+                                <div class="text-center text-muted py-5">
+                                    <i class="fas fa-brain fa-3x mb-3"></i>
+                                    <p>Las operaciones de AWS aparecerán aquí mientras el AI trabaja...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -156,6 +207,36 @@
 <style>
 .chat-container {
     scroll-behavior: smooth;
+}
+
+.operation-item {
+    border-left: 3px solid #0d6efd;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.operation-item.success {
+    border-left-color: #198754;
+}
+
+.operation-item.error {
+    border-left-color: #dc3545;
+}
+
+.operation-item.thinking {
+    border-left-color: #ffc107;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .message {
@@ -221,6 +302,93 @@ let chatContainer = document.getElementById('chatContainer');
 let messageInput = document.getElementById('messageInput');
 let sendButton = document.getElementById('sendButton');
 
+// Cargar herramientas disponibles al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    loadAvailableTools();
+});
+
+// Función para cargar las herramientas disponibles
+function loadAvailableTools() {
+    fetch('/chat/get_tools')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                displayTools(data.tools_by_category, data.total_tools);
+            } else {
+                showToolsError('Error al cargar herramientas: ' + data.error);
+            }
+        })
+        .catch(error => {
+            showToolsError('Error de conexión: ' + error.message);
+        });
+}
+
+// Función para mostrar las herramientas organizadas por categoría
+function displayTools(toolsByCategory, totalTools) {
+    const container = document.getElementById('toolsContainer');
+    
+    let html = `
+        <div class="alert alert-info mb-3">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>${totalTools} herramientas</strong> disponibles para el AI Assistant
+        </div>
+        <div class="row">
+    `;
+    
+    // Iterar sobre cada categoría
+    for (const [category, tools] of Object.entries(toolsByCategory)) {
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-layer-group text-primary me-2"></i>
+                            ${category}
+                            <span class="badge bg-primary float-end">${tools.length}</span>
+                        </h6>
+                    </div>
+                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                        <div class="list-group list-group-flush">
+        `;
+        
+        // Agregar cada herramienta de la categoría
+        tools.forEach(tool => {
+            html += `
+                <div class="list-group-item px-0 py-2 border-0">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-cog text-muted me-2 mt-1" style="font-size: 0.85rem;"></i>
+                        <div class="flex-grow-1">
+                            <code class="text-primary" style="font-size: 0.85rem;">${tool.name}</code>
+                            <p class="text-muted mb-0 small">${tool.description}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Función para mostrar error al cargar herramientas
+function showToolsError(message) {
+    const container = document.getElementById('toolsContainer');
+    container.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+        </div>
+    `;
+}
+
 // Auto-resize textarea
 messageInput.addEventListener('input', function() {
     this.style.height = 'auto';
@@ -255,6 +423,9 @@ function sendMessage() {
 
     // Show typing indicator
     showTypingIndicator();
+    
+    // Add thinking operation to panel
+    addOperationToPanel('Pensando...', 'El AI está analizando tu solicitud', 'thinking');
 
     // Send to server
     fetch('/chat/send_message', {
@@ -266,26 +437,56 @@ function sendMessage() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Respuesta recibida:', data);
         hideTypingIndicator();
 
         if (data.status === 'success') {
+            console.log('Status: success');
+            console.log('Tool results:', data.tool_results);
+            console.log('Response:', data.response);
+            
             // Mostrar resultados de herramientas si existen
             if (data.tool_results && data.tool_results.length > 0) {
                 for (const toolResult of data.tool_results) {
+                    // Agregar al panel de operaciones
+                    const toolName = toolResult.tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const isSuccess = !toolResult.result.error;
+                    const statusType = isSuccess ? 'success' : 'error';
+                    
+                    let details = '';
+                    if (isSuccess && toolResult.result.result) {
+                        const result = toolResult.result.result;
+                        details = Object.entries(result).slice(0, 3).map(([k, v]) => 
+                            `${k}: ${typeof v === 'object' ? JSON.stringify(v).substring(0, 50) + '...' : v}`
+                        ).join('<br>');
+                    } else if (toolResult.result.error) {
+                        details = toolResult.result.error;
+                    }
+                    
+                    addOperationToPanel(
+                        `🔧 ${toolName}`,
+                        details || 'Operación completada',
+                        statusType
+                    );
+                    
+                    // Agregar también al chat principal
                     addToolResultMessage(toolResult);
                 }
             }
             
             // Mostrar respuesta del AI
             if (data.response) {
+                addOperationToPanel('✅ Respuesta generada', 'El AI ha completado su análisis', 'success');
                 addMessage(data.response, 'ai');
             }
         } else {
+            addOperationToPanel('❌ Error', data.error, 'error');
             addMessage('Lo siento, hubo un error al procesar tu mensaje: ' + data.error, 'ai', true);
         }
     })
     .catch(error => {
         hideTypingIndicator();
+        addOperationToPanel('❌ Error de conexión', error.message, 'error');
         addMessage('Error de conexión. Por favor, verifica tu conexión a internet e intenta nuevamente.', 'ai', true);
         console.error('Error:', error);
     });
@@ -437,6 +638,49 @@ function scrollToBottom() {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+function addOperationToPanel(title, details, type = 'info') {
+    const operationsPanel = document.getElementById('operationsPanel');
+    
+    // Limpiar mensaje inicial si existe
+    const emptyMessage = operationsPanel.querySelector('.text-muted.py-5');
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+    
+    const operationDiv = document.createElement('div');
+    operationDiv.className = `operation-item ${type} mb-3`;
+    
+    const timestamp = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    let iconClass = 'fa-info-circle';
+    let iconColor = 'text-info';
+    
+    if (type === 'success') {
+        iconClass = 'fa-check-circle';
+        iconColor = 'text-success';
+    } else if (type === 'error') {
+        iconClass = 'fa-times-circle';
+        iconColor = 'text-danger';
+    } else if (type === 'thinking') {
+        iconClass = 'fa-brain';
+        iconColor = 'text-warning';
+    }
+    
+    operationDiv.innerHTML = `
+        <div class="d-flex align-items-start mb-2">
+            <i class="fas ${iconClass} ${iconColor} me-2 mt-1"></i>
+            <div class="flex-grow-1">
+                <div class="fw-bold">${title}</div>
+                <small class="text-muted">${timestamp}</small>
+            </div>
+        </div>
+        <div class="small text-muted">${details}</div>
+    `;
+    
+    operationsPanel.appendChild(operationDiv);
+    operationsPanel.scrollTop = operationsPanel.scrollHeight;
+}
+
 function clearChat() {
     if (confirm('¿Estás seguro de que quieres limpiar todo el chat?')) {
         // Keep only the welcome message
@@ -445,6 +689,15 @@ function clearChat() {
         if (welcomeMessage) {
             chatContainer.appendChild(welcomeMessage);
         }
+        
+        // Limpiar panel de operaciones
+        const operationsPanel = document.getElementById('operationsPanel');
+        operationsPanel.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-brain fa-3x mb-3"></i>
+                <p>Las operaciones de AWS aparecerán aquí mientras el AI trabaja...</p>
+            </div>
+        `;
     }
 }
 
@@ -487,6 +740,15 @@ async function clearChatHistory() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                `;
+                
+                // Limpiar panel de operaciones
+                const operationsPanel = document.getElementById('operationsPanel');
+                operationsPanel.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-brain fa-3x mb-3"></i>
+                        <p>Las operaciones de AWS aparecerán aquí mientras el AI trabaja...</p>
                     </div>
                 `;
                 

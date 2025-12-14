@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Kinesis - Amazon Kinesis Data Streams{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1><i class="fab fa-aws text-warning me-2"></i>Amazon Kinesis</h1>
+                    <p class="text-muted">Servicio de streaming de datos en tiempo real de AWS</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-stream"></i> Data Streams
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Gestiona tus streams de datos de Kinesis. Crea, configura y monitorea streams
+                        para procesamiento de datos en tiempo real.
+                    </p>
+                    <div class="d-grid">
+                        <a href="{{ url_for('kinesis.streams') }}" class="btn btn-primary">
+                            <i class="fas fa-list"></i> Ver Streams
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-plus-circle"></i> Crear Stream
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Crea un nuevo stream de Kinesis para comenzar a enviar y procesar datos
+                        en tiempo real.
+                    </p>
+                    <div class="d-grid">
+                        <a href="{{ url_for('kinesis.create_stream') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Crear Stream
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> Acerca de Amazon Kinesis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>¿Qué es Kinesis?</h6>
+                            <p>
+                                Amazon Kinesis es una plataforma para streaming de datos en la nube de AWS.
+                                Permite recopilar, procesar y analizar datos de streaming en tiempo real.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Características principales:</h6>
+                            <ul>
+                                <li>Procesamiento en tiempo real</li>
+                                <li>Escalabilidad automática</li>
+                                <li>Integración con otros servicios AWS</li>
+                                <li>Almacenamiento duradero</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

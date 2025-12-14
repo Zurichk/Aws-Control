@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Endpoint SageMaker - AWS Control Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-plus-circle"></i> Crear Endpoint SageMaker
+                    </h1>
+                    <p class="text-muted">Desplegar un modelo de machine learning como endpoint</p>
+                </div>
+                <a href="{{ url_for('sagemaker.endpoints') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs"></i> Configuración del Endpoint
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="endpoint_name">
+                                <i class="fas fa-tag"></i> Nombre del Endpoint *
+                            </label>
+                            <input type="text" class="form-control" id="endpoint_name" name="endpoint_name"
+                                   placeholder="mi-endpoint-sagemaker" required>
+                            <small class="form-text text-muted">
+                                Nombre único para el endpoint (solo letras, números y guiones)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="config_name">
+                                <i class="fas fa-cog"></i> Configuración del Endpoint *
+                            </label>
+                            <select class="form-control" id="config_name" name="config_name" required>
+                                <option value="">Seleccionar configuración...</option>
+                                {% for config in config_names %}
+                                <option value="{{ config }}">{{ config }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                Configuración que define el modelo y recursos del endpoint
+                            </small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Nota:</strong> Asegúrate de que la configuración del endpoint esté disponible y el modelo esté desplegado.
+                            El proceso de creación puede tomar varios minutos.
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-rocket"></i> Crear Endpoint
+                            </button>
+                            <a href="{{ url_for('sagemaker.endpoints') }}" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-lightbulb"></i> Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h5>¿Qué es un Endpoint?</h5>
+                    <p class="small">
+                        Un endpoint de SageMaker es un servicio web HTTPS que permite hacer predicciones
+                        en tiempo real usando un modelo de machine learning desplegado.
+                    </p>
+
+                    <h6 class="mt-3">Requisitos:</h6>
+                    <ul class="small">
+                        <li>Configuración de endpoint existente</li>
+                        <li>Modelo entrenado disponible</li>
+                        <li>Permisos IAM adecuados</li>
+                    </ul>
+
+                    <h6 class="mt-3">Costo:</h6>
+                    <p class="small">
+                        Se cobra por hora de instancia mientras el endpoint esté activo.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+$(document).ready(function() {
+    $('form').submit(function(e) {
+        const endpointName = $('#endpoint_name').val().trim();
+        if (!endpointName) {
+            e.preventDefault();
+            alert('El nombre del endpoint es requerido');
+            return false;
+        }
+
+        // Validar nombre (solo letras, números, guiones)
+        const nameRegex = /^[a-zA-Z0-9-]+$/;
+        if (!nameRegex.test(endpointName)) {
+            e.preventDefault();
+            alert('El nombre del endpoint solo puede contener letras, números y guiones');
+            return false;
+        }
+
+        // Confirmar creación
+        return confirm('¿Estás seguro de crear este endpoint? El proceso puede tomar varios minutos.');
+    });
+});
+</script>
+{% endblock %}

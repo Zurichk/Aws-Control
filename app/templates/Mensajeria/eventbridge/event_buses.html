@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Event Buses - EventBridge{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-bus text-primary"></i> Event Buses
+                    </h1>
+                    <p class="text-muted">Gestión de buses de eventos</p>
+                </div>
+                <a href="{{ url_for('eventbridge.create_event_bus') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Crear Event Bus
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Event Buses -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list"></i> Event Buses Disponibles
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if event_buses %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="eventBusesTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>ARN</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Última Modificación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bus in event_buses %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ bus.name }}</strong>
+                                        {% if bus.name == 'default' %}
+                                        <span class="badge badge-info">Default</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ bus.description or 'Sin descripción' }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ bus.arn }}</small>
+                                    </td>
+                                    <td>{{ bus.creation_time }}</td>
+                                    <td>{{ bus.last_modified_time }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-bus fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay Event Buses</h5>
+                        <p class="text-muted">Crea tu primer Event Bus para comenzar</p>
+                        <a href="{{ url_for('eventbridge.create_event_bus') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Crear Event Bus
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#eventBusesTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "order": [[ 3, "desc" ]],
+        "pageLength": 25
+    });
+});
+</script>
+{% endblock %}

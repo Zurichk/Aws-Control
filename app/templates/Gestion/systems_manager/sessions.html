@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Session Manager - Sesiones{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">
+                            <i class="fas fa-desktop"></i> Session Manager - Sesiones Activas
+                        </h3>
+                        <p class="card-subtitle text-muted">Sesiones interactivas en instancias EC2</p>
+                    </div>
+                    <a href="{{ url_for('systems_manager.start_session') }}" class="btn btn-info">
+                        <i class="fas fa-link"></i> Iniciar Nueva Sesión
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="table-responsive">
+                        <table id="sessionsTable" class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID de Sesión</th>
+                                    <th>Target</th>
+                                    <th>Estado</th>
+                                    <th>Inicio</th>
+                                    <th>Fin</th>
+                                    <th>Documento</th>
+                                    <th>Propietario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions %}
+                                <tr>
+                                    <td>
+                                        <code>{{ session.session_id }}</code>
+                                    </td>
+                                    <td>
+                                        <code>{{ session.target }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if session.status == 'Connected' else 'secondary' }}">
+                                            {{ session.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ session.start_date }}</td>
+                                    <td>{{ session.end_date if session.end_date != 'N/A' else '-' }}</td>
+                                    <td>{{ session.document_name }}</td>
+                                    <td>{{ session.owner }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#sessionsTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 25,
+        "order": [[3, 'desc']]
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

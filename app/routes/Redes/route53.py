@@ -3,11 +3,11 @@ from app.utils.aws_client import get_aws_client
 
 bp = Blueprint('route53', __name__)
 
-@bp.route('/route53')
+@bp.route('/')
 def index():
     return render_template('Redes/route53/index.html')
 
-@bp.route('/route53/hosted-zones')
+@bp.route('/hosted-zones')
 def hosted_zones():
     try:
         r53 = get_aws_client('route53')
@@ -24,7 +24,7 @@ def hosted_zones():
         flash(f'Error obteniendo zonas hospedadas de Route 53: {str(e)}', 'error')
         return render_template('Redes/route53/hosted_zones.html', zones=[])
 
-@bp.route('/route53/create-hosted-zone', methods=['GET', 'POST'])
+@bp.route('/create-hosted-zone', methods=['GET', 'POST'])
 def create_hosted_zone():
     """Crear una nueva zona hospedada"""
     try:
@@ -70,7 +70,7 @@ def create_hosted_zone():
         flash(f'Error creando zona hospedada: {str(e)}', 'error')
         return redirect(url_for('route53.hosted_zones'))
 
-@bp.route('/route53/delete-hosted-zone/<zone_id>', methods=['POST'])
+@bp.route('/delete-hosted-zone/<zone_id>', methods=['POST'])
 def delete_hosted_zone(zone_id):
     """Eliminar una zona hospedada"""
     try:
@@ -94,7 +94,7 @@ def delete_hosted_zone(zone_id):
         flash(f'Error eliminando zona hospedada: {str(e)}', 'error')
         return redirect(url_for('route53.hosted_zones'))
 
-@bp.route('/route53/zone/<zone_id>/records')
+@bp.route('/zone/<zone_id>/records')
 def list_resource_record_sets(zone_id):
     """Listar registros de una zona hospedada"""
     try:
@@ -130,7 +130,7 @@ def list_resource_record_sets(zone_id):
         flash(f'Error obteniendo registros: {str(e)}', 'error')
         return redirect(url_for('route53.hosted_zones'))
 
-@bp.route('/route53/zone/<zone_id>/create-record', methods=['GET', 'POST'])
+@bp.route('/zone/<zone_id>/create-record', methods=['GET', 'POST'])
 def create_record(zone_id):
     """Crear un nuevo registro DNS"""
     try:
@@ -179,7 +179,7 @@ def create_record(zone_id):
         flash(f'Error creando registro: {str(e)}', 'error')
         return redirect(url_for('route53.list_resource_record_sets', zone_id=zone_id))
 
-@bp.route('/route53/zone/<zone_id>/delete-record', methods=['POST'])
+@bp.route('/zone/<zone_id>/delete-record', methods=['POST'])
 def delete_record(zone_id):
     """Eliminar un registro DNS"""
     try:
@@ -216,7 +216,7 @@ def delete_record(zone_id):
         flash(f'Error eliminando registro: {str(e)}', 'error')
         return redirect(url_for('route53.list_resource_record_sets', zone_id=zone_id))
 
-@bp.route('/route53/zone/<zone_id>/update-record', methods=['GET', 'POST'])
+@bp.route('/zone/<zone_id>/update-record', methods=['GET', 'POST'])
 def update_record(zone_id):
     """Actualizar un registro DNS existente"""
     try:

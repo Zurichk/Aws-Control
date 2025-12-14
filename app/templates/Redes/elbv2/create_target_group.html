@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}ELBv2 - Crear Target Group{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('elbv2.index') }}">ELBv2</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('elbv2.target_groups') }}">Target Groups</a></li>
+                    <li class="breadcrumb-item active">Crear Target Group</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-plus me-2"></i>
+                        Crear Target Group
+                    </h2>
+                    <small class="text-muted">Configura un nuevo grupo de destino para balanceadores de carga</small>
+                </div>
+
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('elbv2.create_target_group') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>
+                                        Nombre del Target Group *
+                                    </label>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           placeholder="mi-target-group" required>
+                                    <div class="form-text">Nombre único para el Target Group</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="protocol" class="form-label">
+                                        <i class="fas fa-exchange-alt me-1"></i>
+                                        Protocolo
+                                    </label>
+                                    <select class="form-select" id="protocol" name="protocol">
+                                        <option value="HTTP" selected>HTTP</option>
+                                        <option value="HTTPS">HTTPS</option>
+                                        <option value="TCP">TCP</option>
+                                        <option value="UDP">UDP</option>
+                                    </select>
+                                    <div class="form-text">Protocolo de comunicación</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="port" class="form-label">
+                                        <i class="fas fa-plug me-1"></i>
+                                        Puerto
+                                    </label>
+                                    <input type="number" class="form-control" id="port" name="port"
+                                           value="80" min="1" max="65535" required>
+                                    <div class="form-text">Puerto de destino (1-65535)</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="vpc_id" class="form-label">
+                                        <i class="fas fa-network-wired me-1"></i>
+                                        VPC *
+                                    </label>
+                                    <select class="form-select" id="vpc_id" name="vpc_id" required>
+                                        <option value="">Seleccionar VPC...</option>
+                                        {% for vpc in vpcs %}
+                                            <option value="{{ vpc.id }}">{{ vpc.id }} ({{ vpc.cidr }})</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">VPC donde se creará el Target Group</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="health_check_path" class="form-label">
+                                        <i class="fas fa-heartbeat me-1"></i>
+                                        Health Check Path
+                                    </label>
+                                    <input type="text" class="form-control" id="health_check_path" name="health_check_path"
+                                           value="/" placeholder="/health">
+                                    <div class="form-text">Ruta para verificar el estado de los targets</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Información del Target Group</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Target Group:</strong> Grupo de destinos que reciben tráfico del Load Balancer</li>
+                                        <li><strong>Health Checks:</strong> Verificaciones automáticas del estado de los targets</li>
+                                        <li><strong>Protocolo/Puerto:</strong> Cómo se comunica el Load Balancer con los targets</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-save me-2"></i>
+                                    Crear Target Group
+                                </button>
+                                <a href="{{ url_for('elbv2.target_groups') }}" class="btn btn-outline-secondary btn-lg ms-2">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Volver
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

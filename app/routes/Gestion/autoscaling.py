@@ -5,7 +5,7 @@ bp = Blueprint('autoscaling_bp', __name__)
 
 @bp.route('/')
 def index():
-    return render_template('Gestion/autoscaling_service/index.html')
+    return render_template('Gestion/index.html')
 
 @bp.route('/groups')
 def groups():
@@ -156,3 +156,63 @@ def delete_policy(group_name, policy_name):
         flash(f'Error eliminando política de escalado: {str(e)}', 'error')
 
     return redirect(url_for('autoscaling_bp.policies'))
+
+@bp.route('/create-group', methods=['GET', 'POST'])
+def create_group():
+    """Crear un nuevo grupo de Auto Scaling"""
+    if request.method == 'POST':
+        try:
+            group_name = request.form.get('group_name')
+            launch_template_id = request.form.get('launch_template_id')
+            launch_template_name = request.form.get('launch_template_name')
+            min_size = int(request.form.get('min_size', 1))
+            max_size = int(request.form.get('max_size', 3))
+            desired_capacity = int(request.form.get('desired_capacity', 1))
+            availability_zones = request.form.getlist('availability_zones')
+
+            autoscaling_client = get_aws_client('autoscaling')
+
+            # Preparar parámetros del launch template
+            launch_template = {}
+            if launch_template_id:
+                launch_template['LaunchTemplateId'] = launch_template_id
+            elif launch_template_name:
+                launch_template['LaunchTemplateName'] = launch_template_name
+
+            # Crear el grupo de Auto Scaling
+            autoscaling_client.create_auto_scaling_group(
+                AutoScalingGroupName=group_name,
+                LaunchTemplate=launch_template,
+                MinSize=min_size,
+                MaxSize=max_size,
+                DesiredCapacity=desired_capacity,
+                AvailabilityZones=availability_zones
+            )
+
+            flash(f'Grupo de Auto Scaling "{group_name}" creado exitosamente', 'success')
+            return redirect(url_for('autoscaling_bp.groups'))
+
+        except Exception as e:
+            flash(f'Error creando grupo de Auto Scaling: {str(e)}', 'error')
+
+    # GET request - mostrar formulario
+    try:
+        ec2_client = get_aws_client('ec2')
+
+        # Obtener launch templates disponibles
+        launch_templates_response = ec2_client.describe_launch_templates()
+        launch_templates = launch_templates_response.get('LaunchTemplates', [])
+
+        # Obtener availability zones
+        az_response = ec2_client.describe_availability_zones()
+        availability_zones = [az['ZoneName'] for az in az_response.get('AvailabilityZones', [])]
+
+        return render_template('Gestion/autoscaling_service/create_group.html',
+                             launch_templates=launch_templates,
+                             availability_zones=availability_zones)
+
+    except Exception as e:
+        flash(f'Error cargando formulario: {str(e)}', 'error')
+        return render_template('Gestion/autoscaling_service/create_group.html',
+                             launch_templates=[],
+                             availability_zones=[])

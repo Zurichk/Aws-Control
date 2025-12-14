@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Regla - EventBridge{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-plus text-success"></i> Crear Regla
+                    </h1>
+                    <p class="text-muted">Crear una nueva regla para filtrar y enrutar eventos</p>
+                </div>
+                <a href="{{ url_for('eventbridge.list_rules') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de creación -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-edit"></i> Configuración de la Regla
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="rule_name">Nombre de la Regla *</label>
+                            <input type="text" class="form-control" id="rule_name" name="rule_name"
+                                   placeholder="mi-regla" required maxlength="64">
+                            <small class="form-text text-muted">
+                                Nombre único para la regla (máximo 64 caracteres)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event_bus_name">Event Bus</label>
+                            <input type="text" class="form-control" id="event_bus_name" name="event_bus_name"
+                                   value="default" placeholder="default">
+                            <small class="form-text text-muted">
+                                Nombre del Event Bus (deja 'default' para el bus por defecto)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Descripción</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      rows="2" placeholder="Descripción opcional de la regla"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="state">Estado</label>
+                            <select class="form-control" id="state" name="state">
+                                <option value="ENABLED" selected>Habilitada</option>
+                                <option value="DISABLED">Deshabilitada</option>
+                            </select>
+                        </div>
+
+                        <!-- Tipo de regla -->
+                        <div class="form-group">
+                            <label>Tipo de Regla</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="rule_type" id="event_pattern" value="event_pattern" checked>
+                                <label class="form-check-label" for="event_pattern">
+                                    Event Pattern - Filtrar eventos por contenido
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="rule_type" id="schedule" value="schedule">
+                                <label class="form-check-label" for="schedule">
+                                    Schedule - Ejecutar en intervalos regulares
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Event Pattern -->
+                        <div id="event_pattern_section">
+                            <div class="form-group">
+                                <label for="event_pattern">Event Pattern (JSON)</label>
+                                <textarea class="form-control" id="event_pattern" name="event_pattern"
+                                          rows="6" placeholder='{
+  "source": ["aws.ec2"],
+  "detail-type": ["EC2 Instance State-change Notification"],
+  "detail": {
+    "state": ["running", "stopped"]
+  }
+}'></textarea>
+                                <small class="form-text text-muted">
+                                    Patrón JSON para filtrar eventos. Ejemplo: filtrar eventos de EC2 cuando cambian de estado.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Schedule Expression -->
+                        <div id="schedule_section" style="display: none;">
+                            <div class="form-group">
+                                <label for="schedule_expression">Schedule Expression</label>
+                                <input type="text" class="form-control" id="schedule_expression" name="schedule_expression"
+                                       placeholder="rate(10 minutes)" value="rate(10 minutes)">
+                                <small class="form-text text-muted">
+                                    Expresión cron o rate. Ejemplos: "rate(1 hour)", "cron(0 18 ? * MON-FRI *)"
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="role_arn">IAM Role ARN (opcional)</label>
+                            <input type="text" class="form-control" id="role_arn" name="role_arn"
+                                   placeholder="arn:aws:iam::123456789012:role/EventBridgeRole">
+                            <small class="form-text text-muted">
+                                ARN del rol IAM para targets que requieren permisos adicionales
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Crear Regla
+                        </button>
+                        <a href="{{ url_for('eventbridge.list_rules') }}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información lateral -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-info-circle"></i> Tipos de Reglas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Event Pattern:</h6>
+                    <ul>
+                        <li>Filtra eventos por contenido</li>
+                        <li>Usa JSON para definir filtros</li>
+                        <li>Compatible con eventos de AWS y personalizados</li>
+                    </ul>
+
+                    <h6>Schedule:</h6>
+                    <ul>
+                        <li>Ejecuta acciones periódicas</li>
+                        <li>Sintaxis rate() o cron()</li>
+                        <li>Útil para tareas programadas</li>
+                    </ul>
+
+                    <div class="alert alert-warning mt-3">
+                        <small><strong>Nota:</strong> Después de crear la regla, configura los targets para definir qué hacer con los eventos filtrados.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle entre event pattern y schedule
+$('input[name="rule_type"]').change(function() {
+    if ($(this).val() === 'event_pattern') {
+        $('#event_pattern_section').show();
+        $('#schedule_section').hide();
+    } else {
+        $('#event_pattern_section').hide();
+        $('#schedule_section').show();
+    }
+});
+</script>
+{% endblock %}

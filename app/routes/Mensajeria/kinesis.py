@@ -6,7 +6,7 @@ bp = Blueprint('kinesis', __name__)
 
 @bp.route('/')
 def index():
-    return render_template('kinesis/index.html')
+    return render_template('Mensajeria/kinesis/index.html')
 
 @bp.route('/streams')
 def streams():
@@ -23,10 +23,10 @@ def streams():
                 'shards': len(stream_data.get('Shards', [])),
                 'retention_hours': stream_data.get('RetentionPeriodHours', 24)
             })
-        return render_template('kinesis/streams.html', streams=stream_list)
+        return render_template('Mensajeria/kinesis/streams.html', streams=stream_list)
     except Exception as e:
         flash(f'Error obteniendo streams de Kinesis: {str(e)}', 'error')
-        return render_template('kinesis/streams.html', streams=[])
+        return render_template('Mensajeria/kinesis/streams.html', streams=[])
 
 @bp.route('/create-stream', methods=['GET', 'POST'])
 def create_stream():

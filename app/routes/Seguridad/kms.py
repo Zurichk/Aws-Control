@@ -5,7 +5,7 @@ import boto3
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.utils.aws_client import get_aws_client
 
-kms_bp = Blueprint('kms', __name__, url_prefix='/kms')
+kms_bp = Blueprint('kms', __name__)
 
 
 @kms_bp.route('/')

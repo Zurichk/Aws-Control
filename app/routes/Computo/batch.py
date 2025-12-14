@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from app.utils.aws_client import get_aws_client
 import json
 
-bp = Blueprint('batch', __name__, url_prefix='/batch')
+bp = Blueprint('batch', __name__)
 
 @bp.route('/')
 def index():

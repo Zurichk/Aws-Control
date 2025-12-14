@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Parameter Store - Crear Parámetro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus"></i> Crear Nuevo Parámetro
+                    </h3>
+                    <p class="card-subtitle text-muted">Almacena un nuevo parámetro en Parameter Store</p>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="createParameterForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">
+                                        <i class="fas fa-tag"></i> Nombre del Parámetro *
+                                    </label>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           placeholder="/myapp/database/url" required>
+                                    <div class="form-text">
+                                        Nombre único del parámetro. Puede incluir jerarquía con "/"
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">
+                                        <i class="fas fa-cog"></i> Tipo *
+                                    </label>
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="String">String</option>
+                                        <option value="StringList">StringList</option>
+                                        <option value="SecureString">SecureString</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="value" class="form-label">
+                                <i class="fas fa-edit"></i> Valor *
+                            </label>
+                            <textarea class="form-control" id="value" name="value" rows="4"
+                                      placeholder="Valor del parámetro" required></textarea>
+                            <div class="form-text">
+                                Para StringList, separa valores con comas
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tier" class="form-label">
+                                        <i class="fas fa-layer-group"></i> Tier
+                                    </label>
+                                    <select class="form-select" id="tier" name="tier">
+                                        <option value="Standard">Standard</option>
+                                        <option value="Advanced">Advanced</option>
+                                        <option value="Intelligent-Tiering">Intelligent-Tiering</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Advanced permite parámetros más grandes y políticas
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3" id="keyIdGroup" style="display: none;">
+                                    <label for="key_id" class="form-label">
+                                        <i class="fas fa-key"></i> Key ID (para SecureString)
+                                    </label>
+                                    <input type="text" class="form-control" id="key_id" name="key_id"
+                                           placeholder="alias/aws/ssm (opcional)">
+                                    <div class="form-text">
+                                        ID de la clave KMS para encriptar el parámetro
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-comment"></i> Descripción
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="2"
+                                      placeholder="Descripción opcional del parámetro"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Crear Parámetro
+                            </button>
+                            <a href="{{ url_for('systems_manager.parameters') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Mostrar/ocultar campo Key ID basado en el tipo
+    $('#type').change(function() {
+        if ($(this).val() === 'SecureString') {
+            $('#keyIdGroup').show();
+        } else {
+            $('#keyIdGroup').hide();
+            $('#key_id').val('');
+        }
+    });
+
+    // Validación del formulario
+    $('#createParameterForm').submit(function(e) {
+        const name = $('#name').val().trim();
+        const value = $('#value').val().trim();
+
+        if (!name) {
+            e.preventDefault();
+            alert('El nombre del parámetro es requerido');
+            return false;
+        }
+
+        if (!value) {
+            e.preventDefault();
+            alert('El valor del parámetro es requerido');
+            return false;
+        }
+
+        // Validar formato del nombre
+        if (!name.match(/^\/[a-zA-Z0-9._/-]+$/)) {
+            e.preventDefault();
+            alert('El nombre debe comenzar con "/" y contener solo caracteres alfanuméricos, puntos, guiones y barras');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

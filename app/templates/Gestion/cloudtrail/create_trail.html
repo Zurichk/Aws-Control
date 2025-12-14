@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}CloudTrail - Crear Trail{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus"></i> Crear Nuevo Trail
+                    </h3>
+                    <p class="card-subtitle text-muted">Configurar una nueva ruta de auditoría</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="createTrailForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="trailName" class="form-label">
+                                        <i class="fas fa-tag"></i> Nombre del Trail <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="trailName" name="trail_name"
+                                           required pattern="[a-zA-Z0-9._-]{3,128}"
+                                           title="3-128 caracteres, solo letras, números, puntos, guiones y guiones bajos">
+                                    <div class="form-text">Nombre único para identificar el trail</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="s3BucketName" class="form-label">
+                                        <i class="fas fa-archive"></i> S3 Bucket <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="s3BucketName" name="s3_bucket_name"
+                                           required pattern="[a-z0-9][a-z0-9\-]*[a-z0-9]"
+                                           title="Nombre válido de bucket S3">
+                                    <div class="form-text">Bucket donde se almacenarán los logs</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="s3KeyPrefix" class="form-label">
+                                        <i class="fas fa-folder"></i> Prefijo S3 (Opcional)
+                                    </label>
+                                    <input type="text" class="form-control" id="s3KeyPrefix" name="s3_key_prefix"
+                                           placeholder="logs/">
+                                    <div class="form-text">Prefijo para organizar los logs en S3</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="snsTopicName" class="form-label">
+                                        <i class="fas fa-bell"></i> SNS Topic (Opcional)
+                                    </label>
+                                    <input type="text" class="form-control" id="snsTopicName" name="sns_topic_name">
+                                    <div class="form-text">Topic para notificaciones de entrega de logs</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="cloudWatchLogsGroupArn" class="form-label">
+                                        <i class="fas fa-stream"></i> CloudWatch Logs Group ARN (Opcional)
+                                    </label>
+                                    <input type="text" class="form-control" id="cloudWatchLogsGroupArn"
+                                           name="cloud_watch_logs_group_arn"
+                                           pattern="arn:aws:logs:[^:]+:[^:]+:log-group:[^:]+">
+                                    <div class="form-text">ARN del grupo de logs de CloudWatch</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="cloudWatchLogsRoleArn" class="form-label">
+                                        <i class="fas fa-user-shield"></i> CloudWatch Logs Role ARN (Opcional)
+                                    </label>
+                                    <input type="text" class="form-control" id="cloudWatchLogsRoleArn"
+                                           name="cloud_watch_logs_role_arn"
+                                           pattern="arn:aws:iam::[^:]+:role/[^:]+">
+                                    <div class="form-text">ARN del rol IAM para CloudWatch Logs</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isMultiRegionTrail" name="is_multi_region_trail">
+                                        <label class="form-check-label" for="isMultiRegionTrail">
+                                            <i class="fas fa-globe"></i> Trail Multi-Región
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Registra eventos de todas las regiones AWS</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="includeGlobalServiceEvents" name="include_global_service_events" checked>
+                                        <label class="form-check-label" for="includeGlobalServiceEvents">
+                                            <i class="fas fa-cloud"></i> Incluir Eventos de Servicios Globales
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Incluye eventos de servicios globales como IAM</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isOrganizationTrail" name="is_organization_trail">
+                                        <label class="form-check-label" for="isOrganizationTrail">
+                                            <i class="fas fa-building"></i> Trail de Organización
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Trail para toda la organización AWS (requiere permisos de organización)</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="enableLogFileValidation" name="enable_log_file_validation" checked>
+                                        <label class="form-check-label" for="enableLogFileValidation">
+                                            <i class="fas fa-shield-alt"></i> Habilitar Validación de Archivos de Log
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Verifica la integridad de los archivos de log usando hash SHA-256</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Configuración Avanzada</h6>
+                                    <p>Los campos marcados con <span class="text-danger">*</span> son obligatorios. El trail comenzará a registrar eventos inmediatamente después de la creación.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Crear Trail
+                                </button>
+                                <a href="{{ url_for('cloudtrail.trails') }}" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.getElementById('createTrailForm').addEventListener('submit', function(e) {
+    const trailName = document.getElementById('trailName').value;
+    const s3Bucket = document.getElementById('s3BucketName').value;
+
+    if (!trailName || !s3Bucket) {
+        e.preventDefault();
+        alert('El nombre del trail y el bucket S3 son obligatorios.');
+        return;
+    }
+
+    if (!confirm(`¿Crear el trail "${trailName}" con destino al bucket "${s3Bucket}"?`)) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

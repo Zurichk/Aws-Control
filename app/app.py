@@ -3,8 +3,8 @@ from app.routes import (ec2, s3, iam, lambda_bp, rds, vpc, cloudformation, cloud
                        route53, elbv2, dynamodb, sns, sqs, cloudfront, kms, kinesis, 
                        apigateway, ecs, ecr, eks, sagemaker, config, elasticache, neptune, documentdb,
                        autoscaling, ebs, efs, fsx, security_groups, secretsmanager, batch, acm_bp, cost_explorer,
-                       bedrock, rekognition, athena, glue, emr)
-                       # chat,  # Temporalmente comentado por error de importación
+                       bedrock, rekognition, polly_bp, athena, glue, emr, chat, eventbridge, systems_manager, cloudtrail, 
+                       setup, configuracion)
 import os
 import logging
 from dotenv import load_dotenv
@@ -19,7 +19,7 @@ from app.mcp_server.ML_AI.rekognition_mcp_tools import RekognitionMCPTools
 from app.mcp_server.Mensajeria.kinesis_mcp_tools import KinesisMCPTools
 from app.mcp_server.Analytics.athena_mcp_tools import AthenaMCPTools
 from app.mcp_server.Analytics.glue_mcp_tools import GlueMCPTools
-from app.mcp_server.Analytics.emr_mcp_tools import list_emr_clusters, create_emr_cluster, terminate_emr_cluster
+from app.mcp_server.AI_Assistant.ai_assistant_mcp_tools import AIAssistantMCPTools
 
 # Initialize MCP tool instances
 secretsmanager_tools = SecretsManagerMCPTools()
@@ -29,6 +29,7 @@ rekognition_tools = RekognitionMCPTools()
 kinesis_tools = KinesisMCPTools()
 athena_tools = AthenaMCPTools()
 glue_tools = GlueMCPTools()
+ai_assistant_tools = AIAssistantMCPTools()
 
 # Load environment variables
 load_dotenv()
@@ -54,13 +55,14 @@ def create_app():
     app.register_blueprint(autoscaling, url_prefix='/autoscaling')
     app.register_blueprint(rds)
     app.register_blueprint(vpc)
-    app.register_blueprint(cloudformation)
+    app.register_blueprint(cloudformation, url_prefix='/cloudformation')
     app.register_blueprint(cloudwatch)
-    app.register_blueprint(route53)
-    app.register_blueprint(elbv2)
+    app.register_blueprint(route53, url_prefix='/route53')
+    app.register_blueprint(elbv2, url_prefix='/elbv2')
     app.register_blueprint(dynamodb, url_prefix='/dynamodb')
     app.register_blueprint(sns, url_prefix='/sns')
     app.register_blueprint(sqs, url_prefix='/sqs')
+    app.register_blueprint(eventbridge, url_prefix='/eventbridge')
     app.register_blueprint(cloudfront, url_prefix='/cloudfront')
     app.register_blueprint(kms, url_prefix='/kms')
     app.register_blueprint(kinesis, url_prefix='/kinesis')
@@ -69,13 +71,15 @@ def create_app():
     app.register_blueprint(ecr, url_prefix='/ecr')
     app.register_blueprint(eks, url_prefix='/eks')
     app.register_blueprint(sagemaker, url_prefix='/sagemaker')
-    # app.register_blueprint(chat, url_prefix='/chat')  # Temporalmente comentado por error de importación
+    app.register_blueprint(chat, url_prefix='/chat')
     app.register_blueprint(config, url_prefix='/config')
+    app.register_blueprint(setup, url_prefix='/setup')
+    app.register_blueprint(configuracion)  # Ya tiene el prefijo /configuracion en el blueprint
     app.register_blueprint(cost_explorer, url_prefix='/cost_explorer')
     app.register_blueprint(elasticache, url_prefix='/elasticache')
     app.register_blueprint(neptune, url_prefix='/neptune')
     app.register_blueprint(documentdb, url_prefix='/documentdb')
-    app.register_blueprint(ebs)
+    app.register_blueprint(ebs, url_prefix='/ebs')
     app.register_blueprint(efs)
     app.register_blueprint(fsx)
     app.register_blueprint(security_groups)
@@ -84,9 +88,12 @@ def create_app():
     app.register_blueprint(acm_bp, url_prefix='/acm')
     app.register_blueprint(bedrock, url_prefix='/bedrock')
     app.register_blueprint(rekognition, url_prefix='/rekognition')
+    app.register_blueprint(polly_bp, url_prefix='/ml-ai/polly')
     app.register_blueprint(athena, url_prefix='/athena')
     app.register_blueprint(glue, url_prefix='/glue')
     app.register_blueprint(emr, url_prefix='/emr')
+    app.register_blueprint(systems_manager, url_prefix='/systems-manager')
+    app.register_blueprint(cloudtrail, url_prefix='/cloudtrail')
 
     @app.route('/')
     def index():
@@ -331,10 +338,7 @@ def create_app():
         }
         
         # CloudWatch tools
-        from app.mcp_server.cloudwatch_mcp_tools import (
-            put_metric_alarm, delete_alarm, put_metric_data, 
-            get_metric_statistics, list_metrics
-        )
+        from app.mcp_server.cloudwatch_mcp_tools import (put_metric_alarm, delete_alarm, put_metric_data, get_metric_statistics, list_metrics)
         
         cloudwatch_tools = {
             'put_metric_alarm': {

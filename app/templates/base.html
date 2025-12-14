@@ -144,14 +144,15 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/cloudformation">CloudFormation</a></li>
                             <li><a class="dropdown-item" href="/cloudwatch">CloudWatch</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('config.index') }}">AWS Config</a></li>
                         </ul>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('config.index') }}" title="Configuración">
-                            <i class="fas fa-cog me-1"></i>
-                            <span class="d-none d-lg-inline">Config</span>
+                        <a class="nav-link" href="/setup" title="Configuración de la Aplicación">
+                            <i class="fas fa-cogs me-1"></i>
+                            <span class="d-none d-lg-inline">Setup App</span>
                         </a>
                     </li>
                     <li class="nav-item">

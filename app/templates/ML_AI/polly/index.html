@@ -1,0 +1,594 @@
+{% extends "base.html" %}
+
+{% block title %}Amazon Polly - Text-to-Speech{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1><i class="fas fa-volume-up"></i> Amazon Polly - Text-to-Speech</h1>
+    <p class="lead">Convierte texto en voz natural usando inteligencia artificial</p>
+
+    <div class="row mt-4">
+        <!-- Panel de síntesis de voz -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-microphone"></i> Sintetizar Voz</h5>
+                </div>
+                <div class="card-body">
+                    <form id="synthesizeForm">
+                        <div class="mb-3">
+                            <label for="textInput" class="form-label">Texto a sintetizar</label>
+                            <textarea class="form-control" id="textInput" rows="5" 
+                                      placeholder="Escribe el texto que quieres convertir a voz..."></textarea>
+                            <small class="text-muted">Máximo 3000 caracteres (standard) o 6000 (neural)</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="voiceSelect" class="form-label">Voz</label>
+                                <select class="form-select" id="voiceSelect">
+                                    <option value="">Cargando voces...</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="engineSelect" class="form-label">Motor</label>
+                                <select class="form-select" id="engineSelect">
+                                    <option value="neural">Neural (alta calidad)</option>
+                                    <option value="standard">Standard</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="formatSelect" class="form-label">Formato</label>
+                                <select class="form-select" id="formatSelect">
+                                    <option value="mp3">MP3</option>
+                                    <option value="ogg_vorbis">OGG Vorbis</option>
+                                    <option value="pcm">PCM</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="languageFilter" class="form-label">Filtrar por idioma</label>
+                            <select class="form-select" id="languageFilter">
+                                <option value="">Todos los idiomas</option>
+                                <option value="es-ES">Español (España)</option>
+                                <option value="es-US">Español (EE.UU.)</option>
+                                <option value="es-MX">Español (México)</option>
+                                <option value="en-US">Inglés (EE.UU.)</option>
+                                <option value="en-GB">Inglés (Reino Unido)</option>
+                                <option value="pt-BR">Portugués (Brasil)</option>
+                                <option value="fr-FR">Francés</option>
+                                <option value="de-DE">Alemán</option>
+                                <option value="it-IT">Italiano</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-play-circle"></i> Sintetizar Voz
+                        </button>
+                    </form>
+
+                    <!-- Reproductor de audio -->
+                    <div id="audioPlayer" class="mt-4" style="display: none;">
+                        <h5>Audio generado:</h5>
+                        <audio id="audioElement" controls class="w-100"></audio>
+                        <div class="mt-2">
+                            <button id="downloadBtn" class="btn btn-success btn-sm">
+                                <i class="fas fa-download"></i> Descargar Audio
+                            </button>
+                            <span id="audioInfo" class="ms-3 text-muted"></span>
+                        </div>
+                    </div>
+
+                    <div id="synthesizeAlert"></div>
+                </div>
+            </div>
+
+            <!-- Voces disponibles -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Voces Disponibles</h5>
+                </div>
+                <div class="card-body">
+                    <div id="voicesTableContainer">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel lateral: Tareas asíncronas -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-tasks"></i> Tareas Asíncronas</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small">Para textos largos (hasta 200,000 caracteres)</p>
+                    
+                    <button class="btn btn-warning btn-sm w-100 mb-3" data-bs-toggle="modal" data-bs-target="#taskModal">
+                        <i class="fas fa-plus-circle"></i> Nueva Tarea
+                    </button>
+
+                    <div id="tasksList">
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lexicones personalizados -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> Lexicones</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small">Pronunciaciones personalizadas</p>
+                    
+                    <button class="btn btn-secondary btn-sm w-100 mb-3" data-bs-toggle="modal" data-bs-target="#lexiconModal">
+                        <i class="fas fa-plus-circle"></i> Nuevo Lexicón
+                    </button>
+
+                    <div id="lexiconsList">
+                        <p class="text-muted">No hay lexicones</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejemplos rápidos -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Ejemplos Rápidos</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-outline-success btn-sm w-100 mb-2" onclick="setExampleText('es')">
+                        Ejemplo en Español
+                    </button>
+                    <button class="btn btn-outline-success btn-sm w-100 mb-2" onclick="setExampleText('en')">
+                        Ejemplo en Inglés
+                    </button>
+                    <button class="btn btn-outline-success btn-sm w-100" onclick="setExampleText('ssml')">
+                        Ejemplo SSML
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nueva tarea asíncrona -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Tarea de Síntesis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="mb-3">
+                        <label for="taskText" class="form-label">Texto</label>
+                        <textarea class="form-control" id="taskText" rows="4"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskVoice" class="form-label">Voz</label>
+                        <select class="form-select" id="taskVoice">
+                            <option value="Joanna">Joanna (en-US)</option>
+                            <option value="Lucia">Lucia (es-ES)</option>
+                            <option value="Miguel">Miguel (es-US)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskBucket" class="form-label">Bucket S3</label>
+                        <input type="text" class="form-control" id="taskBucket" placeholder="nombre-del-bucket">
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskPrefix" class="form-label">Prefijo S3 (opcional)</label>
+                        <input type="text" class="form-control" id="taskPrefix" placeholder="polly-output/">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="startTask()">Iniciar Tarea</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nuevo lexicón -->
+<div class="modal fade" id="lexiconModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Lexicón</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="lexiconForm">
+                    <div class="mb-3">
+                        <label for="lexiconName" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="lexiconName" placeholder="mi-lexicon">
+                    </div>
+                    <div class="mb-3">
+                        <label for="lexiconContent" class="form-label">Contenido PLS (XML)</label>
+                        <textarea class="form-control" id="lexiconContent" rows="8"><?xml version="1.0" encoding="UTF-8"?>
+<lexicon version="1.0" 
+      xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.w3.org/2005/01/pronunciation-lexicon
+        http://www.w3.org/TR/2007/CR-pronunciation-lexicon-20071212/pls.xsd"
+      alphabet="ipa" xml:lang="es-ES">
+  <lexeme>
+    <grapheme>ejemplo</grapheme>
+    <phoneme>eˈxemplo</phoneme>
+  </lexeme>
+</lexicon></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createLexicon()">Crear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentAudioData = null;
+let currentFormat = 'mp3';
+
+// Cargar voces al iniciar
+$(document).ready(function() {
+    loadVoices();
+    loadTasks();
+    loadLexicons();
+
+    // Actualizar voces cuando cambie el filtro de idioma
+    $('#languageFilter').change(function() {
+        loadVoices($(this).val());
+    });
+});
+
+// Sintetizar voz
+$('#synthesizeForm').submit(function(e) {
+    e.preventDefault();
+    
+    const text = $('#textInput').val().trim();
+    const voiceId = $('#voiceSelect').val();
+    const engine = $('#engineSelect').val();
+    const format = $('#formatSelect').val();
+    
+    if (!text) {
+        showAlert('synthesizeAlert', 'Por favor ingresa un texto', 'warning');
+        return;
+    }
+    
+    if (!voiceId) {
+        showAlert('synthesizeAlert', 'Por favor selecciona una voz', 'warning');
+        return;
+    }
+    
+    showLoading('synthesizeAlert');
+    
+    $.ajax({
+        url: '/ml-ai/polly/synthesize',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            text: text,
+            voice_id: voiceId,
+            engine: engine,
+            output_format: format
+        }),
+        success: function(response) {
+            if (response.success) {
+                currentAudioData = response.audio;
+                currentFormat = format;
+                
+                // Crear blob y URL para el audio
+                const audioBlob = base64ToBlob(response.audio, response.content_type);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                // Configurar reproductor
+                $('#audioElement').attr('src', audioUrl);
+                $('#audioPlayer').show();
+                
+                $('#audioInfo').text(`Tamaño: ${formatBytes(response.size)} | Caracteres: ${response.characters}`);
+                
+                showAlert('synthesizeAlert', '¡Audio sintetizado exitosamente!', 'success');
+            } else {
+                showAlert('synthesizeAlert', response.error, 'danger');
+            }
+        },
+        error: function(xhr) {
+            const error = xhr.responseJSON ? xhr.responseJSON.error : 'Error desconocido';
+            showAlert('synthesizeAlert', 'Error: ' + error, 'danger');
+        }
+    });
+});
+
+// Descargar audio
+$('#downloadBtn').click(function() {
+    if (!currentAudioData) return;
+    
+    const blob = base64ToBlob(currentAudioData, `audio/${currentFormat}`);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `polly-audio-${Date.now()}.${currentFormat}`;
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+// Cargar voces
+function loadVoices(languageCode = '') {
+    let url = '/ml-ai/polly/voices';
+    if (languageCode) {
+        url += `?language_code=${languageCode}`;
+    }
+    
+    $.get(url, function(response) {
+        if (response.success) {
+            const select = $('#voiceSelect');
+            const taskSelect = $('#taskVoice');
+            
+            select.empty();
+            taskSelect.empty();
+            
+            // Agrupar por idioma
+            const groupedVoices = {};
+            response.voices.forEach(voice => {
+                const lang = voice.language_name;
+                if (!groupedVoices[lang]) {
+                    groupedVoices[lang] = [];
+                }
+                groupedVoices[lang].push(voice);
+            });
+            
+            // Agregar opciones agrupadas
+            Object.keys(groupedVoices).sort().forEach(lang => {
+                const optgroup = $('<optgroup>').attr('label', lang);
+                groupedVoices[lang].forEach(voice => {
+                    const engines = voice.supported_engines.join(', ');
+                    const option = $('<option>')
+                        .val(voice.id)
+                        .text(`${voice.name} (${voice.gender}) - ${engines}`);
+                    optgroup.append(option);
+                });
+                select.append(optgroup);
+                taskSelect.append(optgroup.clone());
+            });
+            
+            // Crear tabla de voces
+            displayVoicesTable(response.voices);
+        }
+    });
+}
+
+// Mostrar tabla de voces
+function displayVoicesTable(voices) {
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Voz</th>
+                        <th>Género</th>
+                        <th>Idioma</th>
+                        <th>Motores</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    voices.forEach(voice => {
+        const engines = voice.supported_engines.map(e => 
+            `<span class="badge bg-secondary">${e}</span>`
+        ).join(' ');
+        
+        html += `
+            <tr>
+                <td><strong>${voice.name}</strong> <small class="text-muted">(${voice.id})</small></td>
+                <td>${voice.gender}</td>
+                <td>${voice.language_name}</td>
+                <td>${engines}</td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    $('#voicesTableContainer').html(html);
+}
+
+// Cargar tareas
+function loadTasks() {
+    $.get('/ml-ai/polly/tasks', function(response) {
+        if (response.success && response.tasks.length > 0) {
+            let html = '<div class="list-group">';
+            response.tasks.forEach(task => {
+                const statusClass = task.status === 'completed' ? 'success' : 
+                                  task.status === 'failed' ? 'danger' : 'warning';
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${task.voice_id}</h6>
+                            <span class="badge bg-${statusClass}">${task.status}</span>
+                        </div>
+                        <small class="text-muted">${task.task_id}</small>
+                        ${task.output_uri ? `<br><small><a href="${task.output_uri}" target="_blank">Descargar</a></small>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            $('#tasksList').html(html);
+        } else {
+            $('#tasksList').html('<p class="text-muted">No hay tareas</p>');
+        }
+    });
+}
+
+// Iniciar tarea asíncrona
+function startTask() {
+    const text = $('#taskText').val();
+    const voiceId = $('#taskVoice').val();
+    const bucket = $('#taskBucket').val();
+    const prefix = $('#taskPrefix').val();
+    
+    if (!text || !bucket) {
+        alert('Texto y bucket S3 son requeridos');
+        return;
+    }
+    
+    $.ajax({
+        url: '/ml-ai/polly/tasks/start',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            text: text,
+            voice_id: voiceId,
+            s3_bucket: bucket,
+            s3_key_prefix: prefix || 'polly-output/'
+        }),
+        success: function(response) {
+            if (response.success) {
+                alert('Tarea iniciada exitosamente');
+                $('#taskModal').modal('hide');
+                loadTasks();
+            } else {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function(xhr) {
+            alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Error desconocido'));
+        }
+    });
+}
+
+// Cargar lexicones
+function loadLexicons() {
+    $.get('/ml-ai/polly/lexicons', function(response) {
+        if (response.success && response.lexicons.length > 0) {
+            let html = '<div class="list-group">';
+            response.lexicons.forEach(lex => {
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${lex.name}</span>
+                        <button class="btn btn-danger btn-sm" onclick="deleteLexicon('${lex.name}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            $('#lexiconsList').html(html);
+        }
+    });
+}
+
+// Crear lexicón
+function createLexicon() {
+    const name = $('#lexiconName').val();
+    const content = $('#lexiconContent').val();
+    
+    if (!name || !content) {
+        alert('Nombre y contenido son requeridos');
+        return;
+    }
+    
+    $.ajax({
+        url: '/ml-ai/polly/lexicons',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ name: name, content: content }),
+        success: function(response) {
+            if (response.success) {
+                alert('Lexicón creado exitosamente');
+                $('#lexiconModal').modal('hide');
+                loadLexicons();
+            } else {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function(xhr) {
+            alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Error desconocido'));
+        }
+    });
+}
+
+// Eliminar lexicón
+function deleteLexicon(name) {
+    if (!confirm(`¿Eliminar lexicón ${name}?`)) return;
+    
+    $.ajax({
+        url: `/ml-ai/polly/lexicons/${name}`,
+        method: 'DELETE',
+        success: function() {
+            loadLexicons();
+        }
+    });
+}
+
+// Ejemplos rápidos
+function setExampleText(type) {
+    const examples = {
+        'es': 'Hola, soy una voz generada por Amazon Polly. Puedo hablar en español de forma natural y expresiva.',
+        'en': 'Hello, I am a voice generated by Amazon Polly. I can speak English naturally and expressively.',
+        'ssml': '<speak>Puedo hablar <emphasis level="strong">con énfasis</emphasis> y hacer <break time="1s"/> pausas dramáticas.</speak>'
+    };
+    
+    $('#textInput').val(examples[type]);
+}
+
+// Utilidades
+function base64ToBlob(base64, contentType) {
+    const byteCharacters = atob(base64);
+    const byteArrays = [];
+    
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+        byteArrays.push(new Uint8Array(byteNumbers));
+    }
+    
+    return new Blob(byteArrays, {type: contentType});
+}
+
+function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function showAlert(containerId, message, type) {
+    $(`#${containerId}`).html(`
+        <div class="alert alert-${type} alert-dismissible fade show mt-3" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+}
+
+function showLoading(containerId) {
+    $(`#${containerId}`).html(`
+        <div class="alert alert-info mt-3">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Sintetizando voz...
+        </div>
+    `);
+}
+</script>
+{% endblock %}
