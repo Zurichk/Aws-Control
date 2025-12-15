@@ -2,6 +2,14 @@
 
 Panel de control web completo para gestionar servicios de AWS con integración de IA Assistant.
 
+## 🔒 Seguridad
+
+> **⚠️ IMPORTANTE**: Este proyecto maneja credenciales sensibles (AWS, API keys de IA).
+> 
+> - **NUNCA** subas tu archivo `.env` a repositorios públicos
+> - Usa HTTPS en producción
+> - Configura las API keys desde la interfaz web en lugar de variables de entorno
+
 ## 🚀 Características
 
 - **Gestión Completa de AWS**: Administra EC2, S3, Lambda, RDS, DynamoDB, VPC y más de 30 servicios
