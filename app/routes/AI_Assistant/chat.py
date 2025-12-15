@@ -48,28 +48,53 @@ def make_serializable(obj):
     except:
         return repr(obj)
 
-# Configure AI providers
+def get_api_keys():
+    """Obtiene las API keys de forma dinámica desde env o sesión"""
+    return {
+        'gemini': session.get('gemini_api_key') or os.environ.get('GEMINI_API_KEY'),
+        'deepseek': session.get('deepseek_api_key') or os.environ.get('DEEPSEEK_API_KEY'),
+        'provider': session.get('ai_provider') or os.environ.get('AI_PROVIDER', 'gemini').lower()
+    }
+
+def configure_gemini_if_needed():
+    """Configura Gemini dinámicamente si hay una API key disponible"""
+    keys = get_api_keys()
+    gemini_key = keys['gemini']
+    
+    if gemini_key:
+        genai.configure(api_key=gemini_key)
+        return True
+    return False
+
+def get_deepseek_client():
+    """Obtiene un cliente de DeepSeek configurado dinámicamente"""
+    keys = get_api_keys()
+    deepseek_key = keys['deepseek']
+    
+    if deepseek_key:
+        return OpenAI(
+            api_key=deepseek_key,
+            base_url="https://api.deepseek.com"
+        )
+    return None
+
+# Configure AI providers (solo para logging inicial)
 AI_PROVIDER = os.environ.get('AI_PROVIDER', 'gemini').lower()
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
 
-# Configure Gemini
+# Configure Gemini (solo si hay key al inicio)
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
     logger.info(f"Gemini API Key configurada: {GEMINI_API_KEY[:10]}...")
 else:
     logger.warning("No se encontró GEMINI_API_KEY en las variables de entorno")
 
-# Configure DeepSeek
+# Log DeepSeek inicial
 if DEEPSEEK_API_KEY:
-    deepseek_client = OpenAI(
-        api_key=DEEPSEEK_API_KEY,
-        base_url="https://api.deepseek.com"
-    )
     logger.info(f"DeepSeek API Key configurada: {DEEPSEEK_API_KEY[:10]}...")
 else:
     logger.warning("No se encontró DEEPSEEK_API_KEY en las variables de entorno")
-    deepseek_client = None
 
 logger.info(f"Proveedor de IA activo: {AI_PROVIDER.upper()}")
 
@@ -346,9 +371,12 @@ def get_tools():
 def process_with_deepseek(user_message, session_id, tools_definition, mcp_server):
     """Procesa un mensaje usando DeepSeek API"""
     try:
+        # Obtener cliente dinámicamente
+        deepseek_client = get_deepseek_client()
+        
         if not deepseek_client:
             return {
-                'error': 'DeepSeek no está configurado. Por favor configura DEEPSEEK_API_KEY.',
+                'error': 'DeepSeek no está configurado. Por favor configura DEEPSEEK_API_KEY en la sección Setup.',
                 'response': '',
                 'tool_results': [],
                 'status': 'error'
@@ -550,7 +578,8 @@ def send_message():
         logger.info(f"Herramientas disponibles: {[t['name'] for t in tools_definition]}")
         
         # Determinar qué proveedor usar (permitir override desde sesión)
-        current_provider = session.get('ai_provider', AI_PROVIDER)
+        keys = get_api_keys()
+        current_provider = keys['provider']
         logger.info(f"Usando proveedor de IA: {current_provider.upper()}")
         
         # Si se selecciona DeepSeek, usar la función auxiliar
@@ -561,6 +590,15 @@ def send_message():
             return jsonify(result)
         
         # Si se llega aquí, usar Gemini (comportamiento por defecto)
+        # Configurar Gemini dinámicamente
+        if not configure_gemini_if_needed():
+            return jsonify({
+                'error': 'Gemini no está configurado. Por favor configura GEMINI_API_KEY en la sección Setup.',
+                'response': '',
+                'tool_results': [],
+                'status': 'error'
+            }), 500
+        
         # Convertir herramientas a formato simple para Gemini
         tools_for_gemini = []
         for tool in tools_definition:
