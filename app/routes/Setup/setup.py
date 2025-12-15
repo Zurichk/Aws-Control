@@ -120,16 +120,34 @@ def ai_provider():
             gemini_key = request.form.get('gemini_api_key', '').strip()
             deepseek_key = request.form.get('deepseek_api_key', '').strip()
 
+            # Obtener keys actuales de la sesión
+            current_gemini = session.get('gemini_api_key') or os.environ.get('GEMINI_API_KEY')
+            current_deepseek = session.get('deepseek_api_key') or os.environ.get('DEEPSEEK_API_KEY')
+
+            # Si no se proporciona nueva key, mantener la actual
+            if not gemini_key and current_gemini:
+                gemini_key = current_gemini
+            if not deepseek_key and current_deepseek:
+                deepseek_key = current_deepseek
+
             # Validar que se proporcione la API key del proveedor seleccionado
             if provider == 'gemini' and not gemini_key:
-                flash('Debes proporcionar la API Key de Gemini', 'error')
-                return render_template('Setup/ai_provider.html')
+                flash('Debes proporcionar la API Key de Gemini o ya tenerla configurada', 'error')
+                return render_template('Setup/ai_provider.html', config={
+                    'ai_provider': provider,
+                    'gemini_api_key': bool(current_gemini),
+                    'deepseek_api_key': bool(current_deepseek)
+                })
             
             if provider == 'deepseek' and not deepseek_key:
-                flash('Debes proporcionar la API Key de DeepSeek', 'error')
-                return render_template('Setup/ai_provider.html')
+                flash('Debes proporcionar la API Key de DeepSeek o ya tenerla configurada', 'error')
+                return render_template('Setup/ai_provider.html', config={
+                    'ai_provider': provider,
+                    'gemini_api_key': bool(current_gemini),
+                    'deepseek_api_key': bool(current_deepseek)
+                })
 
-            # Guardar en sesión
+            # Guardar en sesión solo las keys proporcionadas o actualizadas
             session['ai_provider'] = provider
             if gemini_key:
                 session['gemini_api_key'] = gemini_key
@@ -174,11 +192,12 @@ def ai_provider():
         except Exception as e:
             flash(f'Error guardando configuración: {str(e)}', 'error')
 
-    # GET: Mostrar formulario con valores actuales
+    # GET: Mostrar formulario con valores actuales (sin exponer las keys)
     current_config = {
         'ai_provider': session.get('ai_provider', os.environ.get('AI_PROVIDER', 'gemini')),
-        'gemini_api_key': session.get('gemini_api_key', os.environ.get('GEMINI_API_KEY', '')),
-        'deepseek_api_key': session.get('deepseek_api_key', os.environ.get('DEEPSEEK_API_KEY', ''))
+        # Solo indicar si la key existe, no mostrar su valor
+        'gemini_api_key': bool(session.get('gemini_api_key') or os.environ.get('GEMINI_API_KEY')),
+        'deepseek_api_key': bool(session.get('deepseek_api_key') or os.environ.get('DEEPSEEK_API_KEY'))
     }
 
     return render_template('Setup/ai_provider.html', config=current_config)

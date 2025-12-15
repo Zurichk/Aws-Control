@@ -36,7 +36,13 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
+    
+    # Security configurations
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
+    app.config['SESSION_COOKIE_SECURE'] = True  # Solo HTTPS en producción
+    app.config['SESSION_COOKIE_HTTPONLY'] = True  # No accesible desde JavaScript
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Protección CSRF
+    app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora de sesión
 
     # Configure logging
     logging.basicConfig(

@@ -82,13 +82,14 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-key"></i></span>
                                     <input type="password" class="form-control" id="gemini_api_key" name="gemini_api_key" 
-                                           value="{{ config.gemini_api_key }}" 
-                                           placeholder="AIza...">
+                                           placeholder="{% if config.gemini_api_key %}••••••••••••••••{% else %}AIza...{% endif %}" 
+                                           autocomplete="off">
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('gemini_api_key')">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="fas fa-eye" id="gemini_api_key_icon"></i>
                                     </button>
                                 </div>
                                 <small class="form-text text-muted">
+                                    {% if config.gemini_api_key %}<i class="fas fa-check-circle text-success"></i> API Key configurada. Deja en blanco para mantener la actual.<br>{% endif %}
                                     Obtén tu API Key en <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
                                 </small>
                             </div>
@@ -101,13 +102,14 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-key"></i></span>
                                     <input type="password" class="form-control" id="deepseek_api_key" name="deepseek_api_key" 
-                                           value="{{ config.deepseek_api_key }}" 
-                                           placeholder="sk-...">
+                                           placeholder="{% if config.deepseek_api_key %}••••••••••••••••{% else %}sk-...{% endif %}" 
+                                           autocomplete="off">
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('deepseek_api_key')">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="fas fa-eye" id="deepseek_api_key_icon"></i>
                                     </button>
                                 </div>
                                 <small class="form-text text-muted">
+                                    {% if config.deepseek_api_key %}<i class="fas fa-check-circle text-success"></i> API Key configurada. Deja en blanco para mantener la actual.<br>{% endif %}
                                     Obtén tu API Key en <a href="https://platform.deepseek.com/" target="_blank">DeepSeek Platform</a>
                                 </small>
                             </div>
