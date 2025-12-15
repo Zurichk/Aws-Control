@@ -39,7 +39,9 @@ def create_app():
     
     # Security configurations
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-    app.config['SESSION_COOKIE_SECURE'] = True  # Solo HTTPS en producción
+    # Solo HTTPS en producción (Coolify/VPS), permitir HTTP en desarrollo local
+    is_production = os.environ.get('FLASK_ENV') != 'development'
+    app.config['SESSION_COOKIE_SECURE'] = is_production
     app.config['SESSION_COOKIE_HTTPONLY'] = True  # No accesible desde JavaScript
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Protección CSRF
     app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora de sesión
