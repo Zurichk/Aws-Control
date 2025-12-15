@@ -144,6 +144,8 @@ aws-credentials
 aws-credentials.*
 config
 config.*
+!app/routes/AWSConfig/config.py
+!app/config.py
 *.pem
 *.key
 *.crt
