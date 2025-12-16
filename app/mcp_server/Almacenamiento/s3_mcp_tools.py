@@ -263,9 +263,9 @@ class S3MCPTools:
             )
 
         return {
-            'message': f'Bucket {kwargs.get('bucket_name')} creado exitosamente',
+            'message': f'Bucket {kwargs.get("bucket_name")} creado exitosamente',
             'bucket_name': kwargs.get('bucket_name'),
-            'location': response.get('Location', f'https://{kwargs.get('bucket_name')}.s3.amazonaws.com/')
+            'location': response.get('Location', f'https://{kwargs.get("bucket_name")}.s3.amazonaws.com/')
         }
 
     def _delete_bucket(self, **kwargs) -> Dict[str, Any]:
@@ -275,7 +275,7 @@ class S3MCPTools:
         client.delete_bucket(Bucket=kwargs.get('bucket_name'))
 
         return {
-            'message': f'Bucket {kwargs.get('bucket_name')} eliminado exitosamente'
+            'message': f'Bucket {kwargs.get("bucket_name")} eliminado exitosamente'
         }
 
     def _list_objects(self, **kwargs) -> Dict[str, Any]:
@@ -288,7 +288,7 @@ class S3MCPTools:
         }
 
         if kwargs.get('prefix'):
-            s3_kwargs.get('Prefix') = kwargs.get('prefix')
+            s3_kwargs['Prefix'] = kwargs.get('prefix')
 
         response = client.list_objects_v2(**s3_params)
 
@@ -345,20 +345,20 @@ class S3MCPTools:
         # Leer el archivo
         try:
             with open(kwargs.get('file_path'), 'rb') as file:
-                s3_kwargs.get('Body') = file.read()
+                s3_kwargs['Body'] = file.read()
         except FileNotFoundError:
-            return {'error': f'Archivo no encontrado: {kwargs.get('file_path')}'}
+            return {'error': f'Archivo no encontrado: {kwargs.get("file_path")}'}
 
         if kwargs.get('content_type'):
-            s3_kwargs.get('ContentType') = kwargs.get('content_type')
+            s3_kwargs['ContentType'] = kwargs.get('content_type')
 
         if kwargs.get('metadata'):
-            s3_kwargs.get('Metadata') = kwargs.get('metadata')
+            s3_kwargs['Metadata'] = kwargs.get('metadata')
 
         response = client.put_object(**s3_params)
 
         return {
-            'message': f'Objeto {kwargs.get('key')} subido exitosamente',
+            'message': f'Objeto {kwargs.get("key")} subido exitosamente',
             'bucket_name': kwargs.get('bucket_name'),
             'key': kwargs.get('key'),
             'etag': response.get('ETag'),
@@ -379,7 +379,7 @@ class S3MCPTools:
             file.write(response['Body'].read())
 
         return {
-            'message': f'Objeto {kwargs.get('key')} descargado exitosamente',
+            'message': f'Objeto {kwargs.get("key")} descargado exitosamente',
             'bucket_name': kwargs.get('bucket_name'),
             'key': kwargs.get('key'),
             'file_path': kwargs.get('file_path'),
@@ -397,7 +397,7 @@ class S3MCPTools:
         )
 
         return {
-            'message': f'Objeto {kwargs.get('key')} eliminado exitosamente',
+            'message': f'Objeto {kwargs.get("key")} eliminado exitosamente',
             'bucket_name': kwargs.get('bucket_name'),
             'key': kwargs.get('key'),
             'delete_marker': response.get('DeleteMarker', False),
@@ -420,7 +420,7 @@ class S3MCPTools:
         )
 
         return {
-            'message': f'Objeto copiado de {kwargs.get('source_bucket')}/{kwargs.get('source_key')} a {kwargs.get('dest_bucket')}/{kwargs.get('dest_key')}',
+            'message': f'Objeto copiado de {kwargs.get("source_bucket")}/{kwargs.get("source_key")} a {kwargs.get("dest_bucket")}/{kwargs.get("dest_key")}',
             'source_bucket': kwargs.get('source_bucket'),
             'source_key': kwargs.get('source_key'),
             'dest_bucket': kwargs.get('dest_bucket'),
@@ -456,7 +456,7 @@ class S3MCPTools:
         )
 
         return {
-            'message': f'Política aplicada al bucket {kwargs.get('bucket_name')}',
+            'message': f'Política aplicada al bucket {kwargs.get("bucket_name")}',
             'bucket_name': kwargs.get('bucket_name')
         }
 
@@ -486,7 +486,7 @@ class S3MCPTools:
         )
 
         return {
-            'message': f'Versionado {versioning_config["Status"]} para bucket {kwargs.get('bucket_name')}',
+            'message': f'Versionado {versioning_config["Status"]} para bucket {kwargs.get("bucket_name")}',
             'bucket_name': kwargs.get('bucket_name'),
             'versioning_status': versioning_config['Status']
         }

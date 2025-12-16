@@ -245,10 +245,10 @@ class RDSMCPTools:
         }
 
         if kwargs.get('db_instance_identifier'):
-            rds_kwargs.get('DBInstanceIdentifier') = kwargs.get('db_instance_identifier')
+            rds_kwargs['DBInstanceIdentifier'] = kwargs.get('db_instance_identifier')
 
         if kwargs.get('filters'):
-            rds_kwargs.get('Filters') = kwargs.get('filters')
+            rds_kwargs['Filters'] = kwargs.get('filters')
 
         response = client.describe_db_instances(**rds_params)
 
@@ -332,21 +332,21 @@ class RDSMCPTools:
         }
 
         if kwargs.get('db_name'):
-            rds_kwargs.get('DBName') = kwargs.get('db_name')
+            rds_kwargs['DBName'] = kwargs.get('db_name')
 
         if kwargs.get('vpc_security_group_ids'):
-            rds_kwargs.get('VpcSecurityGroupIds') = kwargs.get('vpc_security_group_ids')
+            rds_kwargs['VpcSecurityGroupIds'] = kwargs.get('vpc_security_group_ids')
 
         if kwargs.get('db_subnet_group_name'):
-            rds_kwargs.get('DBSubnetGroupName') = kwargs.get('db_subnet_group_name')
+            rds_kwargs['DBSubnetGroupName'] = kwargs.get('db_subnet_group_name')
 
         if kwargs.get('tags'):
-            rds_kwargs.get('Tags') = kwargs.get('tags')
+            rds_kwargs['Tags'] = kwargs.get('tags')
 
         client.create_db_instance(**rds_params)
 
         return {
-            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} está siendo creada',
+            'message': f'Instancia RDS {kwargs.get("db_instance_identifier")} está siendo creada',
             'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'creating'
         }
@@ -360,7 +360,7 @@ class RDSMCPTools:
         )
 
         return {
-            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} iniciándose',
+            'message': f'Instancia RDS {kwargs.get("db_instance_identifier")} iniciándose',
             'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'starting'
         }
@@ -374,7 +374,7 @@ class RDSMCPTools:
         )
 
         return {
-            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} deteniéndose',
+            'message': f'Instancia RDS {kwargs.get("db_instance_identifier")} deteniéndose',
             'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'stopping'
         }
@@ -388,12 +388,12 @@ class RDSMCPTools:
         }
 
         if kwargs.get('force_failover'):
-            rds_kwargs.get('ForceFailover') = kwargs.get('force_failover')
+            rds_kwargs['ForceFailover'] = kwargs.get('force_failover')
 
         client.reboot_db_instance(**rds_params)
 
         return {
-            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} reiniciándose',
+            'message': f'Instancia RDS {kwargs.get("db_instance_identifier")} reiniciándose',
             'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'rebooting'
         }
@@ -409,12 +409,12 @@ class RDSMCPTools:
         }
 
         if not kwargs.get('skip_final_snapshot', False) and kwargs.get('final_db_snapshot_identifier'):
-            rds_kwargs.get('FinalDBSnapshotIdentifier') = kwargs.get('final_db_snapshot_identifier')
+            rds_kwargs['FinalDBSnapshotIdentifier'] = kwargs.get('final_db_snapshot_identifier')
 
         client.delete_db_instance(**rds_params)
 
         return {
-            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} eliminándose',
+            'message': f'Instancia RDS {kwargs.get("db_instance_identifier")} eliminándose',
             'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'deleting'
         }
@@ -428,10 +428,10 @@ class RDSMCPTools:
         }
 
         if kwargs.get('db_instance_identifier'):
-            rds_kwargs.get('DBInstanceIdentifier') = kwargs.get('db_instance_identifier')
+            rds_kwargs['DBInstanceIdentifier'] = kwargs.get('db_instance_identifier')
 
         if kwargs.get('snapshot_type'):
-            rds_kwargs.get('SnapshotType') = kwargs.get('snapshot_type')
+            rds_kwargs['SnapshotType'] = kwargs.get('snapshot_type')
 
         response = client.describe_db_snapshots(**rds_params)
 
@@ -465,7 +465,7 @@ class RDSMCPTools:
         )
 
         return {
-            'message': f'Snapshot {kwargs.get('db_snapshot_identifier')} está siendo creado',
+            'message': f'Snapshot {kwargs.get("db_snapshot_identifier")} está siendo creado',
             'db_snapshot_identifier': kwargs.get('db_snapshot_identifier'),
             'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'status': 'creating'
@@ -480,7 +480,7 @@ class RDSMCPTools:
         )
 
         return {
-            'message': f'Snapshot {kwargs.get('db_snapshot_identifier')} eliminado',
+            'message': f'Snapshot {kwargs.get("db_snapshot_identifier")} eliminado',
             'db_snapshot_identifier': kwargs.get('db_snapshot_identifier')
         }
 
@@ -493,7 +493,7 @@ class RDSMCPTools:
         }
 
         if kwargs.get('db_subnet_group_name'):
-            rds_kwargs.get('DBSubnetGroupName') = kwargs.get('db_subnet_group_name')
+            rds_kwargs['DBSubnetGroupName'] = kwargs.get('db_subnet_group_name')
 
         response = client.describe_db_subnet_groups(**rds_params)
 
@@ -527,7 +527,7 @@ class RDSMCPTools:
         }
 
         if kwargs.get('db_parameter_group_name'):
-            rds_kwargs.get('DBParameterGroupName') = kwargs.get('db_parameter_group_name')
+            rds_kwargs['DBParameterGroupName'] = kwargs.get('db_parameter_group_name')
 
         response = client.describe_db_parameter_groups(**rds_params)
 
@@ -555,7 +555,7 @@ class RDSMCPTools:
         }
 
         if kwargs.get('reserved_db_instance_id'):
-            rds_kwargs.get('ReservedDBInstanceId') = kwargs.get('reserved_db_instance_id')
+            rds_kwargs['ReservedDBInstanceId'] = kwargs.get('reserved_db_instance_id')
 
         response = client.describe_reserved_db_instances(**rds_params)
 

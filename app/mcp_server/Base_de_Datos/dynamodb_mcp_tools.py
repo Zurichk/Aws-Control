@@ -408,9 +408,9 @@ class DynamoDBMCPTools:
 
         dynamo_params = {}
         if kwargs.get('limit'):
-            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+            dynamo_kwargs['Limit'] = kwargs.get('limit')
         if kwargs.get('exclusive_start_table_name'):
-            dynamo_kwargs.get('ExclusiveStartTableName') = kwargs.get('exclusive_start_table_name')
+            dynamo_kwargs['ExclusiveStartTableName'] = kwargs.get('exclusive_start_table_name')
 
         response = client.list_tables(**dynamo_params)
 
@@ -460,27 +460,27 @@ class DynamoDBMCPTools:
         }
 
         if kwargs.get('billing_mode'):
-            dynamo_kwargs.get('BillingMode') = kwargs.get('billing_mode')
+            dynamo_kwargs['BillingMode'] = kwargs.get('billing_mode')
 
         if kwargs.get('provisioned_throughput'):
-            dynamo_kwargs.get('ProvisionedThroughput') = {
+            dynamo_kwargs['ProvisionedThroughput'] = {
                 'ReadCapacityUnits': kwargs.get('provisioned_throughput')['read_capacity_units'],
                 'WriteCapacityUnits': kwargs.get('provisioned_throughput')['write_capacity_units']
             }
 
         if kwargs.get('stream_view_type'):
-            dynamo_kwargs.get('StreamSpecification') = {
+            dynamo_kwargs['StreamSpecification'] = {
                 'StreamEnabled': True,
                 'StreamViewType': kwargs.get('stream_view_type')
             }
 
         if kwargs.get('tags'):
-            dynamo_kwargs.get('Tags') = kwargs.get('tags')
+            dynamo_kwargs['Tags'] = kwargs.get('tags')
 
         response = client.create_table(**dynamo_params)
 
         return {
-            'message': f'Tabla DynamoDB {kwargs.get('table_name')} creada exitosamente',
+            'message': f'Tabla DynamoDB {kwargs.get("table_name")} creada exitosamente',
             'table_description': {
                 'table_name': response['TableDescription']['TableName'],
                 'table_arn': response['TableDescription'].get('TableArn'),
@@ -497,7 +497,7 @@ class DynamoDBMCPTools:
         response = client.delete_table(TableName=kwargs.get('table_name'))
 
         return {
-            'message': f'Tabla DynamoDB {kwargs.get('table_name')} eliminada exitosamente',
+            'message': f'Tabla DynamoDB {kwargs.get("table_name")} eliminada exitosamente',
             'table_description': {
                 'table_name': response['TableDescription']['TableName'],
                 'table_arn': response['TableDescription'].get('TableArn'),
@@ -515,14 +515,14 @@ class DynamoDBMCPTools:
         }
 
         if kwargs.get('condition_expression'):
-            dynamo_kwargs.get('ConditionExpression') = kwargs.get('condition_expression')
+            dynamo_kwargs['ConditionExpression'] = kwargs.get('condition_expression')
         if kwargs.get('return_values'):
-            dynamo_kwargs.get('ReturnValues') = kwargs.get('return_values')
+            dynamo_kwargs['ReturnValues'] = kwargs.get('return_values')
 
         response = client.put_item(**dynamo_params)
 
         result = {
-            'message': f'Item insertado en tabla {kwargs.get('table_name')}',
+            'message': f'Item insertado en tabla {kwargs.get("table_name")}',
             'attributes': response.get('Attributes', {})
         }
 
@@ -541,9 +541,9 @@ class DynamoDBMCPTools:
         }
 
         if kwargs.get('projection_expression'):
-            dynamo_kwargs.get('ProjectionExpression') = kwargs.get('projection_expression')
+            dynamo_kwargs['ProjectionExpression'] = kwargs.get('projection_expression')
         if kwargs.get('consistent_read'):
-            dynamo_kwargs.get('ConsistentRead') = kwargs.get('consistent_read')
+            dynamo_kwargs['ConsistentRead'] = kwargs.get('consistent_read')
 
         response = client.get_item(**dynamo_params)
 
@@ -568,14 +568,14 @@ class DynamoDBMCPTools:
         }
 
         if kwargs.get('condition_expression'):
-            dynamo_kwargs.get('ConditionExpression') = kwargs.get('condition_expression')
+            dynamo_kwargs['ConditionExpression'] = kwargs.get('condition_expression')
         if kwargs.get('return_values'):
-            dynamo_kwargs.get('ReturnValues') = kwargs.get('return_values')
+            dynamo_kwargs['ReturnValues'] = kwargs.get('return_values')
 
         response = client.update_item(**dynamo_params)
 
         result = {
-            'message': f'Item actualizado en tabla {kwargs.get('table_name')}',
+            'message': f'Item actualizado en tabla {kwargs.get("table_name")}',
             'attributes': response.get('Attributes', {})
         }
 
@@ -594,14 +594,14 @@ class DynamoDBMCPTools:
         }
 
         if kwargs.get('condition_expression'):
-            dynamo_kwargs.get('ConditionExpression') = kwargs.get('condition_expression')
+            dynamo_kwargs['ConditionExpression'] = kwargs.get('condition_expression')
         if kwargs.get('return_values'):
-            dynamo_kwargs.get('ReturnValues') = kwargs.get('return_values')
+            dynamo_kwargs['ReturnValues'] = kwargs.get('return_values')
 
         response = client.delete_item(**dynamo_params)
 
         result = {
-            'message': f'Item eliminado de tabla {kwargs.get('table_name')}',
+            'message': f'Item eliminado de tabla {kwargs.get("table_name")}',
             'attributes': response.get('Attributes', {})
         }
 
@@ -617,15 +617,15 @@ class DynamoDBMCPTools:
         dynamo_params = {'TableName': kwargs.get('table_name')}
 
         if kwargs.get('filter_expression'):
-            dynamo_kwargs.get('FilterExpression') = kwargs.get('filter_expression')
+            dynamo_kwargs['FilterExpression'] = kwargs.get('filter_expression')
         if kwargs.get('projection_expression'):
-            dynamo_kwargs.get('ProjectionExpression') = kwargs.get('projection_expression')
+            dynamo_kwargs['ProjectionExpression'] = kwargs.get('projection_expression')
         if kwargs.get('limit'):
-            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+            dynamo_kwargs['Limit'] = kwargs.get('limit')
         if kwargs.get('exclusive_start_key'):
-            dynamo_kwargs.get('ExclusiveStartKey') = kwargs.get('exclusive_start_key')
+            dynamo_kwargs['ExclusiveStartKey'] = kwargs.get('exclusive_start_key')
         if kwargs.get('consistent_read'):
-            dynamo_kwargs.get('ConsistentRead') = kwargs.get('consistent_read')
+            dynamo_kwargs['ConsistentRead'] = kwargs.get('consistent_read')
 
         response = client.scan(**dynamo_params)
 
@@ -651,19 +651,19 @@ class DynamoDBMCPTools:
         }
 
         if kwargs.get('filter_expression'):
-            dynamo_kwargs.get('FilterExpression') = kwargs.get('filter_expression')
+            dynamo_kwargs['FilterExpression'] = kwargs.get('filter_expression')
         if kwargs.get('projection_expression'):
-            dynamo_kwargs.get('ProjectionExpression') = kwargs.get('projection_expression')
+            dynamo_kwargs['ProjectionExpression'] = kwargs.get('projection_expression')
         if kwargs.get('index_name'):
-            dynamo_kwargs.get('IndexName') = kwargs.get('index_name')
+            dynamo_kwargs['IndexName'] = kwargs.get('index_name')
         if kwargs.get('limit'):
-            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+            dynamo_kwargs['Limit'] = kwargs.get('limit')
         if kwargs.get('exclusive_start_key'):
-            dynamo_kwargs.get('ExclusiveStartKey') = kwargs.get('exclusive_start_key')
+            dynamo_kwargs['ExclusiveStartKey'] = kwargs.get('exclusive_start_key')
         if kwargs.get('scan_index_forward'):
-            dynamo_kwargs.get('ScanIndexForward') = kwargs.get('scan_index_forward')
+            dynamo_kwargs['ScanIndexForward'] = kwargs.get('scan_index_forward')
         if kwargs.get('consistent_read'):
-            dynamo_kwargs.get('ConsistentRead') = kwargs.get('consistent_read')
+            dynamo_kwargs['ConsistentRead'] = kwargs.get('consistent_read')
 
         response = client.query(**dynamo_params)
 
@@ -718,21 +718,21 @@ class DynamoDBMCPTools:
         dynamo_params = {'TableName': kwargs.get('table_name')}
 
         if kwargs.get('billing_mode'):
-            dynamo_kwargs.get('BillingMode') = kwargs.get('billing_mode')
+            dynamo_kwargs['BillingMode'] = kwargs.get('billing_mode')
 
         if kwargs.get('provisioned_throughput'):
-            dynamo_kwargs.get('ProvisionedThroughput') = {
+            dynamo_kwargs['ProvisionedThroughput'] = {
                 'ReadCapacityUnits': kwargs.get('provisioned_throughput')['read_capacity_units'],
                 'WriteCapacityUnits': kwargs.get('provisioned_throughput')['write_capacity_units']
             }
 
         if kwargs.get('stream_specification'):
-            dynamo_kwargs.get('StreamSpecification') = kwargs.get('stream_specification')
+            dynamo_kwargs['StreamSpecification'] = kwargs.get('stream_specification')
 
         response = client.update_table(**dynamo_params)
 
         return {
-            'message': f'Tabla {kwargs.get('table_name')} actualizada exitosamente',
+            'message': f'Tabla {kwargs.get("table_name")} actualizada exitosamente',
             'table_description': {
                 'table_name': response['TableDescription']['TableName'],
                 'table_arn': response['TableDescription'].get('TableArn'),
@@ -760,7 +760,7 @@ class DynamoDBMCPTools:
         )
 
         return {
-            'message': f'Backups continuos actualizados para tabla {kwargs.get('table_name')}',
+            'message': f'Backups continuos actualizados para tabla {kwargs.get("table_name")}',
             'continuous_backups_description': response.get('ContinuousBackupsDescription', {})
         }
 
@@ -770,13 +770,13 @@ class DynamoDBMCPTools:
 
         dynamo_params = {}
         if kwargs.get('table_name'):
-            dynamo_kwargs.get('TableName') = kwargs.get('table_name')
+            dynamo_kwargs['TableName'] = kwargs.get('table_name')
         if kwargs.get('backup_type'):
-            dynamo_kwargs.get('BackupType') = kwargs.get('backup_type')
+            dynamo_kwargs['BackupType'] = kwargs.get('backup_type')
         if kwargs.get('limit'):
-            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+            dynamo_kwargs['Limit'] = kwargs.get('limit')
         if kwargs.get('exclusive_start_backup_arn'):
-            dynamo_kwargs.get('ExclusiveStartBackupArn') = kwargs.get('exclusive_start_backup_arn')
+            dynamo_kwargs['ExclusiveStartBackupArn'] = kwargs.get('exclusive_start_backup_arn')
 
         response = client.list_backups(**dynamo_params)
 
@@ -809,7 +809,7 @@ class DynamoDBMCPTools:
         )
 
         return {
-            'message': f'Backup {kwargs.get('backup_name')} creado para tabla {kwargs.get('table_name')}',
+            'message': f'Backup {kwargs.get("backup_name")} creado para tabla {kwargs.get("table_name")}',
             'backup_details': {
                 'backup_arn': response['BackupDetails'].get('BackupArn'),
                 'backup_name': response['BackupDetails'].get('BackupName'),
@@ -828,6 +828,6 @@ class DynamoDBMCPTools:
         response = client.delete_backup(BackupArn=kwargs.get('backup_arn'))
 
         return {
-            'message': f'Backup {kwargs.get('backup_arn')} eliminado exitosamente',
+            'message': f'Backup {kwargs.get("backup_arn")} eliminado exitosamente',
             'backup_arn': kwargs.get('backup_arn')
         }
