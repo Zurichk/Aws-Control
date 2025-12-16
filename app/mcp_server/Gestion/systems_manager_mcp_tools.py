@@ -269,40 +269,40 @@ class SystemsManagerMCPTools:
                 self.ssm = get_aws_client('ssm')
 
             if tool_name == "ssm_list_parameters":
-                return self._list_parameters(parameters)
+                return self._list_parameters(**parameters)
             elif tool_name == "ssm_get_parameter":
-                return self._get_parameter(parameters)
+                return self._get_parameter(**parameters)
             elif tool_name == "ssm_put_parameter":
-                return self._put_parameter(parameters)
+                return self._put_parameter(**parameters)
             elif tool_name == "ssm_delete_parameter":
-                return self._delete_parameter(parameters)
+                return self._delete_parameter(**parameters)
             elif tool_name == "ssm_send_command":
-                return self._send_command(parameters)
+                return self._send_command(**parameters)
             elif tool_name == "ssm_list_commands":
-                return self._list_commands(parameters)
+                return self._list_commands(**parameters)
             elif tool_name == "ssm_get_command_invocation":
-                return self._get_command_invocation(parameters)
+                return self._get_command_invocation(**parameters)
             elif tool_name == "ssm_start_session":
-                return self._start_session(parameters)
+                return self._start_session(**parameters)
             elif tool_name == "ssm_describe_sessions":
-                return self._describe_sessions(parameters)
+                return self._describe_sessions(**parameters)
             elif tool_name == "ssm_terminate_session":
-                return self._terminate_session(parameters)
+                return self._terminate_session(**parameters)
             else:
                 return {"error": f"Herramienta no encontrada: {tool_name}"}
 
         except Exception as e:
             return {"error": str(e)}
 
-    def _list_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_parameters(self, **kwargs) -> Dict[str, Any]:
         """Lista parámetros de Parameter Store"""
         try:
             kwargs = {
-                "MaxResults": min(params.get("max_results", 10), 10)
+                "MaxResults": min(kwargs.get("max_results", 10), 10)
             }
 
-            if "parameter_filters" in params:
-                kwargs["ParameterFilters"] = params["parameter_filters"]
+            if kwargs.get("parameter_filters"):
+                kwargs["ParameterFilters"] = kwargs.get('parameter_filters')
 
             response = self.ssm.describe_parameters(**kwargs)
 
@@ -325,12 +325,12 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error listando parámetros: {str(e)}"}
 
-    def _get_parameter(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_parameter(self, **kwargs) -> Dict[str, Any]:
         """Obtiene un parámetro específico"""
         try:
             response = self.ssm.get_parameter(
-                Name=params["name"],
-                WithDecryption=params.get("with_decryption", True)
+                Name=kwargs.get('name'),
+                WithDecryption=kwargs.get("with_decryption", True)
             )
 
             parameter = response.get("Parameter", {})
@@ -346,24 +346,24 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error obteniendo parámetro: {str(e)}"}
 
-    def _put_parameter(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_parameter(self, **kwargs) -> Dict[str, Any]:
         """Crea o actualiza un parámetro"""
         try:
             kwargs = {
-                "Name": params["name"],
-                "Value": params["value"],
-                "Type": params["type"],
-                "Overwrite": params.get("overwrite", False)
+                "Name": kwargs.get('name'),
+                "Value": kwargs.get('value'),
+                "Type": kwargs.get('type'),
+                "Overwrite": kwargs.get("overwrite", False)
             }
 
-            if "description" in params:
-                kwargs["Description"] = params["description"]
+            if kwargs.get("description"):
+                kwargs["Description"] = kwargs.get('description')
 
-            if "tier" in params:
-                kwargs["Tier"] = params["tier"]
+            if kwargs.get("tier"):
+                kwargs["Tier"] = kwargs.get('tier')
 
-            if params.get("type") == "SecureString" and "key_id" in params:
-                kwargs["KeyId"] = params["key_id"]
+            if kwargs.get("type") == "SecureString" and kwargs.get("key_id"):
+                kwargs["KeyId"] = kwargs.get('key_id')
 
             response = self.ssm.put_parameter(**kwargs)
 
@@ -375,26 +375,26 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error creando parámetro: {str(e)}"}
 
-    def _delete_parameter(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_parameter(self, **kwargs) -> Dict[str, Any]:
         """Elimina un parámetro"""
         try:
-            self.ssm.delete_parameter(Name=params["name"])
-            return {"message": f"Parámetro {params['name']} eliminado exitosamente"}
+            self.ssm.delete_parameter(Name=kwargs.get('name'))
+            return {"message": f"Parámetro {kwargs.get('name')} eliminado exitosamente"}
 
         except Exception as e:
             return {"error": f"Error eliminando parámetro: {str(e)}"}
 
-    def _send_command(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _send_command(self, **kwargs) -> Dict[str, Any]:
         """Ejecuta un comando usando Run Command"""
         try:
             kwargs = {
-                "DocumentName": params.get("document_name", "AWS-RunShellScript"),
-                "Targets": params["targets"],
-                "Parameters": params["parameters"]
+                "DocumentName": kwargs.get("document_name", "AWS-RunShellScript"),
+                "Targets": kwargs.get('targets'),
+                "Parameters": kwargs.get('parameters')
             }
 
-            if "timeout_seconds" in params:
-                kwargs["TimeoutSeconds"] = params["timeout_seconds"]
+            if kwargs.get("timeout_seconds"):
+                kwargs["TimeoutSeconds"] = kwargs.get('timeout_seconds')
 
             response = self.ssm.send_command(**kwargs)
 
@@ -407,15 +407,15 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error ejecutando comando: {str(e)}"}
 
-    def _list_commands(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_commands(self, **kwargs) -> Dict[str, Any]:
         """Lista comandos ejecutados"""
         try:
             kwargs = {
-                "MaxResults": min(params.get("max_results", 50), 50)
+                "MaxResults": min(kwargs.get("max_results", 50), 50)
             }
 
-            if "command_id" in params:
-                kwargs["CommandId"] = params["command_id"]
+            if kwargs.get("command_id"):
+                kwargs["CommandId"] = kwargs.get('command_id')
 
             response = self.ssm.list_commands(**kwargs)
 
@@ -439,12 +439,12 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error listando comandos: {str(e)}"}
 
-    def _get_command_invocation(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_command_invocation(self, **kwargs) -> Dict[str, Any]:
         """Obtiene detalles de la ejecución de un comando"""
         try:
             response = self.ssm.get_command_invocation(
-                CommandId=params["command_id"],
-                InstanceId=params["instance_id"]
+                CommandId=kwargs.get('command_id'),
+                InstanceId=kwargs.get('instance_id')
             )
 
             return {
@@ -462,18 +462,18 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error obteniendo invocación del comando: {str(e)}"}
 
-    def _start_session(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _start_session(self, **kwargs) -> Dict[str, Any]:
         """Inicia una sesión interactiva"""
         try:
             kwargs = {
-                "Target": params["target"]
+                "Target": kwargs.get('target')
             }
 
-            if "document_name" in params:
-                kwargs["DocumentName"] = params["document_name"]
+            if kwargs.get("document_name"):
+                kwargs["DocumentName"] = kwargs.get('document_name')
 
-            if "parameters" in params:
-                kwargs["Parameters"] = params["parameters"]
+            if kwargs.get("parameters"):
+                kwargs["Parameters"] = kwargs.get('parameters')
 
             response = self.ssm.start_session(**kwargs)
 
@@ -486,12 +486,12 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error iniciando sesión: {str(e)}"}
 
-    def _describe_sessions(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_sessions(self, **kwargs) -> Dict[str, Any]:
         """Lista sesiones activas"""
         try:
             kwargs = {
-                "State": params.get("state", "Active"),
-                "MaxResults": min(params.get("max_results", 20), 20)
+                "State": kwargs.get("state", "Active"),
+                "MaxResults": min(kwargs.get("max_results", 20), 20)
             }
 
             response = self.ssm.describe_sessions(**kwargs)
@@ -516,10 +516,10 @@ class SystemsManagerMCPTools:
         except Exception as e:
             return {"error": f"Error describiendo sesiones: {str(e)}"}
 
-    def _terminate_session(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _terminate_session(self, **kwargs) -> Dict[str, Any]:
         """Termina una sesión activa"""
         try:
-            response = self.ssm.terminate_session(SessionId=params["session_id"])
+            response = self.ssm.terminate_session(SessionId=kwargs.get('session_id'))
 
             return {
                 "session_id": response.get("SessionId")

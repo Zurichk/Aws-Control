@@ -192,29 +192,29 @@ class S3MCPTools:
             if tool_name == 's3_list_buckets':
                 return self._list_buckets()
             elif tool_name == 's3_create_bucket':
-                return self._create_bucket(parameters)
+                return self._create_bucket(**parameters)
             elif tool_name == 's3_delete_bucket':
-                return self._delete_bucket(parameters)
+                return self._delete_bucket(**parameters)
             elif tool_name == 's3_list_objects':
-                return self._list_objects(parameters)
+                return self._list_objects(**parameters)
             elif tool_name == 's3_get_object':
-                return self._get_object(parameters)
+                return self._get_object(**parameters)
             elif tool_name == 's3_upload_object':
-                return self._upload_object(parameters)
+                return self._upload_object(**parameters)
             elif tool_name == 's3_download_object':
-                return self._download_object(parameters)
+                return self._download_object(**parameters)
             elif tool_name == 's3_delete_object':
-                return self._delete_object(parameters)
+                return self._delete_object(**parameters)
             elif tool_name == 's3_copy_object':
-                return self._copy_object(parameters)
+                return self._copy_object(**parameters)
             elif tool_name == 's3_get_bucket_policy':
-                return self._get_bucket_policy(parameters)
+                return self._get_bucket_policy(**parameters)
             elif tool_name == 's3_put_bucket_policy':
-                return self._put_bucket_policy(parameters)
+                return self._put_bucket_policy(**parameters)
             elif tool_name == 's3_get_bucket_versioning':
-                return self._get_bucket_versioning(parameters)
+                return self._get_bucket_versioning(**parameters)
             elif tool_name == 's3_put_bucket_versioning':
-                return self._put_bucket_versioning(parameters)
+                return self._put_bucket_versioning(**parameters)
             else:
                 return {'error': f'Herramienta S3 no encontrada: {tool_name}'}
 
@@ -236,12 +236,12 @@ class S3MCPTools:
             'total_count': len(buckets)
         }
 
-    def _create_bucket(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_bucket(self, **kwargs) -> Dict[str, Any]:
         """Crea un nuevo bucket"""
         client = self._get_client()
 
         bucket_config = {}
-        region = params.get('region', 'us-east-1')
+        region = kwargs.get('region', 'us-east-1')
 
         # Configuración especial para buckets en regiones diferentes a us-east-1
         if region != 'us-east-1':
@@ -252,43 +252,43 @@ class S3MCPTools:
         # Crear el bucket
         if region == 'us-east-1':
             response = client.create_bucket(
-                Bucket=params['bucket_name'],
-                ACL=params.get('acl', 'private')
+                Bucket=kwargs.get('bucket_name'),
+                ACL=kwargs.get('acl', 'private')
             )
         else:
             response = client.create_bucket(
-                Bucket=params['bucket_name'],
-                ACL=params.get('acl', 'private'),
+                Bucket=kwargs.get('bucket_name'),
+                ACL=kwargs.get('acl', 'private'),
                 **bucket_config
             )
 
         return {
-            'message': f'Bucket {params["bucket_name"]} creado exitosamente',
-            'bucket_name': params['bucket_name'],
-            'location': response.get('Location', f'https://{params["bucket_name"]}.s3.amazonaws.com/')
+            'message': f'Bucket {kwargs.get('bucket_name')} creado exitosamente',
+            'bucket_name': kwargs.get('bucket_name'),
+            'location': response.get('Location', f'https://{kwargs.get('bucket_name')}.s3.amazonaws.com/')
         }
 
-    def _delete_bucket(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_bucket(self, **kwargs) -> Dict[str, Any]:
         """Elimina un bucket"""
         client = self._get_client()
 
-        client.delete_bucket(Bucket=params['bucket_name'])
+        client.delete_bucket(Bucket=kwargs.get('bucket_name'))
 
         return {
-            'message': f'Bucket {params["bucket_name"]} eliminado exitosamente'
+            'message': f'Bucket {kwargs.get('bucket_name')} eliminado exitosamente'
         }
 
-    def _list_objects(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_objects(self, **kwargs) -> Dict[str, Any]:
         """Lista objetos en un bucket"""
         client = self._get_client()
 
         s3_params = {
-            'Bucket': params['bucket_name'],
-            'MaxKeys': params.get('max_keys', 1000)
+            'Bucket': kwargs.get('bucket_name'),
+            'MaxKeys': kwargs.get('max_keys', 1000)
         }
 
-        if 'prefix' in params:
-            s3_params['Prefix'] = params['prefix']
+        if kwargs.get('prefix'):
+            s3_kwargs.get('Prefix') = kwargs.get('prefix')
 
         response = client.list_objects_v2(**s3_params)
 
@@ -304,25 +304,25 @@ class S3MCPTools:
                 })
 
         return {
-            'bucket_name': params['bucket_name'],
+            'bucket_name': kwargs.get('bucket_name'),
             'objects': objects,
             'total_count': len(objects),
             'is_truncated': response.get('IsTruncated', False),
             'next_continuation_token': response.get('NextContinuationToken')
         }
 
-    def _get_object(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_object(self, **kwargs) -> Dict[str, Any]:
         """Obtiene información de un objeto"""
         client = self._get_client()
 
         response = client.head_object(
-            Bucket=params['bucket_name'],
-            Key=params['key']
+            Bucket=kwargs.get('bucket_name'),
+            Key=kwargs.get('key')
         )
 
         return {
-            'bucket_name': params['bucket_name'],
-            'key': params['key'],
+            'bucket_name': kwargs.get('bucket_name'),
+            'key': kwargs.get('key'),
             'size': response.get('ContentLength', 0),
             'content_type': response.get('ContentType'),
             'last_modified': response.get('LastModified').strftime('%Y-%m-%d %H:%M:%S') if response.get('LastModified') else None,
@@ -333,160 +333,160 @@ class S3MCPTools:
             'version_id': response.get('VersionId')
         }
 
-    def _upload_object(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _upload_object(self, **kwargs) -> Dict[str, Any]:
         """Sube un objeto a S3"""
         client = self._get_client()
 
         s3_params = {
-            'Bucket': params['bucket_name'],
-            'Key': params['key']
+            'Bucket': kwargs.get('bucket_name'),
+            'Key': kwargs.get('key')
         }
 
         # Leer el archivo
         try:
-            with open(params['file_path'], 'rb') as file:
-                s3_params['Body'] = file.read()
+            with open(kwargs.get('file_path'), 'rb') as file:
+                s3_kwargs.get('Body') = file.read()
         except FileNotFoundError:
-            return {'error': f'Archivo no encontrado: {params["file_path"]}'}
+            return {'error': f'Archivo no encontrado: {kwargs.get('file_path')}'}
 
-        if 'content_type' in params:
-            s3_params['ContentType'] = params['content_type']
+        if kwargs.get('content_type'):
+            s3_kwargs.get('ContentType') = kwargs.get('content_type')
 
-        if 'metadata' in params:
-            s3_params['Metadata'] = params['metadata']
+        if kwargs.get('metadata'):
+            s3_kwargs.get('Metadata') = kwargs.get('metadata')
 
         response = client.put_object(**s3_params)
 
         return {
-            'message': f'Objeto {params["key"]} subido exitosamente',
-            'bucket_name': params['bucket_name'],
-            'key': params['key'],
+            'message': f'Objeto {kwargs.get('key')} subido exitosamente',
+            'bucket_name': kwargs.get('bucket_name'),
+            'key': kwargs.get('key'),
             'etag': response.get('ETag'),
             'version_id': response.get('VersionId')
         }
 
-    def _download_object(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _download_object(self, **kwargs) -> Dict[str, Any]:
         """Descarga un objeto desde S3"""
         client = self._get_client()
 
         response = client.get_object(
-            Bucket=params['bucket_name'],
-            Key=params['key']
+            Bucket=kwargs.get('bucket_name'),
+            Key=kwargs.get('key')
         )
 
         # Guardar el archivo
-        with open(params['file_path'], 'wb') as file:
+        with open(kwargs.get('file_path'), 'wb') as file:
             file.write(response['Body'].read())
 
         return {
-            'message': f'Objeto {params["key"]} descargado exitosamente',
-            'bucket_name': params['bucket_name'],
-            'key': params['key'],
-            'file_path': params['file_path'],
+            'message': f'Objeto {kwargs.get('key')} descargado exitosamente',
+            'bucket_name': kwargs.get('bucket_name'),
+            'key': kwargs.get('key'),
+            'file_path': kwargs.get('file_path'),
             'size': response.get('ContentLength', 0),
             'content_type': response.get('ContentType')
         }
 
-    def _delete_object(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_object(self, **kwargs) -> Dict[str, Any]:
         """Elimina un objeto"""
         client = self._get_client()
 
         response = client.delete_object(
-            Bucket=params['bucket_name'],
-            Key=params['key']
+            Bucket=kwargs.get('bucket_name'),
+            Key=kwargs.get('key')
         )
 
         return {
-            'message': f'Objeto {params["key"]} eliminado exitosamente',
-            'bucket_name': params['bucket_name'],
-            'key': params['key'],
+            'message': f'Objeto {kwargs.get('key')} eliminado exitosamente',
+            'bucket_name': kwargs.get('bucket_name'),
+            'key': kwargs.get('key'),
             'delete_marker': response.get('DeleteMarker', False),
             'version_id': response.get('VersionId')
         }
 
-    def _copy_object(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _copy_object(self, **kwargs) -> Dict[str, Any]:
         """Copia un objeto"""
         client = self._get_client()
 
         copy_source = {
-            'Bucket': params['source_bucket'],
-            'Key': params['source_key']
+            'Bucket': kwargs.get('source_bucket'),
+            'Key': kwargs.get('source_key')
         }
 
         response = client.copy_object(
             CopySource=copy_source,
-            Bucket=params['dest_bucket'],
-            Key=params['dest_key']
+            Bucket=kwargs.get('dest_bucket'),
+            Key=kwargs.get('dest_key')
         )
 
         return {
-            'message': f'Objeto copiado de {params["source_bucket"]}/{params["source_key"]} a {params["dest_bucket"]}/{params["dest_key"]}',
-            'source_bucket': params['source_bucket'],
-            'source_key': params['source_key'],
-            'dest_bucket': params['dest_bucket'],
-            'dest_key': params['dest_key'],
+            'message': f'Objeto copiado de {kwargs.get('source_bucket')}/{kwargs.get('source_key')} a {kwargs.get('dest_bucket')}/{kwargs.get('dest_key')}',
+            'source_bucket': kwargs.get('source_bucket'),
+            'source_key': kwargs.get('source_key'),
+            'dest_bucket': kwargs.get('dest_bucket'),
+            'dest_key': kwargs.get('dest_key'),
             'etag': response.get('CopyObjectResult', {}).get('ETag'),
             'last_modified': response.get('CopyObjectResult', {}).get('LastModified').strftime('%Y-%m-%d %H:%M:%S') if response.get('CopyObjectResult', {}).get('LastModified') else None
         }
 
-    def _get_bucket_policy(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_bucket_policy(self, **kwargs) -> Dict[str, Any]:
         """Obtiene la política de un bucket"""
         client = self._get_client()
 
         try:
-            response = client.get_bucket_policy(Bucket=params['bucket_name'])
+            response = client.get_bucket_policy(Bucket=kwargs.get('bucket_name'))
             return {
-                'bucket_name': params['bucket_name'],
+                'bucket_name': kwargs.get('bucket_name'),
                 'policy': response['Policy']
             }
         except client.exceptions.NoSuchBucketPolicy:
             return {
-                'bucket_name': params['bucket_name'],
+                'bucket_name': kwargs.get('bucket_name'),
                 'policy': None,
                 'message': 'El bucket no tiene política configurada'
             }
 
-    def _put_bucket_policy(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_bucket_policy(self, **kwargs) -> Dict[str, Any]:
         """Establece la política de un bucket"""
         client = self._get_client()
 
         client.put_bucket_policy(
-            Bucket=params['bucket_name'],
-            Policy=params['policy']
+            Bucket=kwargs.get('bucket_name'),
+            Policy=kwargs.get('policy')
         )
 
         return {
-            'message': f'Política aplicada al bucket {params["bucket_name"]}',
-            'bucket_name': params['bucket_name']
+            'message': f'Política aplicada al bucket {kwargs.get('bucket_name')}',
+            'bucket_name': kwargs.get('bucket_name')
         }
 
-    def _get_bucket_versioning(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_bucket_versioning(self, **kwargs) -> Dict[str, Any]:
         """Obtiene la configuración de versionado"""
         client = self._get_client()
 
-        response = client.get_bucket_versioning(Bucket=params['bucket_name'])
+        response = client.get_bucket_versioning(Bucket=kwargs.get('bucket_name'))
 
         return {
-            'bucket_name': params['bucket_name'],
+            'bucket_name': kwargs.get('bucket_name'),
             'versioning': response.get('Status', 'Suspended'),
             'mfa_delete': response.get('MFADelete', 'Disabled')
         }
 
-    def _put_bucket_versioning(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_bucket_versioning(self, **kwargs) -> Dict[str, Any]:
         """Configura el versionado del bucket"""
         client = self._get_client()
 
         versioning_config = {
-            'Status': params.get('versioning', 'Enabled')
+            'Status': kwargs.get('versioning', 'Enabled')
         }
 
         client.put_bucket_versioning(
-            Bucket=params['bucket_name'],
+            Bucket=kwargs.get('bucket_name'),
             VersioningConfiguration=versioning_config
         )
 
         return {
-            'message': f'Versionado {versioning_config["Status"]} para bucket {params["bucket_name"]}',
-            'bucket_name': params['bucket_name'],
+            'message': f'Versionado {versioning_config["Status"]} para bucket {kwargs.get('bucket_name')}',
+            'bucket_name': kwargs.get('bucket_name'),
             'versioning_status': versioning_config['Status']
         }

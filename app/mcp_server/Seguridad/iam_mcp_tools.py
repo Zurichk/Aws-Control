@@ -270,58 +270,58 @@ class IAMMCPTools:
         """Ejecuta una herramienta específica de IAM"""
         try:
             if tool_name == 'iam_list_users':
-                return self._list_users(parameters)
+                return self._list_users(**parameters)
             elif tool_name == 'iam_create_user':
-                return self._create_user(parameters)
+                return self._create_user(**parameters)
             elif tool_name == 'iam_delete_user':
-                return self._delete_user(parameters)
+                return self._delete_user(**parameters)
             elif tool_name == 'iam_create_access_key':
-                return self._create_access_key(parameters)
+                return self._create_access_key(**parameters)
             elif tool_name == 'iam_delete_access_key':
-                return self._delete_access_key(parameters)
+                return self._delete_access_key(**parameters)
             elif tool_name == 'iam_list_groups':
-                return self._list_groups(parameters)
+                return self._list_groups(**parameters)
             elif tool_name == 'iam_create_group':
-                return self._create_group(parameters)
+                return self._create_group(**parameters)
             elif tool_name == 'iam_add_user_to_group':
-                return self._add_user_to_group(parameters)
+                return self._add_user_to_group(**parameters)
             elif tool_name == 'iam_remove_user_from_group':
-                return self._remove_user_from_group(parameters)
+                return self._remove_user_from_group(**parameters)
             elif tool_name == 'iam_list_roles':
-                return self._list_roles(parameters)
+                return self._list_roles(**parameters)
             elif tool_name == 'iam_create_role':
-                return self._create_role(parameters)
+                return self._create_role(**parameters)
             elif tool_name == 'iam_delete_role':
-                return self._delete_role(parameters)
+                return self._delete_role(**parameters)
             elif tool_name == 'iam_attach_role_policy':
-                return self._attach_role_policy(parameters)
+                return self._attach_role_policy(**parameters)
             elif tool_name == 'iam_detach_role_policy':
-                return self._detach_role_policy(parameters)
+                return self._detach_role_policy(**parameters)
             elif tool_name == 'iam_list_policies':
-                return self._list_policies(parameters)
+                return self._list_policies(**parameters)
             elif tool_name == 'iam_create_policy':
-                return self._create_policy(parameters)
+                return self._create_policy(**parameters)
             elif tool_name == 'iam_get_user':
-                return self._get_user(parameters)
+                return self._get_user(**parameters)
             elif tool_name == 'iam_list_access_keys':
-                return self._list_access_keys(parameters)
+                return self._list_access_keys(**parameters)
             elif tool_name == 'iam_list_attached_role_policies':
-                return self._list_attached_role_policies(parameters)
+                return self._list_attached_role_policies(**parameters)
             else:
                 return {'error': f'Herramienta IAM no encontrada: {tool_name}'}
 
         except Exception as e:
             return {'error': f'Error ejecutando herramienta IAM {tool_name}: {str(e)}'}
 
-    def _list_users(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_users(self, **kwargs) -> Dict[str, Any]:
         """Lista usuarios IAM"""
         client = self._get_client()
 
         iam_params = {}
-        if 'path_prefix' in params:
-            iam_params['PathPrefix'] = params['path_prefix']
-        if 'max_items' in params:
-            iam_params['MaxItems'] = params['max_items']
+        if kwargs.get('path_prefix'):
+            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+        if kwargs.get('max_items'):
+            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_users(**iam_params)
 
@@ -343,86 +343,86 @@ class IAMMCPTools:
             'is_truncated': response.get('IsTruncated', False)
         }
 
-    def _create_user(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_user(self, **kwargs) -> Dict[str, Any]:
         """Crea un usuario IAM"""
         client = self._get_client()
 
         iam_params = {
-            'UserName': params['user_name']
+            'UserName': kwargs.get('user_name')
         }
 
-        if 'path' in params:
-            iam_params['Path'] = params['path']
-        if 'permissions_boundary' in params:
-            iam_params['PermissionsBoundary'] = params['permissions_boundary']
+        if kwargs.get('path'):
+            iam_kwargs.get('Path') = kwargs.get('path')
+        if kwargs.get('permissions_boundary'):
+            iam_kwargs.get('PermissionsBoundary') = kwargs.get('permissions_boundary')
 
         response = client.create_user(**iam_params)
 
         user_arn = response['User']['Arn']
 
         # Agregar tags si se proporcionaron
-        if 'tags' in params:
+        if kwargs.get('tags'):
             client.tag_user(
-                UserName=params['user_name'],
-                Tags=params['tags']
+                UserName=kwargs.get('user_name'),
+                Tags=kwargs.get('tags')
             )
 
         return {
-            'message': f'Usuario IAM {params["user_name"]} creado exitosamente',
-            'user_name': params['user_name'],
+            'message': f'Usuario IAM {kwargs.get('user_name')} creado exitosamente',
+            'user_name': kwargs.get('user_name'),
             'user_arn': user_arn
         }
 
-    def _delete_user(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_user(self, **kwargs) -> Dict[str, Any]:
         """Elimina un usuario IAM"""
         client = self._get_client()
 
-        client.delete_user(UserName=params['user_name'])
+        client.delete_user(UserName=kwargs.get('user_name'))
 
         return {
-            'message': f'Usuario IAM {params["user_name"]} eliminado exitosamente',
-            'user_name': params['user_name']
+            'message': f'Usuario IAM {kwargs.get('user_name')} eliminado exitosamente',
+            'user_name': kwargs.get('user_name')
         }
 
-    def _create_access_key(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_access_key(self, **kwargs) -> Dict[str, Any]:
         """Crea una access key para un usuario"""
         client = self._get_client()
 
-        response = client.create_access_key(UserName=params['user_name'])
+        response = client.create_access_key(UserName=kwargs.get('user_name'))
 
         return {
-            'message': f'Access key creada para usuario {params["user_name"]}',
-            'user_name': params['user_name'],
+            'message': f'Access key creada para usuario {kwargs.get('user_name')}',
+            'user_name': kwargs.get('user_name'),
             'access_key_id': response['AccessKey']['AccessKeyId'],
             'secret_access_key': response['AccessKey']['SecretAccessKey'],
             'status': response['AccessKey']['Status'],
             'create_date': response['AccessKey']['CreateDate'].strftime('%Y-%m-%d %H:%M:%S')
         }
 
-    def _delete_access_key(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_access_key(self, **kwargs) -> Dict[str, Any]:
         """Elimina una access key"""
         client = self._get_client()
 
         client.delete_access_key(
-            UserName=params['user_name'],
-            AccessKeyId=params['access_key_id']
+            UserName=kwargs.get('user_name'),
+            AccessKeyId=kwargs.get('access_key_id')
         )
 
         return {
-            'message': f'Access key {params["access_key_id"]} eliminada del usuario {params["user_name"]}',
-            'user_name': params['user_name'],
-            'access_key_id': params['access_key_id']
+            'message': f'Access key {kwargs.get('access_key_id')} eliminada del usuario {kwargs.get('user_name')}',
+            'user_name': kwargs.get('user_name'),
+            'access_key_id': kwargs.get('access_key_id')
         }
 
-    def _list_groups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_groups(self, **kwargs) -> Dict[str, Any]:
         """Lista grupos IAM"""
         client = self._get_client()
 
         iam_params = {}
-        if 'path_prefix' in params:
-            iam_params['PathPrefix'] = params['path_prefix']
-        if 'max_items' in params:
-            iam_params['MaxItems'] = params['max_items']
+        if kwargs.get('path_prefix'):
+            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+        if kwargs.get('max_items'):
+            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_groups(**iam_params)
 
@@ -442,64 +442,64 @@ class IAMMCPTools:
             'is_truncated': response.get('IsTruncated', False)
         }
 
-    def _create_group(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_group(self, **kwargs) -> Dict[str, Any]:
         """Crea un grupo IAM"""
         client = self._get_client()
 
         iam_params = {
-            'GroupName': params['group_name']
+            'GroupName': kwargs.get('group_name')
         }
 
-        if 'path' in params:
-            iam_params['Path'] = params['path']
+        if kwargs.get('path'):
+            iam_kwargs.get('Path') = kwargs.get('path')
 
         response = client.create_group(**iam_params)
 
         return {
-            'message': f'Grupo IAM {params["group_name"]} creado exitosamente',
-            'group_name': params['group_name'],
+            'message': f'Grupo IAM {kwargs.get('group_name')} creado exitosamente',
+            'group_name': kwargs.get('group_name'),
             'group_arn': response['Group']['Arn']
         }
 
-    def _add_user_to_group(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _add_user_to_group(self, **kwargs) -> Dict[str, Any]:
         """Agrega un usuario a un grupo"""
         client = self._get_client()
 
         client.add_user_to_group(
-            GroupName=params['group_name'],
-            UserName=params['user_name']
+            GroupName=kwargs.get('group_name'),
+            UserName=kwargs.get('user_name')
         )
 
         return {
-            'message': f'Usuario {params["user_name"]} agregado al grupo {params["group_name"]}',
-            'group_name': params['group_name'],
-            'user_name': params['user_name']
+            'message': f'Usuario {kwargs.get('user_name')} agregado al grupo {kwargs.get('group_name')}',
+            'group_name': kwargs.get('group_name'),
+            'user_name': kwargs.get('user_name')
         }
 
-    def _remove_user_from_group(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _remove_user_from_group(self, **kwargs) -> Dict[str, Any]:
         """Remueve un usuario de un grupo"""
         client = self._get_client()
 
         client.remove_user_from_group(
-            GroupName=params['group_name'],
-            UserName=params['user_name']
+            GroupName=kwargs.get('group_name'),
+            UserName=kwargs.get('user_name')
         )
 
         return {
-            'message': f'Usuario {params["user_name"]} removido del grupo {params["group_name"]}',
-            'group_name': params['group_name'],
-            'user_name': params['user_name']
+            'message': f'Usuario {kwargs.get('user_name')} removido del grupo {kwargs.get('group_name')}',
+            'group_name': kwargs.get('group_name'),
+            'user_name': kwargs.get('user_name')
         }
 
-    def _list_roles(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_roles(self, **kwargs) -> Dict[str, Any]:
         """Lista roles IAM"""
         client = self._get_client()
 
         iam_params = {}
-        if 'path_prefix' in params:
-            iam_params['PathPrefix'] = params['path_prefix']
-        if 'max_items' in params:
-            iam_params['MaxItems'] = params['max_items']
+        if kwargs.get('path_prefix'):
+            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+        if kwargs.get('max_items'):
+            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_roles(**iam_params)
 
@@ -522,97 +522,97 @@ class IAMMCPTools:
             'is_truncated': response.get('IsTruncated', False)
         }
 
-    def _create_role(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_role(self, **kwargs) -> Dict[str, Any]:
         """Crea un rol IAM"""
         client = self._get_client()
 
         iam_params = {
-            'RoleName': params['role_name'],
-            'AssumeRolePolicyDocument': params['assume_role_policy_document']
+            'RoleName': kwargs.get('role_name'),
+            'AssumeRolePolicyDocument': kwargs.get('assume_role_policy_document')
         }
 
-        if 'path' in params:
-            iam_params['Path'] = params['path']
-        if 'description' in params:
-            iam_params['Description'] = params['description']
-        if 'max_session_duration' in params:
-            iam_params['MaxSessionDuration'] = params['max_session_duration']
-        if 'permissions_boundary' in params:
-            iam_params['PermissionsBoundary'] = params['permissions_boundary']
+        if kwargs.get('path'):
+            iam_kwargs.get('Path') = kwargs.get('path')
+        if kwargs.get('description'):
+            iam_kwargs.get('Description') = kwargs.get('description')
+        if kwargs.get('max_session_duration'):
+            iam_kwargs.get('MaxSessionDuration') = kwargs.get('max_session_duration')
+        if kwargs.get('permissions_boundary'):
+            iam_kwargs.get('PermissionsBoundary') = kwargs.get('permissions_boundary')
 
         response = client.create_role(**iam_params)
 
         role_arn = response['Role']['Arn']
 
         # Agregar tags si se proporcionaron
-        if 'tags' in params:
+        if kwargs.get('tags'):
             client.tag_role(
-                RoleName=params['role_name'],
-                Tags=params['tags']
+                RoleName=kwargs.get('role_name'),
+                Tags=kwargs.get('tags')
             )
 
         return {
-            'message': f'Rol IAM {params["role_name"]} creado exitosamente',
-            'role_name': params['role_name'],
+            'message': f'Rol IAM {kwargs.get('role_name')} creado exitosamente',
+            'role_name': kwargs.get('role_name'),
             'role_arn': role_arn
         }
 
-    def _delete_role(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_role(self, **kwargs) -> Dict[str, Any]:
         """Elimina un rol IAM"""
         client = self._get_client()
 
-        client.delete_role(RoleName=params['role_name'])
+        client.delete_role(RoleName=kwargs.get('role_name'))
 
         return {
-            'message': f'Rol IAM {params["role_name"]} eliminado exitosamente',
-            'role_name': params['role_name']
+            'message': f'Rol IAM {kwargs.get('role_name')} eliminado exitosamente',
+            'role_name': kwargs.get('role_name')
         }
 
-    def _attach_role_policy(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _attach_role_policy(self, **kwargs) -> Dict[str, Any]:
         """Asocia una política a un rol"""
         client = self._get_client()
 
         client.attach_role_policy(
-            RoleName=params['role_name'],
-            PolicyArn=params['policy_arn']
+            RoleName=kwargs.get('role_name'),
+            PolicyArn=kwargs.get('policy_arn')
         )
 
         return {
-            'message': f'Política {params["policy_arn"]} asociada al rol {params["role_name"]}',
-            'role_name': params['role_name'],
-            'policy_arn': params['policy_arn']
+            'message': f'Política {kwargs.get('policy_arn')} asociada al rol {kwargs.get('role_name')}',
+            'role_name': kwargs.get('role_name'),
+            'policy_arn': kwargs.get('policy_arn')
         }
 
-    def _detach_role_policy(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _detach_role_policy(self, **kwargs) -> Dict[str, Any]:
         """Desasocia una política de un rol"""
         client = self._get_client()
 
         client.detach_role_policy(
-            RoleName=params['role_name'],
-            PolicyArn=params['policy_arn']
+            RoleName=kwargs.get('role_name'),
+            PolicyArn=kwargs.get('policy_arn')
         )
 
         return {
-            'message': f'Política {params["policy_arn"]} desasociada del rol {params["role_name"]}',
-            'role_name': params['role_name'],
-            'policy_arn': params['policy_arn']
+            'message': f'Política {kwargs.get('policy_arn')} desasociada del rol {kwargs.get('role_name')}',
+            'role_name': kwargs.get('role_name'),
+            'policy_arn': kwargs.get('policy_arn')
         }
 
-    def _list_policies(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_policies(self, **kwargs) -> Dict[str, Any]:
         """Lista políticas IAM"""
         client = self._get_client()
 
         iam_params = {}
-        if 'scope' in params:
-            iam_params['Scope'] = params['scope']
-        if 'only_attached' in params:
-            iam_params['OnlyAttached'] = params['only_attached']
-        if 'path_prefix' in params:
-            iam_params['PathPrefix'] = params['path_prefix']
-        if 'policy_usage_filter' in params:
-            iam_params['PolicyUsageFilter'] = params['policy_usage_filter']
-        if 'max_items' in params:
-            iam_params['MaxItems'] = params['max_items']
+        if kwargs.get('scope'):
+            iam_kwargs.get('Scope') = kwargs.get('scope')
+        if kwargs.get('only_attached'):
+            iam_kwargs.get('OnlyAttached') = kwargs.get('only_attached')
+        if kwargs.get('path_prefix'):
+            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+        if kwargs.get('policy_usage_filter'):
+            iam_kwargs.get('PolicyUsageFilter') = kwargs.get('policy_usage_filter')
+        if kwargs.get('max_items'):
+            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_policies(**iam_params)
 
@@ -638,42 +638,42 @@ class IAMMCPTools:
             'is_truncated': response.get('IsTruncated', False)
         }
 
-    def _create_policy(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_policy(self, **kwargs) -> Dict[str, Any]:
         """Crea una política IAM personalizada"""
         client = self._get_client()
 
         iam_params = {
-            'PolicyName': params['policy_name'],
-            'PolicyDocument': params['policy_document']
+            'PolicyName': kwargs.get('policy_name'),
+            'PolicyDocument': kwargs.get('policy_document')
         }
 
-        if 'path' in params:
-            iam_params['Path'] = params['path']
-        if 'description' in params:
-            iam_params['Description'] = params['description']
+        if kwargs.get('path'):
+            iam_kwargs.get('Path') = kwargs.get('path')
+        if kwargs.get('description'):
+            iam_kwargs.get('Description') = kwargs.get('description')
 
         response = client.create_policy(**iam_params)
 
         policy_arn = response['Policy']['Arn']
 
         # Agregar tags si se proporcionaron
-        if 'tags' in params:
+        if kwargs.get('tags'):
             client.tag_policy(
                 PolicyArn=policy_arn,
-                Tags=params['tags']
+                Tags=kwargs.get('tags')
             )
 
         return {
-            'message': f'Política IAM {params["policy_name"]} creada exitosamente',
-            'policy_name': params['policy_name'],
+            'message': f'Política IAM {kwargs.get('policy_name')} creada exitosamente',
+            'policy_name': kwargs.get('policy_name'),
             'policy_arn': policy_arn
         }
 
-    def _get_user(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_user(self, **kwargs) -> Dict[str, Any]:
         """Obtiene detalles completos de un usuario"""
         client = self._get_client()
 
-        response = client.get_user(UserName=params['user_name'])
+        response = client.get_user(UserName=kwargs.get('user_name'))
 
         user = response['User']
 
@@ -690,16 +690,16 @@ class IAMMCPTools:
             }
         }
 
-    def _list_access_keys(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_access_keys(self, **kwargs) -> Dict[str, Any]:
         """Lista access keys de un usuario"""
         client = self._get_client()
 
         iam_params = {
-            'UserName': params['user_name']
+            'UserName': kwargs.get('user_name')
         }
 
-        if 'max_items' in params:
-            iam_params['MaxItems'] = params['max_items']
+        if kwargs.get('max_items'):
+            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_access_keys(**iam_params)
 
@@ -712,24 +712,24 @@ class IAMMCPTools:
             })
 
         return {
-            'user_name': params['user_name'],
+            'user_name': kwargs.get('user_name'),
             'access_keys': access_keys,
             'total_count': len(access_keys),
             'is_truncated': response.get('IsTruncated', False)
         }
 
-    def _list_attached_role_policies(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_attached_role_policies(self, **kwargs) -> Dict[str, Any]:
         """Lista políticas adjuntas a un rol"""
         client = self._get_client()
 
         iam_params = {
-            'RoleName': params['role_name']
+            'RoleName': kwargs.get('role_name')
         }
 
-        if 'path_prefix' in params:
-            iam_params['PathPrefix'] = params['path_prefix']
-        if 'max_items' in params:
-            iam_params['MaxItems'] = params['max_items']
+        if kwargs.get('path_prefix'):
+            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+        if kwargs.get('max_items'):
+            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_attached_role_policies(**iam_params)
 
@@ -741,7 +741,7 @@ class IAMMCPTools:
             })
 
         return {
-            'role_name': params['role_name'],
+            'role_name': kwargs.get('role_name'),
             'attached_policies': policies,
             'total_count': len(policies),
             'is_truncated': response.get('IsTruncated', False)

@@ -361,56 +361,56 @@ class DynamoDBMCPTools:
         """Ejecuta una herramienta específica de DynamoDB"""
         try:
             if tool_name == 'dynamodb_list_tables':
-                return self._list_tables(parameters)
+                return self._list_tables(**parameters)
             elif tool_name == 'dynamodb_describe_table':
-                return self._describe_table(parameters)
+                return self._describe_table(**parameters)
             elif tool_name == 'dynamodb_create_table':
-                return self._create_table(parameters)
+                return self._create_table(**parameters)
             elif tool_name == 'dynamodb_delete_table':
-                return self._delete_table(parameters)
+                return self._delete_table(**parameters)
             elif tool_name == 'dynamodb_put_item':
-                return self._put_item(parameters)
+                return self._put_item(**parameters)
             elif tool_name == 'dynamodb_get_item':
-                return self._get_item(parameters)
+                return self._get_item(**parameters)
             elif tool_name == 'dynamodb_update_item':
-                return self._update_item(parameters)
+                return self._update_item(**parameters)
             elif tool_name == 'dynamodb_delete_item':
-                return self._delete_item(parameters)
+                return self._delete_item(**parameters)
             elif tool_name == 'dynamodb_scan':
-                return self._scan(parameters)
+                return self._scan(**parameters)
             elif tool_name == 'dynamodb_query':
-                return self._query(parameters)
+                return self._query(**parameters)
             elif tool_name == 'dynamodb_batch_write_item':
-                return self._batch_write_item(parameters)
+                return self._batch_write_item(**parameters)
             elif tool_name == 'dynamodb_batch_get_item':
-                return self._batch_get_item(parameters)
+                return self._batch_get_item(**parameters)
             elif tool_name == 'dynamodb_update_table':
-                return self._update_table(parameters)
+                return self._update_table(**parameters)
             elif tool_name == 'dynamodb_describe_continuous_backups':
-                return self._describe_continuous_backups(parameters)
+                return self._describe_continuous_backups(**parameters)
             elif tool_name == 'dynamodb_update_continuous_backups':
-                return self._update_continuous_backups(parameters)
+                return self._update_continuous_backups(**parameters)
             elif tool_name == 'dynamodb_list_backups':
-                return self._list_backups(parameters)
+                return self._list_backups(**parameters)
             elif tool_name == 'dynamodb_create_backup':
-                return self._create_backup(parameters)
+                return self._create_backup(**parameters)
             elif tool_name == 'dynamodb_delete_backup':
-                return self._delete_backup(parameters)
+                return self._delete_backup(**parameters)
             else:
                 return {'error': f'Herramienta DynamoDB no encontrada: {tool_name}'}
 
         except Exception as e:
             return {'error': f'Error ejecutando herramienta DynamoDB {tool_name}: {str(e)}'}
 
-    def _list_tables(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_tables(self, **kwargs) -> Dict[str, Any]:
         """Lista tablas DynamoDB"""
         client = self._get_client()
 
         dynamo_params = {}
-        if 'limit' in params:
-            dynamo_params['Limit'] = params['limit']
-        if 'exclusive_start_table_name' in params:
-            dynamo_params['ExclusiveStartTableName'] = params['exclusive_start_table_name']
+        if kwargs.get('limit'):
+            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+        if kwargs.get('exclusive_start_table_name'):
+            dynamo_kwargs.get('ExclusiveStartTableName') = kwargs.get('exclusive_start_table_name')
 
         response = client.list_tables(**dynamo_params)
 
@@ -420,11 +420,11 @@ class DynamoDBMCPTools:
             'total_count': len(response['TableNames'])
         }
 
-    def _describe_table(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_table(self, **kwargs) -> Dict[str, Any]:
         """Describe una tabla"""
         client = self._get_client()
 
-        response = client.describe_table(TableName=params['table_name'])
+        response = client.describe_table(TableName=kwargs.get('table_name'))
 
         table = response['Table']
         return {
@@ -449,38 +449,38 @@ class DynamoDBMCPTools:
             }
         }
 
-    def _create_table(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_table(self, **kwargs) -> Dict[str, Any]:
         """Crea una nueva tabla"""
         client = self._get_client()
 
         dynamo_params = {
-            'TableName': params['table_name'],
-            'KeySchema': params['key_schema'],
-            'AttributeDefinitions': params['attribute_definitions']
+            'TableName': kwargs.get('table_name'),
+            'KeySchema': kwargs.get('key_schema'),
+            'AttributeDefinitions': kwargs.get('attribute_definitions')
         }
 
-        if 'billing_mode' in params:
-            dynamo_params['BillingMode'] = params['billing_mode']
+        if kwargs.get('billing_mode'):
+            dynamo_kwargs.get('BillingMode') = kwargs.get('billing_mode')
 
-        if 'provisioned_throughput' in params:
-            dynamo_params['ProvisionedThroughput'] = {
-                'ReadCapacityUnits': params['provisioned_throughput']['read_capacity_units'],
-                'WriteCapacityUnits': params['provisioned_throughput']['write_capacity_units']
+        if kwargs.get('provisioned_throughput'):
+            dynamo_kwargs.get('ProvisionedThroughput') = {
+                'ReadCapacityUnits': kwargs.get('provisioned_throughput')['read_capacity_units'],
+                'WriteCapacityUnits': kwargs.get('provisioned_throughput')['write_capacity_units']
             }
 
-        if 'stream_view_type' in params:
-            dynamo_params['StreamSpecification'] = {
+        if kwargs.get('stream_view_type'):
+            dynamo_kwargs.get('StreamSpecification') = {
                 'StreamEnabled': True,
-                'StreamViewType': params['stream_view_type']
+                'StreamViewType': kwargs.get('stream_view_type')
             }
 
-        if 'tags' in params:
-            dynamo_params['Tags'] = params['tags']
+        if kwargs.get('tags'):
+            dynamo_kwargs.get('Tags') = kwargs.get('tags')
 
         response = client.create_table(**dynamo_params)
 
         return {
-            'message': f'Tabla DynamoDB {params["table_name"]} creada exitosamente',
+            'message': f'Tabla DynamoDB {kwargs.get('table_name')} creada exitosamente',
             'table_description': {
                 'table_name': response['TableDescription']['TableName'],
                 'table_arn': response['TableDescription'].get('TableArn'),
@@ -490,14 +490,14 @@ class DynamoDBMCPTools:
             }
         }
 
-    def _delete_table(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_table(self, **kwargs) -> Dict[str, Any]:
         """Elimina una tabla"""
         client = self._get_client()
 
-        response = client.delete_table(TableName=params['table_name'])
+        response = client.delete_table(TableName=kwargs.get('table_name'))
 
         return {
-            'message': f'Tabla DynamoDB {params["table_name"]} eliminada exitosamente',
+            'message': f'Tabla DynamoDB {kwargs.get('table_name')} eliminada exitosamente',
             'table_description': {
                 'table_name': response['TableDescription']['TableName'],
                 'table_arn': response['TableDescription'].get('TableArn'),
@@ -505,24 +505,24 @@ class DynamoDBMCPTools:
             }
         }
 
-    def _put_item(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_item(self, **kwargs) -> Dict[str, Any]:
         """Inserta o reemplaza un item"""
         client = self._get_client()
 
         dynamo_params = {
-            'TableName': params['table_name'],
-            'Item': params['item']
+            'TableName': kwargs.get('table_name'),
+            'Item': kwargs.get('item')
         }
 
-        if 'condition_expression' in params:
-            dynamo_params['ConditionExpression'] = params['condition_expression']
-        if 'return_values' in params:
-            dynamo_params['ReturnValues'] = params['return_values']
+        if kwargs.get('condition_expression'):
+            dynamo_kwargs.get('ConditionExpression') = kwargs.get('condition_expression')
+        if kwargs.get('return_values'):
+            dynamo_kwargs.get('ReturnValues') = kwargs.get('return_values')
 
         response = client.put_item(**dynamo_params)
 
         result = {
-            'message': f'Item insertado en tabla {params["table_name"]}',
+            'message': f'Item insertado en tabla {kwargs.get('table_name')}',
             'attributes': response.get('Attributes', {})
         }
 
@@ -531,19 +531,19 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _get_item(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_item(self, **kwargs) -> Dict[str, Any]:
         """Obtiene un item"""
         client = self._get_client()
 
         dynamo_params = {
-            'TableName': params['table_name'],
-            'Key': params['key']
+            'TableName': kwargs.get('table_name'),
+            'Key': kwargs.get('key')
         }
 
-        if 'projection_expression' in params:
-            dynamo_params['ProjectionExpression'] = params['projection_expression']
-        if 'consistent_read' in params:
-            dynamo_params['ConsistentRead'] = params['consistent_read']
+        if kwargs.get('projection_expression'):
+            dynamo_kwargs.get('ProjectionExpression') = kwargs.get('projection_expression')
+        if kwargs.get('consistent_read'):
+            dynamo_kwargs.get('ConsistentRead') = kwargs.get('consistent_read')
 
         response = client.get_item(**dynamo_params)
 
@@ -557,25 +557,25 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _update_item(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _update_item(self, **kwargs) -> Dict[str, Any]:
         """Actualiza un item"""
         client = self._get_client()
 
         dynamo_params = {
-            'TableName': params['table_name'],
-            'Key': params['key'],
-            'UpdateExpression': params['update_expression']
+            'TableName': kwargs.get('table_name'),
+            'Key': kwargs.get('key'),
+            'UpdateExpression': kwargs.get('update_expression')
         }
 
-        if 'condition_expression' in params:
-            dynamo_params['ConditionExpression'] = params['condition_expression']
-        if 'return_values' in params:
-            dynamo_params['ReturnValues'] = params['return_values']
+        if kwargs.get('condition_expression'):
+            dynamo_kwargs.get('ConditionExpression') = kwargs.get('condition_expression')
+        if kwargs.get('return_values'):
+            dynamo_kwargs.get('ReturnValues') = kwargs.get('return_values')
 
         response = client.update_item(**dynamo_params)
 
         result = {
-            'message': f'Item actualizado en tabla {params["table_name"]}',
+            'message': f'Item actualizado en tabla {kwargs.get('table_name')}',
             'attributes': response.get('Attributes', {})
         }
 
@@ -584,24 +584,24 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _delete_item(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_item(self, **kwargs) -> Dict[str, Any]:
         """Elimina un item"""
         client = self._get_client()
 
         dynamo_params = {
-            'TableName': params['table_name'],
-            'Key': params['key']
+            'TableName': kwargs.get('table_name'),
+            'Key': kwargs.get('key')
         }
 
-        if 'condition_expression' in params:
-            dynamo_params['ConditionExpression'] = params['condition_expression']
-        if 'return_values' in params:
-            dynamo_params['ReturnValues'] = params['return_values']
+        if kwargs.get('condition_expression'):
+            dynamo_kwargs.get('ConditionExpression') = kwargs.get('condition_expression')
+        if kwargs.get('return_values'):
+            dynamo_kwargs.get('ReturnValues') = kwargs.get('return_values')
 
         response = client.delete_item(**dynamo_params)
 
         result = {
-            'message': f'Item eliminado de tabla {params["table_name"]}',
+            'message': f'Item eliminado de tabla {kwargs.get('table_name')}',
             'attributes': response.get('Attributes', {})
         }
 
@@ -610,22 +610,22 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _scan(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _scan(self, **kwargs) -> Dict[str, Any]:
         """Escanea una tabla"""
         client = self._get_client()
 
-        dynamo_params = {'TableName': params['table_name']}
+        dynamo_params = {'TableName': kwargs.get('table_name')}
 
-        if 'filter_expression' in params:
-            dynamo_params['FilterExpression'] = params['filter_expression']
-        if 'projection_expression' in params:
-            dynamo_params['ProjectionExpression'] = params['projection_expression']
-        if 'limit' in params:
-            dynamo_params['Limit'] = params['limit']
-        if 'exclusive_start_key' in params:
-            dynamo_params['ExclusiveStartKey'] = params['exclusive_start_key']
-        if 'consistent_read' in params:
-            dynamo_params['ConsistentRead'] = params['consistent_read']
+        if kwargs.get('filter_expression'):
+            dynamo_kwargs.get('FilterExpression') = kwargs.get('filter_expression')
+        if kwargs.get('projection_expression'):
+            dynamo_kwargs.get('ProjectionExpression') = kwargs.get('projection_expression')
+        if kwargs.get('limit'):
+            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+        if kwargs.get('exclusive_start_key'):
+            dynamo_kwargs.get('ExclusiveStartKey') = kwargs.get('exclusive_start_key')
+        if kwargs.get('consistent_read'):
+            dynamo_kwargs.get('ConsistentRead') = kwargs.get('consistent_read')
 
         response = client.scan(**dynamo_params)
 
@@ -641,29 +641,29 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _query(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _query(self, **kwargs) -> Dict[str, Any]:
         """Consulta una tabla"""
         client = self._get_client()
 
         dynamo_params = {
-            'TableName': params['table_name'],
-            'KeyConditionExpression': params['key_condition_expression']
+            'TableName': kwargs.get('table_name'),
+            'KeyConditionExpression': kwargs.get('key_condition_expression')
         }
 
-        if 'filter_expression' in params:
-            dynamo_params['FilterExpression'] = params['filter_expression']
-        if 'projection_expression' in params:
-            dynamo_params['ProjectionExpression'] = params['projection_expression']
-        if 'index_name' in params:
-            dynamo_params['IndexName'] = params['index_name']
-        if 'limit' in params:
-            dynamo_params['Limit'] = params['limit']
-        if 'exclusive_start_key' in params:
-            dynamo_params['ExclusiveStartKey'] = params['exclusive_start_key']
-        if 'scan_index_forward' in params:
-            dynamo_params['ScanIndexForward'] = params['scan_index_forward']
-        if 'consistent_read' in params:
-            dynamo_params['ConsistentRead'] = params['consistent_read']
+        if kwargs.get('filter_expression'):
+            dynamo_kwargs.get('FilterExpression') = kwargs.get('filter_expression')
+        if kwargs.get('projection_expression'):
+            dynamo_kwargs.get('ProjectionExpression') = kwargs.get('projection_expression')
+        if kwargs.get('index_name'):
+            dynamo_kwargs.get('IndexName') = kwargs.get('index_name')
+        if kwargs.get('limit'):
+            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+        if kwargs.get('exclusive_start_key'):
+            dynamo_kwargs.get('ExclusiveStartKey') = kwargs.get('exclusive_start_key')
+        if kwargs.get('scan_index_forward'):
+            dynamo_kwargs.get('ScanIndexForward') = kwargs.get('scan_index_forward')
+        if kwargs.get('consistent_read'):
+            dynamo_kwargs.get('ConsistentRead') = kwargs.get('consistent_read')
 
         response = client.query(**dynamo_params)
 
@@ -679,11 +679,11 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _batch_write_item(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _batch_write_item(self, **kwargs) -> Dict[str, Any]:
         """Escribe múltiples items en lote"""
         client = self._get_client()
 
-        response = client.batch_write_item(RequestItems=params['request_items'])
+        response = client.batch_write_item(RequestItems=kwargs.get('request_items'))
 
         result = {
             'message': 'Items escritos en lote exitosamente',
@@ -695,11 +695,11 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _batch_get_item(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _batch_get_item(self, **kwargs) -> Dict[str, Any]:
         """Obtiene múltiples items en lote"""
         client = self._get_client()
 
-        response = client.batch_get_item(RequestItems=params['request_items'])
+        response = client.batch_get_item(RequestItems=kwargs.get('request_items'))
 
         result = {
             'responses': response.get('Responses', {}),
@@ -711,28 +711,28 @@ class DynamoDBMCPTools:
 
         return result
 
-    def _update_table(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _update_table(self, **kwargs) -> Dict[str, Any]:
         """Actualiza la configuración de una tabla"""
         client = self._get_client()
 
-        dynamo_params = {'TableName': params['table_name']}
+        dynamo_params = {'TableName': kwargs.get('table_name')}
 
-        if 'billing_mode' in params:
-            dynamo_params['BillingMode'] = params['billing_mode']
+        if kwargs.get('billing_mode'):
+            dynamo_kwargs.get('BillingMode') = kwargs.get('billing_mode')
 
-        if 'provisioned_throughput' in params:
-            dynamo_params['ProvisionedThroughput'] = {
-                'ReadCapacityUnits': params['provisioned_throughput']['read_capacity_units'],
-                'WriteCapacityUnits': params['provisioned_throughput']['write_capacity_units']
+        if kwargs.get('provisioned_throughput'):
+            dynamo_kwargs.get('ProvisionedThroughput') = {
+                'ReadCapacityUnits': kwargs.get('provisioned_throughput')['read_capacity_units'],
+                'WriteCapacityUnits': kwargs.get('provisioned_throughput')['write_capacity_units']
             }
 
-        if 'stream_specification' in params:
-            dynamo_params['StreamSpecification'] = params['stream_specification']
+        if kwargs.get('stream_specification'):
+            dynamo_kwargs.get('StreamSpecification') = kwargs.get('stream_specification')
 
         response = client.update_table(**dynamo_params)
 
         return {
-            'message': f'Tabla {params["table_name"]} actualizada exitosamente',
+            'message': f'Tabla {kwargs.get('table_name')} actualizada exitosamente',
             'table_description': {
                 'table_name': response['TableDescription']['TableName'],
                 'table_arn': response['TableDescription'].get('TableArn'),
@@ -740,43 +740,43 @@ class DynamoDBMCPTools:
             }
         }
 
-    def _describe_continuous_backups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_continuous_backups(self, **kwargs) -> Dict[str, Any]:
         """Describe backups continuos"""
         client = self._get_client()
 
-        response = client.describe_continuous_backups(TableName=params['table_name'])
+        response = client.describe_continuous_backups(TableName=kwargs.get('table_name'))
 
         return {
             'continuous_backups_description': response.get('ContinuousBackupsDescription', {})
         }
 
-    def _update_continuous_backups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _update_continuous_backups(self, **kwargs) -> Dict[str, Any]:
         """Actualiza backups continuos"""
         client = self._get_client()
 
         response = client.update_continuous_backups(
-            TableName=params['table_name'],
-            PointInTimeRecoverySpecification=params['point_in_time_recovery_specification']
+            TableName=kwargs.get('table_name'),
+            PointInTimeRecoverySpecification=kwargs.get('point_in_time_recovery_specification')
         )
 
         return {
-            'message': f'Backups continuos actualizados para tabla {params["table_name"]}',
+            'message': f'Backups continuos actualizados para tabla {kwargs.get('table_name')}',
             'continuous_backups_description': response.get('ContinuousBackupsDescription', {})
         }
 
-    def _list_backups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_backups(self, **kwargs) -> Dict[str, Any]:
         """Lista backups"""
         client = self._get_client()
 
         dynamo_params = {}
-        if 'table_name' in params:
-            dynamo_params['TableName'] = params['table_name']
-        if 'backup_type' in params:
-            dynamo_params['BackupType'] = params['backup_type']
-        if 'limit' in params:
-            dynamo_params['Limit'] = params['limit']
-        if 'exclusive_start_backup_arn' in params:
-            dynamo_params['ExclusiveStartBackupArn'] = params['exclusive_start_backup_arn']
+        if kwargs.get('table_name'):
+            dynamo_kwargs.get('TableName') = kwargs.get('table_name')
+        if kwargs.get('backup_type'):
+            dynamo_kwargs.get('BackupType') = kwargs.get('backup_type')
+        if kwargs.get('limit'):
+            dynamo_kwargs.get('Limit') = kwargs.get('limit')
+        if kwargs.get('exclusive_start_backup_arn'):
+            dynamo_kwargs.get('ExclusiveStartBackupArn') = kwargs.get('exclusive_start_backup_arn')
 
         response = client.list_backups(**dynamo_params)
 
@@ -799,17 +799,17 @@ class DynamoDBMCPTools:
             'last_evaluated_backup_arn': response.get('LastEvaluatedBackupArn')
         }
 
-    def _create_backup(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_backup(self, **kwargs) -> Dict[str, Any]:
         """Crea un backup"""
         client = self._get_client()
 
         response = client.create_backup(
-            TableName=params['table_name'],
-            BackupName=params['backup_name']
+            TableName=kwargs.get('table_name'),
+            BackupName=kwargs.get('backup_name')
         )
 
         return {
-            'message': f'Backup {params["backup_name"]} creado para tabla {params["table_name"]}',
+            'message': f'Backup {kwargs.get('backup_name')} creado para tabla {kwargs.get('table_name')}',
             'backup_details': {
                 'backup_arn': response['BackupDetails'].get('BackupArn'),
                 'backup_name': response['BackupDetails'].get('BackupName'),
@@ -821,13 +821,13 @@ class DynamoDBMCPTools:
             }
         }
 
-    def _delete_backup(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_backup(self, **kwargs) -> Dict[str, Any]:
         """Elimina un backup"""
         client = self._get_client()
 
-        response = client.delete_backup(BackupArn=params['backup_arn'])
+        response = client.delete_backup(BackupArn=kwargs.get('backup_arn'))
 
         return {
-            'message': f'Backup {params["backup_arn"]} eliminado exitosamente',
-            'backup_arn': params['backup_arn']
+            'message': f'Backup {kwargs.get('backup_arn')} eliminado exitosamente',
+            'backup_arn': kwargs.get('backup_arn')
         }

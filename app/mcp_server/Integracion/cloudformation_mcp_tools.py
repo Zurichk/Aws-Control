@@ -389,56 +389,56 @@ class CloudFormationMCPTools:
         """Ejecuta una herramienta específica de CloudFormation"""
         try:
             if tool_name == 'cloudformation_list_stacks':
-                return self._list_stacks(parameters)
+                return self._list_stacks(**parameters)
             elif tool_name == 'cloudformation_describe_stacks':
-                return self._describe_stacks(parameters)
+                return self._describe_stacks(**parameters)
             elif tool_name == 'cloudformation_create_stack':
-                return self._create_stack(parameters)
+                return self._create_stack(**parameters)
             elif tool_name == 'cloudformation_update_stack':
-                return self._update_stack(parameters)
+                return self._update_stack(**parameters)
             elif tool_name == 'cloudformation_delete_stack':
-                return self._delete_stack(parameters)
+                return self._delete_stack(**parameters)
             elif tool_name == 'cloudformation_create_change_set':
-                return self._create_change_set(parameters)
+                return self._create_change_set(**parameters)
             elif tool_name == 'cloudformation_describe_change_set':
-                return self._describe_change_set(parameters)
+                return self._describe_change_set(**parameters)
             elif tool_name == 'cloudformation_execute_change_set':
-                return self._execute_change_set(parameters)
+                return self._execute_change_set(**parameters)
             elif tool_name == 'cloudformation_delete_change_set':
-                return self._delete_change_set(parameters)
+                return self._delete_change_set(**parameters)
             elif tool_name == 'cloudformation_list_stack_resources':
-                return self._list_stack_resources(parameters)
+                return self._list_stack_resources(**parameters)
             elif tool_name == 'cloudformation_describe_stack_resources':
-                return self._describe_stack_resources(parameters)
+                return self._describe_stack_resources(**parameters)
             elif tool_name == 'cloudformation_get_template':
-                return self._get_template(parameters)
+                return self._get_template(**parameters)
             elif tool_name == 'cloudformation_validate_template':
-                return self._validate_template(parameters)
+                return self._validate_template(**parameters)
             elif tool_name == 'cloudformation_list_exports':
-                return self._list_exports(parameters)
+                return self._list_exports(**parameters)
             elif tool_name == 'cloudformation_list_imports':
-                return self._list_imports(parameters)
+                return self._list_imports(**parameters)
             elif tool_name == 'cloudformation_describe_stack_events':
-                return self._describe_stack_events(parameters)
+                return self._describe_stack_events(**parameters)
             elif tool_name == 'cloudformation_set_stack_policy':
-                return self._set_stack_policy(parameters)
+                return self._set_stack_policy(**parameters)
             elif tool_name == 'cloudformation_get_stack_policy':
-                return self._get_stack_policy(parameters)
+                return self._get_stack_policy(**parameters)
             else:
                 return {'error': f'Herramienta CloudFormation no encontrada: {tool_name}'}
 
         except Exception as e:
             return {'error': f'Error ejecutando herramienta CloudFormation {tool_name}: {str(e)}'}
 
-    def _list_stacks(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_stacks(self, **kwargs) -> Dict[str, Any]:
         """Lista stacks CloudFormation"""
         client = self._get_client()
 
         cf_params = {}
-        if 'stack_status_filter' in params:
-            cf_params['StackStatusFilter'] = params['stack_status_filter']
-        if 'next_token' in params:
-            cf_params['NextToken'] = params['next_token']
+        if kwargs.get('stack_status_filter'):
+            cf_kwargs.get('StackStatusFilter') = kwargs.get('stack_status_filter')
+        if kwargs.get('next_token'):
+            cf_kwargs.get('NextToken') = kwargs.get('next_token')
 
         response = client.list_stacks(**cf_params)
 
@@ -464,15 +464,15 @@ class CloudFormationMCPTools:
             'next_token': response.get('NextToken')
         }
 
-    def _describe_stacks(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_stacks(self, **kwargs) -> Dict[str, Any]:
         """Describe stacks CloudFormation"""
         client = self._get_client()
 
         cf_params = {}
-        if 'stack_name' in params:
-            cf_params['StackName'] = params['stack_name']
-        if 'next_token' in params:
-            cf_params['NextToken'] = params['next_token']
+        if kwargs.get('stack_name'):
+            cf_kwargs.get('StackName') = kwargs.get('stack_name')
+        if kwargs.get('next_token'):
+            cf_kwargs.get('NextToken') = kwargs.get('next_token')
 
         response = client.describe_stacks(**cf_params)
 
@@ -506,118 +506,118 @@ class CloudFormationMCPTools:
             'next_token': response.get('NextToken')
         }
 
-    def _create_stack(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_stack(self, **kwargs) -> Dict[str, Any]:
         """Crea un nuevo stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
+        cf_params = {'StackName': kwargs.get('stack_name')}
 
-        if 'template_body' in params:
-            cf_params['TemplateBody'] = params['template_body']
-        if 'template_url' in params:
-            cf_params['TemplateURL'] = params['template_url']
-        if 'parameters' in params:
-            cf_params['Parameters'] = params['parameters']
-        if 'capabilities' in params:
-            cf_params['Capabilities'] = params['capabilities']
-        if 'tags' in params:
-            cf_params['Tags'] = params['tags']
-        if 'notification_arns' in params:
-            cf_params['NotificationARNs'] = params['notification_arns']
-        if 'timeout_in_minutes' in params:
-            cf_params['TimeoutInMinutes'] = params['timeout_in_minutes']
-        if 'on_failure' in params:
-            cf_params['OnFailure'] = params['on_failure']
+        if kwargs.get('template_body'):
+            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+        if kwargs.get('template_url'):
+            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
+        if kwargs.get('parameters'):
+            cf_kwargs.get('Parameters') = kwargs.get('parameters')
+        if kwargs.get('capabilities'):
+            cf_kwargs.get('Capabilities') = kwargs.get('capabilities')
+        if kwargs.get('tags'):
+            cf_kwargs.get('Tags') = kwargs.get('tags')
+        if kwargs.get('notification_arns'):
+            cf_kwargs.get('NotificationARNs') = kwargs.get('notification_arns')
+        if kwargs.get('timeout_in_minutes'):
+            cf_kwargs.get('TimeoutInMinutes') = kwargs.get('timeout_in_minutes')
+        if kwargs.get('on_failure'):
+            cf_kwargs.get('OnFailure') = kwargs.get('on_failure')
 
         response = client.create_stack(**cf_params)
 
         return {
-            'message': f'Stack CloudFormation {params["stack_name"]} creado exitosamente',
+            'message': f'Stack CloudFormation {kwargs.get('stack_name')} creado exitosamente',
             'stack_id': response.get('StackId')
         }
 
-    def _update_stack(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _update_stack(self, **kwargs) -> Dict[str, Any]:
         """Actualiza un stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
+        cf_params = {'StackName': kwargs.get('stack_name')}
 
-        if 'template_body' in params:
-            cf_params['TemplateBody'] = params['template_body']
-        if 'template_url' in params:
-            cf_params['TemplateURL'] = params['template_url']
-        if 'parameters' in params:
-            cf_params['Parameters'] = params['parameters']
-        if 'capabilities' in params:
-            cf_params['Capabilities'] = params['capabilities']
-        if 'tags' in params:
-            cf_params['Tags'] = params['tags']
-        if 'notification_arns' in params:
-            cf_params['NotificationARNs'] = params['notification_arns']
+        if kwargs.get('template_body'):
+            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+        if kwargs.get('template_url'):
+            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
+        if kwargs.get('parameters'):
+            cf_kwargs.get('Parameters') = kwargs.get('parameters')
+        if kwargs.get('capabilities'):
+            cf_kwargs.get('Capabilities') = kwargs.get('capabilities')
+        if kwargs.get('tags'):
+            cf_kwargs.get('Tags') = kwargs.get('tags')
+        if kwargs.get('notification_arns'):
+            cf_kwargs.get('NotificationARNs') = kwargs.get('notification_arns')
 
         response = client.update_stack(**cf_params)
 
         return {
-            'message': f'Stack CloudFormation {params["stack_name"]} actualizado exitosamente',
+            'message': f'Stack CloudFormation {kwargs.get('stack_name')} actualizado exitosamente',
             'stack_id': response.get('StackId')
         }
 
-    def _delete_stack(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_stack(self, **kwargs) -> Dict[str, Any]:
         """Elimina un stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
+        cf_params = {'StackName': kwargs.get('stack_name')}
 
-        if 'retain_resources' in params:
-            cf_params['RetainResources'] = params['retain_resources']
-        if 'role_arn' in params:
-            cf_params['RoleARN'] = params['role_arn']
-        if 'client_request_token' in params:
-            cf_params['ClientRequestToken'] = params['client_request_token']
+        if kwargs.get('retain_resources'):
+            cf_kwargs.get('RetainResources') = kwargs.get('retain_resources')
+        if kwargs.get('role_arn'):
+            cf_kwargs.get('RoleARN') = kwargs.get('role_arn')
+        if kwargs.get('client_request_token'):
+            cf_kwargs.get('ClientRequestToken') = kwargs.get('client_request_token')
 
         client.delete_stack(**cf_params)
 
         return {
-            'message': f'Stack CloudFormation {params["stack_name"]} eliminado exitosamente'
+            'message': f'Stack CloudFormation {kwargs.get('stack_name')} eliminado exitosamente'
         }
 
-    def _create_change_set(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_change_set(self, **kwargs) -> Dict[str, Any]:
         """Crea un change set"""
         client = self._get_client()
 
         cf_params = {
-            'StackName': params['stack_name'],
-            'ChangeSetName': params['change_set_name']
+            'StackName': kwargs.get('stack_name'),
+            'ChangeSetName': kwargs.get('change_set_name')
         }
 
-        if 'template_body' in params:
-            cf_params['TemplateBody'] = params['template_body']
-        if 'template_url' in params:
-            cf_params['TemplateURL'] = params['template_url']
-        if 'parameters' in params:
-            cf_params['Parameters'] = params['parameters']
-        if 'capabilities' in params:
-            cf_params['Capabilities'] = params['capabilities']
-        if 'tags' in params:
-            cf_params['Tags'] = params['tags']
-        if 'change_set_type' in params:
-            cf_params['ChangeSetType'] = params['change_set_type']
+        if kwargs.get('template_body'):
+            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+        if kwargs.get('template_url'):
+            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
+        if kwargs.get('parameters'):
+            cf_kwargs.get('Parameters') = kwargs.get('parameters')
+        if kwargs.get('capabilities'):
+            cf_kwargs.get('Capabilities') = kwargs.get('capabilities')
+        if kwargs.get('tags'):
+            cf_kwargs.get('Tags') = kwargs.get('tags')
+        if kwargs.get('change_set_type'):
+            cf_kwargs.get('ChangeSetType') = kwargs.get('change_set_type')
 
         response = client.create_change_set(**cf_params)
 
         return {
-            'message': f'Change set {params["change_set_name"]} creado para stack {params["stack_name"]}',
+            'message': f'Change set {kwargs.get('change_set_name')} creado para stack {kwargs.get('stack_name')}',
             'change_set_id': response.get('Id'),
             'stack_id': response.get('StackId')
         }
 
-    def _describe_change_set(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_change_set(self, **kwargs) -> Dict[str, Any]:
         """Describe un change set"""
         client = self._get_client()
 
         response = client.describe_change_set(
-            StackName=params['stack_name'],
-            ChangeSetName=params['change_set_name']
+            StackName=kwargs.get('stack_name'),
+            ChangeSetName=kwargs.get('change_set_name')
         )
 
         changes = []
@@ -648,44 +648,44 @@ class CloudFormationMCPTools:
             'next_token': response.get('NextToken')
         }
 
-    def _execute_change_set(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _execute_change_set(self, **kwargs) -> Dict[str, Any]:
         """Ejecuta un change set"""
         client = self._get_client()
 
         cf_params = {
-            'StackName': params['stack_name'],
-            'ChangeSetName': params['change_set_name']
+            'StackName': kwargs.get('stack_name'),
+            'ChangeSetName': kwargs.get('change_set_name')
         }
 
-        if 'client_request_token' in params:
-            cf_params['ClientRequestToken'] = params['client_request_token']
+        if kwargs.get('client_request_token'):
+            cf_kwargs.get('ClientRequestToken') = kwargs.get('client_request_token')
 
         client.execute_change_set(**cf_params)
 
         return {
-            'message': f'Change set {params["change_set_name"]} ejecutado para stack {params["stack_name"]}'
+            'message': f'Change set {kwargs.get('change_set_name')} ejecutado para stack {kwargs.get('stack_name')}'
         }
 
-    def _delete_change_set(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_change_set(self, **kwargs) -> Dict[str, Any]:
         """Elimina un change set"""
         client = self._get_client()
 
         client.delete_change_set(
-            StackName=params['stack_name'],
-            ChangeSetName=params['change_set_name']
+            StackName=kwargs.get('stack_name'),
+            ChangeSetName=kwargs.get('change_set_name')
         )
 
         return {
-            'message': f'Change set {params["change_set_name"]} eliminado del stack {params["stack_name"]}'
+            'message': f'Change set {kwargs.get('change_set_name')} eliminado del stack {kwargs.get('stack_name')}'
         }
 
-    def _list_stack_resources(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_stack_resources(self, **kwargs) -> Dict[str, Any]:
         """Lista recursos de un stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
-        if 'next_token' in params:
-            cf_params['NextToken'] = params['next_token']
+        cf_params = {'StackName': kwargs.get('stack_name')}
+        if kwargs.get('next_token'):
+            cf_kwargs.get('NextToken') = kwargs.get('next_token')
 
         response = client.list_stack_resources(**cf_params)
 
@@ -703,22 +703,22 @@ class CloudFormationMCPTools:
             })
 
         return {
-            'stack_name': params['stack_name'],
+            'stack_name': kwargs.get('stack_name'),
             'resources': resources,
             'total_count': len(resources),
             'next_token': response.get('NextToken')
         }
 
-    def _describe_stack_resources(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_stack_resources(self, **kwargs) -> Dict[str, Any]:
         """Describe recursos específicos de un stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
+        cf_params = {'StackName': kwargs.get('stack_name')}
 
-        if 'logical_resource_id' in params:
-            cf_params['LogicalResourceId'] = params['logical_resource_id']
-        if 'physical_resource_id' in params:
-            cf_params['PhysicalResourceId'] = params['physical_resource_id']
+        if kwargs.get('logical_resource_id'):
+            cf_kwargs.get('LogicalResourceId') = kwargs.get('logical_resource_id')
+        if kwargs.get('physical_resource_id'):
+            cf_kwargs.get('PhysicalResourceId') = kwargs.get('physical_resource_id')
 
         response = client.describe_stack_resources(**cf_params)
 
@@ -744,31 +744,31 @@ class CloudFormationMCPTools:
             'total_count': len(resources)
         }
 
-    def _get_template(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_template(self, **kwargs) -> Dict[str, Any]:
         """Obtiene el template de un stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
-        if 'change_set_name' in params:
-            cf_params['ChangeSetName'] = params['change_set_name']
+        cf_params = {'StackName': kwargs.get('stack_name')}
+        if kwargs.get('change_set_name'):
+            cf_kwargs.get('ChangeSetName') = kwargs.get('change_set_name')
 
         response = client.get_template(**cf_params)
 
         return {
-            'stack_name': params['stack_name'],
+            'stack_name': kwargs.get('stack_name'),
             'template_body': response.get('TemplateBody'),
             'stages_available': response.get('StagesAvailable', [])
         }
 
-    def _validate_template(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate_template(self, **kwargs) -> Dict[str, Any]:
         """Valida un template CloudFormation"""
         client = self._get_client()
 
         cf_params = {}
-        if 'template_body' in params:
-            cf_params['TemplateBody'] = params['template_body']
-        if 'template_url' in params:
-            cf_params['TemplateURL'] = params['template_url']
+        if kwargs.get('template_body'):
+            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+        if kwargs.get('template_url'):
+            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
 
         response = client.validate_template(**cf_params)
 
@@ -779,13 +779,13 @@ class CloudFormationMCPTools:
             'capabilities_reason': response.get('CapabilitiesReason')
         }
 
-    def _list_exports(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_exports(self, **kwargs) -> Dict[str, Any]:
         """Lista exports de stacks"""
         client = self._get_client()
 
         cf_params = {}
-        if 'next_token' in params:
-            cf_params['NextToken'] = params['next_token']
+        if kwargs.get('next_token'):
+            cf_kwargs.get('NextToken') = kwargs.get('next_token')
 
         response = client.list_exports(**cf_params)
 
@@ -804,30 +804,30 @@ class CloudFormationMCPTools:
             'next_token': response.get('NextToken')
         }
 
-    def _list_imports(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_imports(self, **kwargs) -> Dict[str, Any]:
         """Lista imports de un export"""
         client = self._get_client()
 
-        cf_params = {'ExportName': params['export_name']}
-        if 'next_token' in params:
-            cf_params['NextToken'] = params['next_token']
+        cf_params = {'ExportName': kwargs.get('export_name')}
+        if kwargs.get('next_token'):
+            cf_kwargs.get('NextToken') = kwargs.get('next_token')
 
         response = client.list_imports(**cf_params)
 
         return {
-            'export_name': params['export_name'],
+            'export_name': kwargs.get('export_name'),
             'imports': response.get('Imports', []),
             'total_count': len(response.get('Imports', [])),
             'next_token': response.get('NextToken')
         }
 
-    def _describe_stack_events(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_stack_events(self, **kwargs) -> Dict[str, Any]:
         """Describe eventos de un stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
-        if 'next_token' in params:
-            cf_params['NextToken'] = params['next_token']
+        cf_params = {'StackName': kwargs.get('stack_name')}
+        if kwargs.get('next_token'):
+            cf_kwargs.get('NextToken') = kwargs.get('next_token')
 
         response = client.describe_stack_events(**cf_params)
 
@@ -852,36 +852,36 @@ class CloudFormationMCPTools:
             })
 
         return {
-            'stack_name': params['stack_name'],
+            'stack_name': kwargs.get('stack_name'),
             'events': events,
             'total_count': len(events),
             'next_token': response.get('NextToken')
         }
 
-    def _set_stack_policy(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _set_stack_policy(self, **kwargs) -> Dict[str, Any]:
         """Establece la política de un stack"""
         client = self._get_client()
 
-        cf_params = {'StackName': params['stack_name']}
+        cf_params = {'StackName': kwargs.get('stack_name')}
 
-        if 'stack_policy_body' in params:
-            cf_params['StackPolicyBody'] = params['stack_policy_body']
-        if 'stack_policy_url' in params:
-            cf_params['StackPolicyURL'] = params['stack_policy_url']
+        if kwargs.get('stack_policy_body'):
+            cf_kwargs.get('StackPolicyBody') = kwargs.get('stack_policy_body')
+        if kwargs.get('stack_policy_url'):
+            cf_kwargs.get('StackPolicyURL') = kwargs.get('stack_policy_url')
 
         client.set_stack_policy(**cf_params)
 
         return {
-            'message': f'Política del stack {params["stack_name"]} establecida exitosamente'
+            'message': f'Política del stack {kwargs.get('stack_name')} establecida exitosamente'
         }
 
-    def _get_stack_policy(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_stack_policy(self, **kwargs) -> Dict[str, Any]:
         """Obtiene la política de un stack"""
         client = self._get_client()
 
-        response = client.get_stack_policy(StackName=params['stack_name'])
+        response = client.get_stack_policy(StackName=kwargs.get('stack_name'))
 
         return {
-            'stack_name': params['stack_name'],
+            'stack_name': kwargs.get('stack_name'),
             'stack_policy_body': response.get('StackPolicyBody')
         }

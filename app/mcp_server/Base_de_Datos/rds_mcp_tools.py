@@ -205,50 +205,50 @@ class RDSMCPTools:
         """Ejecuta una herramienta específica de RDS"""
         try:
             if tool_name == 'rds_describe_db_instances':
-                return self._describe_db_instances(parameters)
+                return self._describe_db_instances(**parameters)
             elif tool_name == 'rds_describe_db_instance':
-                return self._describe_db_instance(parameters)
+                return self._describe_db_instance(**parameters)
             elif tool_name == 'rds_create_db_instance':
-                return self._create_db_instance(parameters)
+                return self._create_db_instance(**parameters)
             elif tool_name == 'rds_start_db_instance':
-                return self._start_db_instance(parameters)
+                return self._start_db_instance(**parameters)
             elif tool_name == 'rds_stop_db_instance':
-                return self._stop_db_instance(parameters)
+                return self._stop_db_instance(**parameters)
             elif tool_name == 'rds_reboot_db_instance':
-                return self._reboot_db_instance(parameters)
+                return self._reboot_db_instance(**parameters)
             elif tool_name == 'rds_delete_db_instance':
-                return self._delete_db_instance(parameters)
+                return self._delete_db_instance(**parameters)
             elif tool_name == 'rds_describe_db_snapshots':
-                return self._describe_db_snapshots(parameters)
+                return self._describe_db_snapshots(**parameters)
             elif tool_name == 'rds_create_db_snapshot':
-                return self._create_db_snapshot(parameters)
+                return self._create_db_snapshot(**parameters)
             elif tool_name == 'rds_delete_db_snapshot':
-                return self._delete_db_snapshot(parameters)
+                return self._delete_db_snapshot(**parameters)
             elif tool_name == 'rds_describe_db_subnet_groups':
-                return self._describe_db_subnet_groups(parameters)
+                return self._describe_db_subnet_groups(**parameters)
             elif tool_name == 'rds_describe_db_parameter_groups':
-                return self._describe_db_parameter_groups(parameters)
+                return self._describe_db_parameter_groups(**parameters)
             elif tool_name == 'rds_describe_reserved_db_instances':
-                return self._describe_reserved_db_instances(parameters)
+                return self._describe_reserved_db_instances(**parameters)
             else:
                 return {'error': f'Herramienta RDS no encontrada: {tool_name}'}
 
         except Exception as e:
             return {'error': f'Error ejecutando herramienta RDS {tool_name}: {str(e)}'}
 
-    def _describe_db_instances(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_db_instances(self, **kwargs) -> Dict[str, Any]:
         """Lista instancias de base de datos"""
         client = self._get_client()
 
         rds_params = {
-            'MaxRecords': params.get('max_records', 100)
+            'MaxRecords': kwargs.get('max_records', 100)
         }
 
-        if 'db_instance_identifier' in params:
-            rds_params['DBInstanceIdentifier'] = params['db_instance_identifier']
+        if kwargs.get('db_instance_identifier'):
+            rds_kwargs.get('DBInstanceIdentifier') = kwargs.get('db_instance_identifier')
 
-        if 'filters' in params:
-            rds_params['Filters'] = params['filters']
+        if kwargs.get('filters'):
+            rds_kwargs.get('Filters') = kwargs.get('filters')
 
         response = client.describe_db_instances(**rds_params)
 
@@ -280,12 +280,12 @@ class RDSMCPTools:
             'total_count': len(instances)
         }
 
-    def _describe_db_instance(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_db_instance(self, **kwargs) -> Dict[str, Any]:
         """Describe una instancia específica"""
         client = self._get_client()
 
         response = client.describe_db_instances(
-            DBInstanceIdentifier=params['db_instance_identifier']
+            DBInstanceIdentifier=kwargs.get('db_instance_identifier')
         )
 
         db = response['DBInstances'][0]
@@ -315,123 +315,123 @@ class RDSMCPTools:
             }
         }
 
-    def _create_db_instance(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_db_instance(self, **kwargs) -> Dict[str, Any]:
         """Crea una nueva instancia RDS"""
         client = self._get_client()
 
         rds_params = {
-            'DBInstanceIdentifier': params['db_instance_identifier'],
-            'DBInstanceClass': params['db_instance_class'],
-            'Engine': params['engine'],
-            'MasterUsername': params['master_username'],
-            'MasterUserPassword': params['master_user_password'],
-            'AllocatedStorage': params.get('allocated_storage', 20),
-            'BackupRetentionPeriod': params.get('backup_retention_period', 7),
-            'MultiAZ': params.get('multi_az', False),
-            'PubliclyAccessible': params.get('publicly_accessible', False)
+            'DBInstanceIdentifier': kwargs.get('db_instance_identifier'),
+            'DBInstanceClass': kwargs.get('db_instance_class'),
+            'Engine': kwargs.get('engine'),
+            'MasterUsername': kwargs.get('master_username'),
+            'MasterUserPassword': kwargs.get('master_user_password'),
+            'AllocatedStorage': kwargs.get('allocated_storage', 20),
+            'BackupRetentionPeriod': kwargs.get('backup_retention_period', 7),
+            'MultiAZ': kwargs.get('multi_az', False),
+            'PubliclyAccessible': kwargs.get('publicly_accessible', False)
         }
 
-        if 'db_name' in params:
-            rds_params['DBName'] = params['db_name']
+        if kwargs.get('db_name'):
+            rds_kwargs.get('DBName') = kwargs.get('db_name')
 
-        if 'vpc_security_group_ids' in params:
-            rds_params['VpcSecurityGroupIds'] = params['vpc_security_group_ids']
+        if kwargs.get('vpc_security_group_ids'):
+            rds_kwargs.get('VpcSecurityGroupIds') = kwargs.get('vpc_security_group_ids')
 
-        if 'db_subnet_group_name' in params:
-            rds_params['DBSubnetGroupName'] = params['db_subnet_group_name']
+        if kwargs.get('db_subnet_group_name'):
+            rds_kwargs.get('DBSubnetGroupName') = kwargs.get('db_subnet_group_name')
 
-        if 'tags' in params:
-            rds_params['Tags'] = params['tags']
+        if kwargs.get('tags'):
+            rds_kwargs.get('Tags') = kwargs.get('tags')
 
         client.create_db_instance(**rds_params)
 
         return {
-            'message': f'Instancia RDS {params["db_instance_identifier"]} está siendo creada',
-            'db_instance_identifier': params['db_instance_identifier'],
+            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} está siendo creada',
+            'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'creating'
         }
 
-    def _start_db_instance(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _start_db_instance(self, **kwargs) -> Dict[str, Any]:
         """Inicia una instancia RDS"""
         client = self._get_client()
 
         client.start_db_instance(
-            DBInstanceIdentifier=params['db_instance_identifier']
+            DBInstanceIdentifier=kwargs.get('db_instance_identifier')
         )
 
         return {
-            'message': f'Instancia RDS {params["db_instance_identifier"]} iniciándose',
-            'db_instance_identifier': params['db_instance_identifier'],
+            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} iniciándose',
+            'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'starting'
         }
 
-    def _stop_db_instance(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _stop_db_instance(self, **kwargs) -> Dict[str, Any]:
         """Detiene una instancia RDS"""
         client = self._get_client()
 
         client.stop_db_instance(
-            DBInstanceIdentifier=params['db_instance_identifier']
+            DBInstanceIdentifier=kwargs.get('db_instance_identifier')
         )
 
         return {
-            'message': f'Instancia RDS {params["db_instance_identifier"]} deteniéndose',
-            'db_instance_identifier': params['db_instance_identifier'],
+            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} deteniéndose',
+            'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'stopping'
         }
 
-    def _reboot_db_instance(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _reboot_db_instance(self, **kwargs) -> Dict[str, Any]:
         """Reinicia una instancia RDS"""
         client = self._get_client()
 
         rds_params = {
-            'DBInstanceIdentifier': params['db_instance_identifier']
+            'DBInstanceIdentifier': kwargs.get('db_instance_identifier')
         }
 
-        if 'force_failover' in params:
-            rds_params['ForceFailover'] = params['force_failover']
+        if kwargs.get('force_failover'):
+            rds_kwargs.get('ForceFailover') = kwargs.get('force_failover')
 
         client.reboot_db_instance(**rds_params)
 
         return {
-            'message': f'Instancia RDS {params["db_instance_identifier"]} reiniciándose',
-            'db_instance_identifier': params['db_instance_identifier'],
+            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} reiniciándose',
+            'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'rebooting'
         }
 
-    def _delete_db_instance(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_db_instance(self, **kwargs) -> Dict[str, Any]:
         """Elimina una instancia RDS"""
         client = self._get_client()
 
         rds_params = {
-            'DBInstanceIdentifier': params['db_instance_identifier'],
-            'SkipFinalSnapshot': params.get('skip_final_snapshot', False),
-            'DeleteAutomatedBackups': params.get('delete_automated_backups', True)
+            'DBInstanceIdentifier': kwargs.get('db_instance_identifier'),
+            'SkipFinalSnapshot': kwargs.get('skip_final_snapshot', False),
+            'DeleteAutomatedBackups': kwargs.get('delete_automated_backups', True)
         }
 
-        if not params.get('skip_final_snapshot', False) and 'final_db_snapshot_identifier' in params:
-            rds_params['FinalDBSnapshotIdentifier'] = params['final_db_snapshot_identifier']
+        if not kwargs.get('skip_final_snapshot', False) and kwargs.get('final_db_snapshot_identifier'):
+            rds_kwargs.get('FinalDBSnapshotIdentifier') = kwargs.get('final_db_snapshot_identifier')
 
         client.delete_db_instance(**rds_params)
 
         return {
-            'message': f'Instancia RDS {params["db_instance_identifier"]} eliminándose',
-            'db_instance_identifier': params['db_instance_identifier'],
+            'message': f'Instancia RDS {kwargs.get('db_instance_identifier')} eliminándose',
+            'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'db_instance_status': 'deleting'
         }
 
-    def _describe_db_snapshots(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_db_snapshots(self, **kwargs) -> Dict[str, Any]:
         """Lista snapshots de base de datos"""
         client = self._get_client()
 
         rds_params = {
-            'MaxRecords': params.get('max_records', 100)
+            'MaxRecords': kwargs.get('max_records', 100)
         }
 
-        if 'db_instance_identifier' in params:
-            rds_params['DBInstanceIdentifier'] = params['db_instance_identifier']
+        if kwargs.get('db_instance_identifier'):
+            rds_kwargs.get('DBInstanceIdentifier') = kwargs.get('db_instance_identifier')
 
-        if 'snapshot_type' in params:
-            rds_params['SnapshotType'] = params['snapshot_type']
+        if kwargs.get('snapshot_type'):
+            rds_kwargs.get('SnapshotType') = kwargs.get('snapshot_type')
 
         response = client.describe_db_snapshots(**rds_params)
 
@@ -455,45 +455,45 @@ class RDSMCPTools:
             'total_count': len(snapshots)
         }
 
-    def _create_db_snapshot(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_db_snapshot(self, **kwargs) -> Dict[str, Any]:
         """Crea un snapshot de base de datos"""
         client = self._get_client()
 
         client.create_db_snapshot(
-            DBSnapshotIdentifier=params['db_snapshot_identifier'],
-            DBInstanceIdentifier=params['db_instance_identifier']
+            DBSnapshotIdentifier=kwargs.get('db_snapshot_identifier'),
+            DBInstanceIdentifier=kwargs.get('db_instance_identifier')
         )
 
         return {
-            'message': f'Snapshot {params["db_snapshot_identifier"]} está siendo creado',
-            'db_snapshot_identifier': params['db_snapshot_identifier'],
-            'db_instance_identifier': params['db_instance_identifier'],
+            'message': f'Snapshot {kwargs.get('db_snapshot_identifier')} está siendo creado',
+            'db_snapshot_identifier': kwargs.get('db_snapshot_identifier'),
+            'db_instance_identifier': kwargs.get('db_instance_identifier'),
             'status': 'creating'
         }
 
-    def _delete_db_snapshot(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_db_snapshot(self, **kwargs) -> Dict[str, Any]:
         """Elimina un snapshot de base de datos"""
         client = self._get_client()
 
         client.delete_db_snapshot(
-            DBSnapshotIdentifier=params['db_snapshot_identifier']
+            DBSnapshotIdentifier=kwargs.get('db_snapshot_identifier')
         )
 
         return {
-            'message': f'Snapshot {params["db_snapshot_identifier"]} eliminado',
-            'db_snapshot_identifier': params['db_snapshot_identifier']
+            'message': f'Snapshot {kwargs.get('db_snapshot_identifier')} eliminado',
+            'db_snapshot_identifier': kwargs.get('db_snapshot_identifier')
         }
 
-    def _describe_db_subnet_groups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_db_subnet_groups(self, **kwargs) -> Dict[str, Any]:
         """Lista grupos de subnets de RDS"""
         client = self._get_client()
 
         rds_params = {
-            'MaxRecords': params.get('max_records', 100)
+            'MaxRecords': kwargs.get('max_records', 100)
         }
 
-        if 'db_subnet_group_name' in params:
-            rds_params['DBSubnetGroupName'] = params['db_subnet_group_name']
+        if kwargs.get('db_subnet_group_name'):
+            rds_kwargs.get('DBSubnetGroupName') = kwargs.get('db_subnet_group_name')
 
         response = client.describe_db_subnet_groups(**rds_params)
 
@@ -518,16 +518,16 @@ class RDSMCPTools:
             'total_count': len(subnet_groups)
         }
 
-    def _describe_db_parameter_groups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_db_parameter_groups(self, **kwargs) -> Dict[str, Any]:
         """Lista grupos de parámetros de RDS"""
         client = self._get_client()
 
         rds_params = {
-            'MaxRecords': params.get('max_records', 100)
+            'MaxRecords': kwargs.get('max_records', 100)
         }
 
-        if 'db_parameter_group_name' in params:
-            rds_params['DBParameterGroupName'] = params['db_parameter_group_name']
+        if kwargs.get('db_parameter_group_name'):
+            rds_kwargs.get('DBParameterGroupName') = kwargs.get('db_parameter_group_name')
 
         response = client.describe_db_parameter_groups(**rds_params)
 
@@ -546,16 +546,16 @@ class RDSMCPTools:
             'total_count': len(parameter_groups)
         }
 
-    def _describe_reserved_db_instances(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_reserved_db_instances(self, **kwargs) -> Dict[str, Any]:
         """Lista instancias reservadas de RDS"""
         client = self._get_client()
 
         rds_params = {
-            'MaxRecords': params.get('max_records', 100)
+            'MaxRecords': kwargs.get('max_records', 100)
         }
 
-        if 'reserved_db_instance_id' in params:
-            rds_params['ReservedDBInstanceId'] = params['reserved_db_instance_id']
+        if kwargs.get('reserved_db_instance_id'):
+            rds_kwargs.get('ReservedDBInstanceId') = kwargs.get('reserved_db_instance_id')
 
         response = client.describe_reserved_db_instances(**rds_params)
 

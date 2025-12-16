@@ -398,60 +398,60 @@ class APIGatewayMCPTools:
         """Ejecuta una herramienta específica de API Gateway"""
         try:
             if tool_name == 'apigateway_get_rest_apis':
-                return self._get_rest_apis(parameters)
+                return self._get_rest_apis(**parameters)
             elif tool_name == 'apigateway_get_rest_api':
-                return self._get_rest_api(parameters)
+                return self._get_rest_api(**parameters)
             elif tool_name == 'apigateway_create_rest_api':
-                return self._create_rest_api(parameters)
+                return self._create_rest_api(**parameters)
             elif tool_name == 'apigateway_delete_rest_api':
-                return self._delete_rest_api(parameters)
+                return self._delete_rest_api(**parameters)
             elif tool_name == 'apigateway_get_resources':
-                return self._get_resources(parameters)
+                return self._get_resources(**parameters)
             elif tool_name == 'apigateway_create_resource':
-                return self._create_resource(parameters)
+                return self._create_resource(**parameters)
             elif tool_name == 'apigateway_delete_resource':
-                return self._delete_resource(parameters)
+                return self._delete_resource(**parameters)
             elif tool_name == 'apigateway_get_method':
-                return self._get_method(parameters)
+                return self._get_method(**parameters)
             elif tool_name == 'apigateway_put_method':
-                return self._put_method(parameters)
+                return self._put_method(**parameters)
             elif tool_name == 'apigateway_put_integration':
-                return self._put_integration(parameters)
+                return self._put_integration(**parameters)
             elif tool_name == 'apigateway_put_method_response':
-                return self._put_method_response(parameters)
+                return self._put_method_response(**parameters)
             elif tool_name == 'apigateway_put_integration_response':
-                return self._put_integration_response(parameters)
+                return self._put_integration_response(**parameters)
             elif tool_name == 'apigateway_create_deployment':
-                return self._create_deployment(parameters)
+                return self._create_deployment(**parameters)
             elif tool_name == 'apigateway_get_stages':
-                return self._get_stages(parameters)
+                return self._get_stages(**parameters)
             elif tool_name == 'apigateway_get_api_keys':
-                return self._get_api_keys(parameters)
+                return self._get_api_keys(**parameters)
             elif tool_name == 'apigateway_create_api_key':
-                return self._create_api_key(parameters)
+                return self._create_api_key(**parameters)
             elif tool_name == 'apigateway_get_usage_plans':
-                return self._get_usage_plans(parameters)
+                return self._get_usage_plans(**parameters)
             elif tool_name == 'apigateway_create_usage_plan':
-                return self._create_usage_plan(parameters)
+                return self._create_usage_plan(**parameters)
             elif tool_name == 'apigateway_create_domain_name':
-                return self._create_domain_name(parameters)
+                return self._create_domain_name(**parameters)
             elif tool_name == 'apigateway_create_base_path_mapping':
-                return self._create_base_path_mapping(parameters)
+                return self._create_base_path_mapping(**parameters)
             else:
                 return {'error': f'Herramienta API Gateway no encontrada: {tool_name}'}
 
         except Exception as e:
             return {'error': f'Error ejecutando herramienta API Gateway {tool_name}: {str(e)}'}
 
-    def _get_rest_apis(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_rest_apis(self, **kwargs) -> Dict[str, Any]:
         """Lista APIs REST"""
         client = self._get_client()
 
         api_params = {}
-        if 'limit' in params:
-            api_params['limit'] = params['limit']
-        if 'position' in params:
-            api_params['position'] = params['position']
+        if kwargs.get('limit'):
+            api_kwargs.get('limit') = kwargs.get('limit')
+        if kwargs.get('position'):
+            api_kwargs.get('position') = kwargs.get('position')
 
         response = client.get_rest_apis(**api_params)
 
@@ -473,11 +473,11 @@ class APIGatewayMCPTools:
             'position': response.get('position')
         }
 
-    def _get_rest_api(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_rest_api(self, **kwargs) -> Dict[str, Any]:
         """Obtiene detalles de una API REST"""
         client = self._get_client()
 
-        response = client.get_rest_api(restApiId=params['rest_api_id'])
+        response = client.get_rest_api(restApiId=kwargs.get('rest_api_id'))
 
         return {
             'api': {
@@ -493,50 +493,50 @@ class APIGatewayMCPTools:
             }
         }
 
-    def _create_rest_api(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_rest_api(self, **kwargs) -> Dict[str, Any]:
         """Crea una nueva API REST"""
         client = self._get_client()
 
         api_params = {
-            'name': params['name']
+            'name': kwargs.get('name')
         }
 
-        if 'description' in params:
-            api_params['description'] = params['description']
-        if 'endpoint_configuration' in params:
-            api_params['endpointConfiguration'] = params['endpoint_configuration']
-        if 'api_key_source_type' in params:
-            api_params['apiKeySourceType'] = params['api_key_source_type']
-        if 'binary_media_types' in params:
-            api_params['binaryMediaTypes'] = params['binary_media_types']
+        if kwargs.get('description'):
+            api_kwargs.get('description') = kwargs.get('description')
+        if kwargs.get('endpoint_configuration'):
+            api_kwargs.get('endpointConfiguration') = kwargs.get('endpoint_configuration')
+        if kwargs.get('api_key_source_type'):
+            api_kwargs.get('apiKeySourceType') = kwargs.get('api_key_source_type')
+        if kwargs.get('binary_media_types'):
+            api_kwargs.get('binaryMediaTypes') = kwargs.get('binary_media_types')
 
         response = client.create_rest_api(**api_params)
 
         return {
-            'message': f'API REST {params["name"]} creada exitosamente',
+            'message': f'API REST {kwargs.get('name')} creada exitosamente',
             'api_id': response.get('id'),
             'api_name': response.get('name')
         }
 
-    def _delete_rest_api(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_rest_api(self, **kwargs) -> Dict[str, Any]:
         """Elimina una API REST"""
         client = self._get_client()
 
-        client.delete_rest_api(restApiId=params['rest_api_id'])
+        client.delete_rest_api(restApiId=kwargs.get('rest_api_id'))
 
         return {
-            'message': f'API REST {params["rest_api_id"]} eliminada exitosamente'
+            'message': f'API REST {kwargs.get('rest_api_id')} eliminada exitosamente'
         }
 
-    def _get_resources(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_resources(self, **kwargs) -> Dict[str, Any]:
         """Lista recursos de una API"""
         client = self._get_client()
 
-        api_params = {'restApiId': params['rest_api_id']}
-        if 'limit' in params:
-            api_params['limit'] = params['limit']
-        if 'position' in params:
-            api_params['position'] = params['position']
+        api_params = {'restApiId': kwargs.get('rest_api_id')}
+        if kwargs.get('limit'):
+            api_kwargs.get('limit') = kwargs.get('limit')
+        if kwargs.get('position'):
+            api_kwargs.get('position') = kwargs.get('position')
 
         response = client.get_resources(**api_params)
 
@@ -556,46 +556,46 @@ class APIGatewayMCPTools:
             'position': response.get('position')
         }
 
-    def _create_resource(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_resource(self, **kwargs) -> Dict[str, Any]:
         """Crea un recurso en una API"""
         client = self._get_client()
 
         response = client.create_resource(
-            restApiId=params['rest_api_id'],
-            parentId=params['parent_id'],
-            pathPart=params['path_part']
+            restApiId=kwargs.get('rest_api_id'),
+            parentId=kwargs.get('parent_id'),
+            pathPart=kwargs.get('path_part')
         )
 
         return {
-            'message': f'Recurso {params["path_part"]} creado en API {params["rest_api_id"]}',
+            'message': f'Recurso {kwargs.get('path_part')} creado en API {kwargs.get('rest_api_id')}',
             'resource_id': response.get('id'),
             'path': response.get('path')
         }
 
-    def _delete_resource(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_resource(self, **kwargs) -> Dict[str, Any]:
         """Elimina un recurso de una API"""
         client = self._get_client()
 
         client.delete_resource(
-            restApiId=params['rest_api_id'],
-            resourceId=params['resource_id']
+            restApiId=kwargs.get('rest_api_id'),
+            resourceId=kwargs.get('resource_id')
         )
 
         return {
-            'message': f'Recurso {params["resource_id"]} eliminado de API {params["rest_api_id"]}'
+            'message': f'Recurso {kwargs.get('resource_id')} eliminado de API {kwargs.get('rest_api_id')}'
         }
 
-    def _get_method(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_method(self, **kwargs) -> Dict[str, Any]:
         """Obtiene un método de un recurso"""
         client = self._get_client()
 
         api_params = {
-            'restApiId': params['rest_api_id'],
-            'resourceId': params['resource_id'],
-            'httpMethod': params['method']
+            'restApiId': kwargs.get('rest_api_id'),
+            'resourceId': kwargs.get('resource_id'),
+            'httpMethod': kwargs.get('method')
         }
-        if 'position' in params:
-            api_params['position'] = params['position']
+        if kwargs.get('position'):
+            api_kwargs.get('position') = kwargs.get('position')
 
         response = client.get_method(**api_params)
 
@@ -610,153 +610,153 @@ class APIGatewayMCPTools:
             }
         }
 
-    def _put_method(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_method(self, **kwargs) -> Dict[str, Any]:
         """Crea o actualiza un método en un recurso"""
         client = self._get_client()
 
         api_params = {
-            'restApiId': params['rest_api_id'],
-            'resourceId': params['resource_id'],
-            'httpMethod': params['method']
+            'restApiId': kwargs.get('rest_api_id'),
+            'resourceId': kwargs.get('resource_id'),
+            'httpMethod': kwargs.get('method')
         }
 
-        if 'authorization_type' in params:
-            api_params['authorizationType'] = params['authorization_type']
-        if 'api_key_required' in params:
-            api_params['apiKeyRequired'] = params['api_key_required']
-        if 'operation_name' in params:
-            api_params['operationName'] = params['operation_name']
-        if 'request_parameters' in params:
-            api_params['requestParameters'] = params['request_parameters']
-        if 'request_models' in params:
-            api_params['requestModels'] = params['request_models']
+        if kwargs.get('authorization_type'):
+            api_kwargs.get('authorizationType') = kwargs.get('authorization_type')
+        if kwargs.get('api_key_required'):
+            api_kwargs.get('apiKeyRequired') = kwargs.get('api_key_required')
+        if kwargs.get('operation_name'):
+            api_kwargs.get('operationName') = kwargs.get('operation_name')
+        if kwargs.get('request_parameters'):
+            api_kwargs.get('requestParameters') = kwargs.get('request_parameters')
+        if kwargs.get('request_models'):
+            api_kwargs.get('requestModels') = kwargs.get('request_models')
 
         response = client.put_method(**api_params)
 
         return {
-            'message': f'Método {params["method"]} configurado en recurso {params["resource_id"]}',
+            'message': f'Método {kwargs.get('method')} configurado en recurso {kwargs.get('resource_id')}',
             'method': response.get('httpMethod')
         }
 
-    def _put_integration(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_integration(self, **kwargs) -> Dict[str, Any]:
         """Crea o actualiza una integración para un método"""
         client = self._get_client()
 
         api_params = {
-            'restApiId': params['rest_api_id'],
-            'resourceId': params['resource_id'],
-            'httpMethod': params['method'],
-            'type': params['type']
+            'restApiId': kwargs.get('rest_api_id'),
+            'resourceId': kwargs.get('resource_id'),
+            'httpMethod': kwargs.get('method'),
+            'type': kwargs.get('type')
         }
 
-        if 'integration_method' in params:
-            api_params['integrationHttpMethod'] = params['integration_method']
-        if 'uri' in params:
-            api_params['uri'] = params['uri']
-        if 'credentials' in params:
-            api_params['credentials'] = params['credentials']
-        if 'request_parameters' in params:
-            api_params['requestParameters'] = params['request_parameters']
-        if 'request_templates' in params:
-            api_params['requestTemplates'] = params['request_templates']
-        if 'passthrough_behavior' in params:
-            api_params['passthroughBehavior'] = params['passthrough_behavior']
-        if 'content_handling' in params:
-            api_params['contentHandling'] = params['content_handling']
+        if kwargs.get('integration_method'):
+            api_kwargs.get('integrationHttpMethod') = kwargs.get('integration_method')
+        if kwargs.get('uri'):
+            api_kwargs.get('uri') = kwargs.get('uri')
+        if kwargs.get('credentials'):
+            api_kwargs.get('credentials') = kwargs.get('credentials')
+        if kwargs.get('request_parameters'):
+            api_kwargs.get('requestParameters') = kwargs.get('request_parameters')
+        if kwargs.get('request_templates'):
+            api_kwargs.get('requestTemplates') = kwargs.get('request_templates')
+        if kwargs.get('passthrough_behavior'):
+            api_kwargs.get('passthroughBehavior') = kwargs.get('passthrough_behavior')
+        if kwargs.get('content_handling'):
+            api_kwargs.get('contentHandling') = kwargs.get('content_handling')
 
         response = client.put_integration(**api_params)
 
         return {
-            'message': f'Integración configurada para método {params["method"]} en recurso {params["resource_id"]}',
+            'message': f'Integración configurada para método {kwargs.get('method')} en recurso {kwargs.get('resource_id')}',
             'integration_type': response.get('type'),
             'uri': response.get('uri')
         }
 
-    def _put_method_response(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_method_response(self, **kwargs) -> Dict[str, Any]:
         """Crea o actualiza una respuesta de método"""
         client = self._get_client()
 
         api_params = {
-            'restApiId': params['rest_api_id'],
-            'resourceId': params['resource_id'],
-            'httpMethod': params['method'],
-            'statusCode': params['status_code']
+            'restApiId': kwargs.get('rest_api_id'),
+            'resourceId': kwargs.get('resource_id'),
+            'httpMethod': kwargs.get('method'),
+            'statusCode': kwargs.get('status_code')
         }
 
-        if 'response_parameters' in params:
-            api_params['responseParameters'] = params['response_parameters']
-        if 'response_models' in params:
-            api_params['responseModels'] = params['response_models']
+        if kwargs.get('response_parameters'):
+            api_kwargs.get('responseParameters') = kwargs.get('response_parameters')
+        if kwargs.get('response_models'):
+            api_kwargs.get('responseModels') = kwargs.get('response_models')
 
         response = client.put_method_response(**api_params)
 
         return {
-            'message': f'Respuesta de método {params["status_code"]} configurada',
+            'message': f'Respuesta de método {kwargs.get('status_code')} configurada',
             'status_code': response.get('statusCode')
         }
 
-    def _put_integration_response(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_integration_response(self, **kwargs) -> Dict[str, Any]:
         """Crea o actualiza una respuesta de integración"""
         client = self._get_client()
 
         api_params = {
-            'restApiId': params['rest_api_id'],
-            'resourceId': params['resource_id'],
-            'httpMethod': params['method'],
-            'statusCode': params['status_code']
+            'restApiId': kwargs.get('rest_api_id'),
+            'resourceId': kwargs.get('resource_id'),
+            'httpMethod': kwargs.get('method'),
+            'statusCode': kwargs.get('status_code')
         }
 
-        if 'response_parameters' in params:
-            api_params['responseParameters'] = params['response_parameters']
-        if 'response_templates' in params:
-            api_params['responseTemplates'] = params['response_templates']
-        if 'content_handling' in params:
-            api_params['contentHandling'] = params['content_handling']
+        if kwargs.get('response_parameters'):
+            api_kwargs.get('responseParameters') = kwargs.get('response_parameters')
+        if kwargs.get('response_templates'):
+            api_kwargs.get('responseTemplates') = kwargs.get('response_templates')
+        if kwargs.get('content_handling'):
+            api_kwargs.get('contentHandling') = kwargs.get('content_handling')
 
         response = client.put_integration_response(**api_params)
 
         return {
-            'message': f'Respuesta de integración {params["status_code"]} configurada',
+            'message': f'Respuesta de integración {kwargs.get('status_code')} configurada',
             'status_code': response.get('statusCode')
         }
 
-    def _create_deployment(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_deployment(self, **kwargs) -> Dict[str, Any]:
         """Crea un deployment de una API"""
         client = self._get_client()
 
         api_params = {
-            'restApiId': params['rest_api_id'],
-            'stageName': params['stage_name']
+            'restApiId': kwargs.get('rest_api_id'),
+            'stageName': kwargs.get('stage_name')
         }
 
-        if 'stage_description' in params:
-            api_params['stageDescription'] = params['stage_description']
-        if 'description' in params:
-            api_params['description'] = params['description']
-        if 'cache_cluster_enabled' in params:
-            api_params['cacheClusterEnabled'] = params['cache_cluster_enabled']
-        if 'cache_cluster_size' in params:
-            api_params['cacheClusterSize'] = params['cache_cluster_size']
-        if 'variables' in params:
-            api_params['variables'] = params['variables']
-        if 'canary_settings' in params:
-            api_params['canarySettings'] = params['canary_settings']
+        if kwargs.get('stage_description'):
+            api_kwargs.get('stageDescription') = kwargs.get('stage_description')
+        if kwargs.get('description'):
+            api_kwargs.get('description') = kwargs.get('description')
+        if kwargs.get('cache_cluster_enabled'):
+            api_kwargs.get('cacheClusterEnabled') = kwargs.get('cache_cluster_enabled')
+        if kwargs.get('cache_cluster_size'):
+            api_kwargs.get('cacheClusterSize') = kwargs.get('cache_cluster_size')
+        if kwargs.get('variables'):
+            api_kwargs.get('variables') = kwargs.get('variables')
+        if kwargs.get('canary_settings'):
+            api_kwargs.get('canarySettings') = kwargs.get('canary_settings')
 
         response = client.create_deployment(**api_params)
 
         return {
-            'message': f'Deployment creado para API {params["rest_api_id"]} en stage {params["stage_name"]}',
+            'message': f'Deployment creado para API {kwargs.get('rest_api_id')} en stage {kwargs.get('stage_name')}',
             'deployment_id': response.get('id'),
             'description': response.get('description')
         }
 
-    def _get_stages(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_stages(self, **kwargs) -> Dict[str, Any]:
         """Lista stages de una API"""
         client = self._get_client()
 
-        api_params = {'restApiId': params['rest_api_id']}
-        if 'deployment_id' in params:
-            api_params['deploymentId'] = params['deployment_id']
+        api_params = {'restApiId': kwargs.get('rest_api_id')}
+        if kwargs.get('deployment_id'):
+            api_kwargs.get('deploymentId') = kwargs.get('deployment_id')
 
         response = client.get_stages(**api_params)
 
@@ -779,19 +779,19 @@ class APIGatewayMCPTools:
             'total_count': len(stages)
         }
 
-    def _get_api_keys(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_api_keys(self, **kwargs) -> Dict[str, Any]:
         """Lista API keys"""
         client = self._get_client()
 
         api_params = {}
-        if 'limit' in params:
-            api_params['limit'] = params['limit']
-        if 'position' in params:
-            api_params['position'] = params['position']
-        if 'name_query' in params:
-            api_params['nameQuery'] = params['name_query']
-        if 'customer_id' in params:
-            api_params['customerId'] = params['customer_id']
+        if kwargs.get('limit'):
+            api_kwargs.get('limit') = kwargs.get('limit')
+        if kwargs.get('position'):
+            api_kwargs.get('position') = kwargs.get('position')
+        if kwargs.get('name_query'):
+            api_kwargs.get('nameQuery') = kwargs.get('name_query')
+        if kwargs.get('customer_id'):
+            api_kwargs.get('customerId') = kwargs.get('customer_id')
 
         response = client.get_api_keys(**api_params)
 
@@ -815,44 +815,44 @@ class APIGatewayMCPTools:
             'position': response.get('position')
         }
 
-    def _create_api_key(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_api_key(self, **kwargs) -> Dict[str, Any]:
         """Crea una API key"""
         client = self._get_client()
 
-        api_params = {'name': params['name']}
+        api_params = {'name': kwargs.get('name')}
 
-        if 'description' in params:
-            api_params['description'] = params['description']
-        if 'enabled' in params:
-            api_params['enabled'] = params['enabled']
-        if 'generate_distinct_id' in params:
-            api_params['generateDistinctId'] = params['generate_distinct_id']
-        if 'value' in params:
-            api_params['value'] = params['value']
-        if 'stage_keys' in params:
-            api_params['stageKeys'] = params['stage_keys']
-        if 'customer_id' in params:
-            api_params['customerId'] = params['customer_id']
-        if 'tags' in params:
-            api_params['tags'] = params['tags']
+        if kwargs.get('description'):
+            api_kwargs.get('description') = kwargs.get('description')
+        if kwargs.get('enabled'):
+            api_kwargs.get('enabled') = kwargs.get('enabled')
+        if kwargs.get('generate_distinct_id'):
+            api_kwargs.get('generateDistinctId') = kwargs.get('generate_distinct_id')
+        if kwargs.get('value'):
+            api_kwargs.get('value') = kwargs.get('value')
+        if kwargs.get('stage_keys'):
+            api_kwargs.get('stageKeys') = kwargs.get('stage_keys')
+        if kwargs.get('customer_id'):
+            api_kwargs.get('customerId') = kwargs.get('customer_id')
+        if kwargs.get('tags'):
+            api_kwargs.get('tags') = kwargs.get('tags')
 
         response = client.create_api_key(**api_params)
 
         return {
-            'message': f'API key {params["name"]} creada exitosamente',
+            'message': f'API key {kwargs.get('name')} creada exitosamente',
             'api_key_id': response.get('id'),
             'api_key_value': response.get('value')
         }
 
-    def _get_usage_plans(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_usage_plans(self, **kwargs) -> Dict[str, Any]:
         """Lista planes de uso"""
         client = self._get_client()
 
         api_params = {}
-        if 'limit' in params:
-            api_params['limit'] = params['limit']
-        if 'position' in params:
-            api_params['position'] = params['position']
+        if kwargs.get('limit'):
+            api_kwargs.get('limit') = kwargs.get('limit')
+        if kwargs.get('position'):
+            api_kwargs.get('position') = kwargs.get('position')
 
         response = client.get_usage_plans(**api_params)
 
@@ -873,60 +873,60 @@ class APIGatewayMCPTools:
             'position': response.get('position')
         }
 
-    def _create_usage_plan(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_usage_plan(self, **kwargs) -> Dict[str, Any]:
         """Crea un plan de uso"""
         client = self._get_client()
 
-        api_params = {'name': params['name']}
+        api_params = {'name': kwargs.get('name')}
 
-        if 'description' in params:
-            api_params['description'] = params['description']
-        if 'api_stages' in params:
-            api_params['apiStages'] = params['api_stages']
-        if 'throttle' in params:
-            api_params['throttle'] = params['throttle']
-        if 'quota' in params:
-            api_params['quota'] = params['quota']
+        if kwargs.get('description'):
+            api_kwargs.get('description') = kwargs.get('description')
+        if kwargs.get('api_stages'):
+            api_kwargs.get('apiStages') = kwargs.get('api_stages')
+        if kwargs.get('throttle'):
+            api_kwargs.get('throttle') = kwargs.get('throttle')
+        if kwargs.get('quota'):
+            api_kwargs.get('quota') = kwargs.get('quota')
 
         response = client.create_usage_plan(**api_params)
 
         return {
-            'message': f'Plan de uso {params["name"]} creado exitosamente',
+            'message': f'Plan de uso {kwargs.get('name')} creado exitosamente',
             'usage_plan_id': response.get('id'),
             'usage_plan_name': response.get('name')
         }
 
-    def _create_domain_name(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_domain_name(self, **kwargs) -> Dict[str, Any]:
         """Crea un nombre de dominio personalizado"""
         client = self._get_client()
 
-        api_params = {'domainName': params['domain_name']}
+        api_params = {'domainName': kwargs.get('domain_name')}
 
-        if 'certificate_name' in params:
-            api_params['certificateName'] = params['certificate_name']
-        if 'certificate_body' in params:
-            api_params['certificateBody'] = params['certificate_body']
-        if 'certificate_private_key' in params:
-            api_params['certificatePrivateKey'] = params['certificate_private_key']
-        if 'certificate_chain' in params:
-            api_params['certificateChain'] = params['certificate_chain']
-        if 'certificate_arn' in params:
-            api_params['certificateArn'] = params['certificate_arn']
-        if 'regional_certificate_name' in params:
-            api_params['regionalCertificateName'] = params['regional_certificate_name']
-        if 'regional_certificate_arn' in params:
-            api_params['regionalCertificateArn'] = params['regional_certificate_arn']
-        if 'endpoint_configuration' in params:
-            api_params['endpointConfiguration'] = params['endpoint_configuration']
-        if 'tags' in params:
-            api_params['tags'] = params['tags']
-        if 'security_policy' in params:
-            api_params['securityPolicy'] = params['security_policy']
+        if kwargs.get('certificate_name'):
+            api_kwargs.get('certificateName') = kwargs.get('certificate_name')
+        if kwargs.get('certificate_body'):
+            api_kwargs.get('certificateBody') = kwargs.get('certificate_body')
+        if kwargs.get('certificate_private_key'):
+            api_kwargs.get('certificatePrivateKey') = kwargs.get('certificate_private_key')
+        if kwargs.get('certificate_chain'):
+            api_kwargs.get('certificateChain') = kwargs.get('certificate_chain')
+        if kwargs.get('certificate_arn'):
+            api_kwargs.get('certificateArn') = kwargs.get('certificate_arn')
+        if kwargs.get('regional_certificate_name'):
+            api_kwargs.get('regionalCertificateName') = kwargs.get('regional_certificate_name')
+        if kwargs.get('regional_certificate_arn'):
+            api_kwargs.get('regionalCertificateArn') = kwargs.get('regional_certificate_arn')
+        if kwargs.get('endpoint_configuration'):
+            api_kwargs.get('endpointConfiguration') = kwargs.get('endpoint_configuration')
+        if kwargs.get('tags'):
+            api_kwargs.get('tags') = kwargs.get('tags')
+        if kwargs.get('security_policy'):
+            api_kwargs.get('securityPolicy') = kwargs.get('security_policy')
 
         response = client.create_domain_name(**api_params)
 
         return {
-            'message': f'Dominio personalizado {params["domain_name"]} creado exitosamente',
+            'message': f'Dominio personalizado {kwargs.get('domain_name')} creado exitosamente',
             'domain_name': response.get('domainName'),
             'certificate_name': response.get('certificateName'),
             'certificate_arn': response.get('certificateArn'),
@@ -934,24 +934,24 @@ class APIGatewayMCPTools:
             'regional_domain_name': response.get('regionalDomainName')
         }
 
-    def _create_base_path_mapping(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_base_path_mapping(self, **kwargs) -> Dict[str, Any]:
         """Crea un mapeo de ruta base"""
         client = self._get_client()
 
         api_params = {
-            'domainName': params['domain_name'],
-            'restApiId': params['rest_api_id']
+            'domainName': kwargs.get('domain_name'),
+            'restApiId': kwargs.get('rest_api_id')
         }
 
-        if 'base_path' in params:
-            api_params['basePath'] = params['base_path']
-        if 'stage' in params:
-            api_params['stage'] = params['stage']
+        if kwargs.get('base_path'):
+            api_kwargs.get('basePath') = kwargs.get('base_path')
+        if kwargs.get('stage'):
+            api_kwargs.get('stage') = kwargs.get('stage')
 
         response = client.create_base_path_mapping(**api_params)
 
         return {
-            'message': f'Mapeo de ruta base creado para dominio {params["domain_name"]}',
+            'message': f'Mapeo de ruta base creado para dominio {kwargs.get('domain_name')}',
             'base_path': response.get('basePath'),
             'rest_api_id': response.get('restApiId'),
             'stage': response.get('stage')

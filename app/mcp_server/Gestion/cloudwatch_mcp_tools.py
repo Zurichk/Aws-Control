@@ -310,94 +310,94 @@ class CloudWatchMCPTools:
         """Ejecuta una herramienta específica de CloudWatch"""
         try:
             if tool_name == 'cloudwatch_put_metric_alarm':
-                return self._put_metric_alarm(parameters)
+                return self._put_metric_alarm(**parameters)
             elif tool_name == 'cloudwatch_delete_alarms':
-                return self._delete_alarms(parameters)
+                return self._delete_alarms(**parameters)
             elif tool_name == 'cloudwatch_describe_alarms':
-                return self._describe_alarms(parameters)
+                return self._describe_alarms(**parameters)
             elif tool_name == 'cloudwatch_put_metric_data':
-                return self._put_metric_data(parameters)
+                return self._put_metric_data(**parameters)
             elif tool_name == 'cloudwatch_get_metric_statistics':
-                return self._get_metric_statistics(parameters)
+                return self._get_metric_statistics(**parameters)
             elif tool_name == 'cloudwatch_list_metrics':
-                return self._list_metrics(parameters)
+                return self._list_metrics(**parameters)
             elif tool_name == 'cloudwatch_create_log_group':
-                return self._create_log_group(parameters)
+                return self._create_log_group(**parameters)
             elif tool_name == 'cloudwatch_delete_log_group':
-                return self._delete_log_group(parameters)
+                return self._delete_log_group(**parameters)
             elif tool_name == 'cloudwatch_describe_log_groups':
-                return self._describe_log_groups(parameters)
+                return self._describe_log_groups(**parameters)
             elif tool_name == 'cloudwatch_create_log_stream':
-                return self._create_log_stream(parameters)
+                return self._create_log_stream(**parameters)
             elif tool_name == 'cloudwatch_put_log_events':
-                return self._put_log_events(parameters)
+                return self._put_log_events(**parameters)
             elif tool_name == 'cloudwatch_get_log_events':
-                return self._get_log_events(parameters)
+                return self._get_log_events(**parameters)
             elif tool_name == 'cloudwatch_put_dashboard':
-                return self._put_dashboard(parameters)
+                return self._put_dashboard(**parameters)
             elif tool_name == 'cloudwatch_get_dashboard':
-                return self._get_dashboard(parameters)
+                return self._get_dashboard(**parameters)
             elif tool_name == 'cloudwatch_list_dashboards':
-                return self._list_dashboards(parameters)
+                return self._list_dashboards(**parameters)
             elif tool_name == 'cloudwatch_delete_dashboard':
-                return self._delete_dashboard(parameters)
+                return self._delete_dashboard(**parameters)
             else:
                 return {'error': f'Herramienta CloudWatch no encontrada: {tool_name}'}
 
         except Exception as e:
             return {'error': f'Error ejecutando herramienta CloudWatch {tool_name}: {str(e)}'}
 
-    def _put_metric_alarm(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_metric_alarm(self, **kwargs) -> Dict[str, Any]:
         """Crear una nueva alarma métrica en CloudWatch"""
         client = self._get_cw_client()
 
         api_params = {
-            'AlarmName': params['alarm_name'],
-            'MetricName': params['metric_name'],
-            'Namespace': params['namespace'],
-            'Statistic': params['statistic'],
-            'ComparisonOperator': params['comparison_operator'],
-            'Threshold': params['threshold'],
-            'Period': params.get('period', 300),
-            'EvaluationPeriods': params.get('evaluation_periods', 2)
+            'AlarmName': kwargs.get('alarm_name'),
+            'MetricName': kwargs.get('metric_name'),
+            'Namespace': kwargs.get('namespace'),
+            'Statistic': kwargs.get('statistic'),
+            'ComparisonOperator': kwargs.get('comparison_operator'),
+            'Threshold': kwargs.get('threshold'),
+            'Period': kwargs.get('period', 300),
+            'EvaluationPeriods': kwargs.get('evaluation_periods', 2)
         }
 
-        if 'alarm_description' in params:
-            api_params['AlarmDescription'] = params['alarm_description']
-        if 'alarm_actions' in params:
-            api_params['AlarmActions'] = params['alarm_actions']
-        if 'ok_actions' in params:
-            api_params['OKActions'] = params['ok_actions']
+        if kwargs.get('alarm_description'):
+            api_kwargs.get('AlarmDescription') = kwargs.get('alarm_description')
+        if kwargs.get('alarm_actions'):
+            api_kwargs.get('AlarmActions') = kwargs.get('alarm_actions')
+        if kwargs.get('ok_actions'):
+            api_kwargs.get('OKActions') = kwargs.get('ok_actions')
 
         client.put_metric_alarm(**api_params)
 
         return {
-            'message': f'Alarma métrica {params["alarm_name"]} creada exitosamente'
+            'message': f'Alarma métrica {kwargs.get('alarm_name')} creada exitosamente'
         }
 
-    def _delete_alarms(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_alarms(self, **kwargs) -> Dict[str, Any]:
         """Eliminar alarmas de CloudWatch"""
         client = self._get_cw_client()
 
-        client.delete_alarms(AlarmNames=params['alarm_names'])
+        client.delete_alarms(AlarmNames=kwargs.get('alarm_names'))
 
         return {
-            'message': f'Alarmas eliminadas exitosamente: {", ".join(params["alarm_names"])}'
+            'message': f'Alarmas eliminadas exitosamente: {", ".join(kwargs.get('alarm_names'))}'
         }
 
-    def _describe_alarms(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_alarms(self, **kwargs) -> Dict[str, Any]:
         """Describir alarmas de CloudWatch"""
         client = self._get_cw_client()
 
         api_params = {}
-        if 'alarm_names' in params:
-            api_params['AlarmNames'] = params['alarm_names']
-        if 'alarm_name_prefix' in params:
-            api_params['AlarmNamePrefix'] = params['alarm_name_prefix']
-        if 'state_value' in params:
-            api_params['StateValue'] = params['state_value']
-        if 'max_records' in params:
-            api_params['MaxRecords'] = params.get('max_records', 100)
+        if kwargs.get('alarm_names'):
+            api_kwargs.get('AlarmNames') = kwargs.get('alarm_names')
+        if kwargs.get('alarm_name_prefix'):
+            api_kwargs.get('AlarmNamePrefix') = kwargs.get('alarm_name_prefix')
+        if kwargs.get('state_value'):
+            api_kwargs.get('StateValue') = kwargs.get('state_value')
+        if kwargs.get('max_records'):
+            api_kwargs.get('MaxRecords') = kwargs.get('max_records', 100)
 
         response = client.describe_alarms(**api_params)
 
@@ -421,12 +421,12 @@ class CloudWatchMCPTools:
             'total_count': len(alarms)
         }
 
-    def _put_metric_data(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_metric_data(self, **kwargs) -> Dict[str, Any]:
         """Enviar datos métricos personalizados a CloudWatch"""
         client = self._get_cw_client()
 
         metric_data = []
-        for data in params['metric_data']:
+        for data in kwargs.get('metric_data'):
             metric = {
                 'MetricName': data['metric_name'],
                 'Value': data['value']
@@ -443,30 +443,30 @@ class CloudWatchMCPTools:
             metric_data.append(metric)
 
         client.put_metric_data(
-            Namespace=params['namespace'],
+            Namespace=kwargs.get('namespace'),
             MetricData=metric_data
         )
 
         return {
-            'message': f'Datos métricos enviados exitosamente al namespace {params["namespace"]}',
+            'message': f'Datos métricos enviados exitosamente al namespace {kwargs.get('namespace')}',
             'metrics_count': len(metric_data)
         }
 
-    def _get_metric_statistics(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_metric_statistics(self, **kwargs) -> Dict[str, Any]:
         """Obtener estadísticas de una métrica específica"""
         client = self._get_cw_client()
 
         api_params = {
-            'Namespace': params['namespace'],
-            'MetricName': params['metric_name'],
-            'StartTime': params['start_time'],
-            'EndTime': params['end_time'],
-            'Period': params.get('period', 300),
-            'Statistics': params['statistics']
+            'Namespace': kwargs.get('namespace'),
+            'MetricName': kwargs.get('metric_name'),
+            'StartTime': kwargs.get('start_time'),
+            'EndTime': kwargs.get('end_time'),
+            'Period': kwargs.get('period', 300),
+            'Statistics': kwargs.get('statistics')
         }
 
-        if 'dimensions' in params:
-            api_params['Dimensions'] = [{'Name': d['name'], 'Value': d['value']} for d in params['dimensions']]
+        if kwargs.get('dimensions'):
+            api_kwargs.get('Dimensions') = [{'Name': d['name'], 'Value': d['value']} for d in kwargs.get('dimensions')]
 
         response = client.get_metric_statistics(**api_params)
 
@@ -488,22 +488,22 @@ class CloudWatchMCPTools:
             'total_datapoints': len(datapoints)
         }
 
-    def _list_metrics(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_metrics(self, **kwargs) -> Dict[str, Any]:
         """Listar métricas disponibles en CloudWatch"""
         client = self._get_cw_client()
 
         api_params = {}
-        if 'namespace' in params:
-            api_params['Namespace'] = params['namespace']
-        if 'metric_name' in params:
-            api_params['MetricName'] = params['metric_name']
-        if 'dimensions' in params:
-            api_params['Dimensions'] = [{'Name': d['name'], 'Value': d['value']} for d in params['dimensions']]
+        if kwargs.get('namespace'):
+            api_kwargs.get('Namespace') = kwargs.get('namespace')
+        if kwargs.get('metric_name'):
+            api_kwargs.get('MetricName') = kwargs.get('metric_name')
+        if kwargs.get('dimensions'):
+            api_kwargs.get('Dimensions') = [{'Name': d['name'], 'Value': d['value']} for d in kwargs.get('dimensions')]
 
         response = client.list_metrics(**api_params)
 
         metrics = []
-        max_records = params.get('max_records', 500)
+        max_records = kwargs.get('max_records', 500)
         for metric in response.get('Metrics', [])[:max_records]:
             metrics.append({
                 'namespace': metric.get('Namespace'),
@@ -517,42 +517,42 @@ class CloudWatchMCPTools:
             'truncated': len(response.get('Metrics', [])) > max_records
         }
 
-    def _create_log_group(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_log_group(self, **kwargs) -> Dict[str, Any]:
         """Crear un grupo de logs en CloudWatch Logs"""
         client = self._get_logs_client()
 
-        api_params = {'logGroupName': params['log_group_name']}
+        api_params = {'logGroupName': kwargs.get('log_group_name')}
 
-        if 'kms_key_id' in params:
-            api_params['kmsKeyId'] = params['kms_key_id']
-        if 'tags' in params:
-            api_params['tags'] = params['tags']
+        if kwargs.get('kms_key_id'):
+            api_kwargs.get('kmsKeyId') = kwargs.get('kms_key_id')
+        if kwargs.get('tags'):
+            api_kwargs.get('tags') = kwargs.get('tags')
 
         client.create_log_group(**api_params)
 
         return {
-            'message': f'Grupo de logs {params["log_group_name"]} creado exitosamente'
+            'message': f'Grupo de logs {kwargs.get('log_group_name')} creado exitosamente'
         }
 
-    def _delete_log_group(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_log_group(self, **kwargs) -> Dict[str, Any]:
         """Eliminar un grupo de logs"""
         client = self._get_logs_client()
 
-        client.delete_log_group(logGroupName=params['log_group_name'])
+        client.delete_log_group(logGroupName=kwargs.get('log_group_name'))
 
         return {
-            'message': f'Grupo de logs {params["log_group_name"]} eliminado exitosamente'
+            'message': f'Grupo de logs {kwargs.get('log_group_name')} eliminado exitosamente'
         }
 
-    def _describe_log_groups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_log_groups(self, **kwargs) -> Dict[str, Any]:
         """Describir grupos de logs"""
         client = self._get_logs_client()
 
         api_params = {}
-        if 'log_group_name_prefix' in params:
-            api_params['logGroupNamePrefix'] = params['log_group_name_prefix']
-        if 'max_results' in params:
-            api_params['maxResults'] = params.get('max_results', 50)
+        if kwargs.get('log_group_name_prefix'):
+            api_kwargs.get('logGroupNamePrefix') = kwargs.get('log_group_name_prefix')
+        if kwargs.get('max_results'):
+            api_kwargs.get('maxResults') = kwargs.get('max_results', 50)
 
         response = client.describe_log_groups(**api_params)
 
@@ -572,33 +572,33 @@ class CloudWatchMCPTools:
             'total_count': len(log_groups)
         }
 
-    def _create_log_stream(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_log_stream(self, **kwargs) -> Dict[str, Any]:
         """Crear un stream de logs en un grupo"""
         client = self._get_logs_client()
 
         client.create_log_stream(
-            logGroupName=params['log_group_name'],
-            logStreamName=params['log_stream_name']
+            logGroupName=kwargs.get('log_group_name'),
+            logStreamName=kwargs.get('log_stream_name')
         )
 
         return {
-            'message': f'Stream de logs {params["log_stream_name"]} creado en grupo {params["log_group_name"]}'
+            'message': f'Stream de logs {kwargs.get('log_stream_name')} creado en grupo {kwargs.get('log_group_name')}'
         }
 
-    def _put_log_events(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_log_events(self, **kwargs) -> Dict[str, Any]:
         """Enviar eventos de log a un stream"""
         client = self._get_logs_client()
 
-        log_events = [{'timestamp': event['timestamp'], 'message': event['message']} for event in params['log_events']]
+        log_events = [{'timestamp': event['timestamp'], 'message': event['message']} for event in kwargs.get('log_events')]
 
         api_params = {
-            'logGroupName': params['log_group_name'],
-            'logStreamName': params['log_stream_name'],
+            'logGroupName': kwargs.get('log_group_name'),
+            'logStreamName': kwargs.get('log_stream_name'),
             'logEvents': log_events
         }
 
-        if 'sequence_token' in params:
-            api_params['sequenceToken'] = params['sequence_token']
+        if kwargs.get('sequence_token'):
+            api_kwargs.get('sequenceToken') = kwargs.get('sequence_token')
 
         response = client.put_log_events(**api_params)
 
@@ -607,23 +607,23 @@ class CloudWatchMCPTools:
             'next_sequence_token': response.get('nextSequenceToken')
         }
 
-    def _get_log_events(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_log_events(self, **kwargs) -> Dict[str, Any]:
         """Obtener eventos de log de un stream"""
         client = self._get_logs_client()
 
         api_params = {
-            'logGroupName': params['log_group_name'],
-            'logStreamName': params['log_stream_name']
+            'logGroupName': kwargs.get('log_group_name'),
+            'logStreamName': kwargs.get('log_stream_name')
         }
 
-        if 'start_time' in params:
-            api_params['startTime'] = params['start_time']
-        if 'end_time' in params:
-            api_params['endTime'] = params['end_time']
-        if 'start_from_head' in params:
-            api_params['startFromHead'] = params.get('start_from_head', True)
-        if 'limit' in params:
-            api_params['limit'] = params.get('limit', 100)
+        if kwargs.get('start_time'):
+            api_kwargs.get('startTime') = kwargs.get('start_time')
+        if kwargs.get('end_time'):
+            api_kwargs.get('endTime') = kwargs.get('end_time')
+        if kwargs.get('start_from_head'):
+            api_kwargs.get('startFromHead') = kwargs.get('start_from_head', True)
+        if kwargs.get('limit'):
+            api_kwargs.get('limit') = kwargs.get('limit', 100)
 
         response = client.get_log_events(**api_params)
 
@@ -642,24 +642,24 @@ class CloudWatchMCPTools:
             'next_backward_token': response.get('nextBackwardToken')
         }
 
-    def _put_dashboard(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _put_dashboard(self, **kwargs) -> Dict[str, Any]:
         """Crear o actualizar un dashboard"""
         client = self._get_cw_client()
 
         client.put_dashboard(
-            DashboardName=params['dashboard_name'],
-            DashboardBody=params['dashboard_body']
+            DashboardName=kwargs.get('dashboard_name'),
+            DashboardBody=kwargs.get('dashboard_body')
         )
 
         return {
-            'message': f'Dashboard {params["dashboard_name"]} creado/actualizado exitosamente'
+            'message': f'Dashboard {kwargs.get('dashboard_name')} creado/actualizado exitosamente'
         }
 
-    def _get_dashboard(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_dashboard(self, **kwargs) -> Dict[str, Any]:
         """Obtener un dashboard"""
         client = self._get_cw_client()
 
-        response = client.get_dashboard(DashboardName=params['dashboard_name'])
+        response = client.get_dashboard(DashboardName=kwargs.get('dashboard_name'))
 
         return {
             'dashboard_name': response.get('DashboardName'),
@@ -667,15 +667,15 @@ class CloudWatchMCPTools:
             'dashboard_body': response.get('DashboardBody')
         }
 
-    def _list_dashboards(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_dashboards(self, **kwargs) -> Dict[str, Any]:
         """Listar dashboards"""
         client = self._get_cw_client()
 
         api_params = {}
-        if 'dashboard_name_prefix' in params:
-            api_params['DashboardNamePrefix'] = params['dashboard_name_prefix']
-        if 'max_records' in params:
-            api_params['MaxRecords'] = params.get('max_records', 100)
+        if kwargs.get('dashboard_name_prefix'):
+            api_kwargs.get('DashboardNamePrefix') = kwargs.get('dashboard_name_prefix')
+        if kwargs.get('max_records'):
+            api_kwargs.get('MaxRecords') = kwargs.get('max_records', 100)
 
         response = client.list_dashboards(**api_params)
 
@@ -693,14 +693,14 @@ class CloudWatchMCPTools:
             'total_count': len(dashboards)
         }
 
-    def _delete_dashboard(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_dashboard(self, **kwargs) -> Dict[str, Any]:
         """Eliminar un dashboard"""
         client = self._get_cw_client()
 
-        client.delete_dashboards(DashboardNames=[params['dashboard_name']])
+        client.delete_dashboards(DashboardNames=[kwargs.get('dashboard_name')])
 
         return {
-            'message': f'Dashboard {params["dashboard_name"]} eliminado exitosamente'
+            'message': f'Dashboard {kwargs.get('dashboard_name')} eliminado exitosamente'
         }
 
 

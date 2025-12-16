@@ -308,56 +308,56 @@ class LambdaMCPTools:
         """Ejecuta una herramienta específica de Lambda"""
         try:
             if tool_name == 'lambda_list_functions':
-                return self._list_functions(parameters)
+                return self._list_functions(**parameters)
             elif tool_name == 'lambda_get_function':
-                return self._get_function(parameters)
+                return self._get_function(**parameters)
             elif tool_name == 'lambda_create_function':
-                return self._create_function(parameters)
+                return self._create_function(**parameters)
             elif tool_name == 'lambda_update_function_code':
-                return self._update_function_code(parameters)
+                return self._update_function_code(**parameters)
             elif tool_name == 'lambda_update_function_configuration':
-                return self._update_function_configuration(parameters)
+                return self._update_function_configuration(**parameters)
             elif tool_name == 'lambda_invoke_function':
-                return self._invoke_function(parameters)
+                return self._invoke_function(**parameters)
             elif tool_name == 'lambda_delete_function':
-                return self._delete_function(parameters)
+                return self._delete_function(**parameters)
             elif tool_name == 'lambda_publish_version':
-                return self._publish_version(parameters)
+                return self._publish_version(**parameters)
             elif tool_name == 'lambda_list_versions_by_function':
-                return self._list_versions_by_function(parameters)
+                return self._list_versions_by_function(**parameters)
             elif tool_name == 'lambda_create_alias':
-                return self._create_alias(parameters)
+                return self._create_alias(**parameters)
             elif tool_name == 'lambda_list_aliases':
-                return self._list_aliases(parameters)
+                return self._list_aliases(**parameters)
             elif tool_name == 'lambda_list_event_source_mappings':
-                return self._list_event_source_mappings(parameters)
+                return self._list_event_source_mappings(**parameters)
             elif tool_name == 'lambda_create_event_source_mapping':
-                return self._create_event_source_mapping(parameters)
+                return self._create_event_source_mapping(**parameters)
             elif tool_name == 'lambda_delete_event_source_mapping':
-                return self._delete_event_source_mapping(parameters)
+                return self._delete_event_source_mapping(**parameters)
             elif tool_name == 'lambda_get_function_configuration':
-                return self._get_function_configuration(parameters)
+                return self._get_function_configuration(**parameters)
             elif tool_name == 'lambda_list_layers':
-                return self._list_layers(parameters)
+                return self._list_layers(**parameters)
             elif tool_name == 'lambda_publish_layer_version':
-                return self._publish_layer_version(parameters)
+                return self._publish_layer_version(**parameters)
             else:
                 return {'error': f'Herramienta Lambda no encontrada: {tool_name}'}
 
         except Exception as e:
             return {'error': f'Error ejecutando herramienta Lambda {tool_name}: {str(e)}'}
 
-    def _list_functions(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_functions(self, **kwargs) -> Dict[str, Any]:
         """Lista funciones Lambda"""
         client = self._get_client()
 
         lambda_params = {}
-        if 'function_version' in params:
-            lambda_params['FunctionVersion'] = params['function_version']
-        if 'marker' in params:
-            lambda_params['Marker'] = params['marker']
-        if 'max_items' in params:
-            lambda_params['MaxItems'] = params['max_items']
+        if kwargs.get('function_version'):
+            lambda_kwargs.get('FunctionVersion') = kwargs.get('function_version')
+        if kwargs.get('marker'):
+            lambda_kwargs.get('Marker') = kwargs.get('marker')
+        if kwargs.get('max_items'):
+            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_functions(**lambda_params)
 
@@ -389,13 +389,13 @@ class LambdaMCPTools:
             'next_marker': response.get('NextMarker')
         }
 
-    def _get_function(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_function(self, **kwargs) -> Dict[str, Any]:
         """Obtiene detalles completos de una función"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
-        if 'qualifier' in params:
-            lambda_params['Qualifier'] = params['qualifier']
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
+        if kwargs.get('qualifier'):
+            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
 
         response = client.get_function(**lambda_params)
 
@@ -432,39 +432,39 @@ class LambdaMCPTools:
             }
         }
 
-    def _create_function(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_function(self, **kwargs) -> Dict[str, Any]:
         """Crea una nueva función Lambda"""
         client = self._get_client()
 
         lambda_params = {
-            'FunctionName': params['function_name'],
-            'Runtime': params['runtime'],
-            'Role': params['role'],
-            'Handler': params['handler'],
-            'Code': self._prepare_code(params['code'])
+            'FunctionName': kwargs.get('function_name'),
+            'Runtime': kwargs.get('runtime'),
+            'Role': kwargs.get('role'),
+            'Handler': kwargs.get('handler'),
+            'Code': self._prepare_code(kwargs.get('code'))
         }
 
-        if 'description' in params:
-            lambda_params['Description'] = params['description']
-        if 'timeout' in params:
-            lambda_params['Timeout'] = params['timeout']
-        if 'memory_size' in params:
-            lambda_params['MemorySize'] = params['memory_size']
-        if 'environment' in params:
-            lambda_params['Environment'] = {'Variables': params['environment']}
-        if 'vpc_config' in params:
-            lambda_params['VpcConfig'] = {
-                'SubnetIds': params['vpc_config'].get('subnet_ids', []),
-                'SecurityGroupIds': params['vpc_config'].get('security_group_ids', [])
+        if kwargs.get('description'):
+            lambda_kwargs.get('Description') = kwargs.get('description')
+        if kwargs.get('timeout'):
+            lambda_kwargs.get('Timeout') = kwargs.get('timeout')
+        if kwargs.get('memory_size'):
+            lambda_kwargs.get('MemorySize') = kwargs.get('memory_size')
+        if kwargs.get('environment'):
+            lambda_kwargs.get('Environment') = {'Variables': kwargs.get('environment')}
+        if kwargs.get('vpc_config'):
+            lambda_kwargs.get('VpcConfig') = {
+                'SubnetIds': kwargs.get('vpc_config').get('subnet_ids', []),
+                'SecurityGroupIds': kwargs.get('vpc_config').get('security_group_ids', [])
             }
-        if 'tags' in params:
-            lambda_params['Tags'] = params['tags']
+        if kwargs.get('tags'):
+            lambda_kwargs.get('Tags') = kwargs.get('tags')
 
         response = client.create_function(**lambda_params)
 
         return {
-            'message': f'Función Lambda {params["function_name"]} creada exitosamente',
-            'function_name': params['function_name'],
+            'message': f'Función Lambda {kwargs.get('function_name')} creada exitosamente',
+            'function_name': kwargs.get('function_name'),
             'function_arn': response['FunctionArn'],
             'version': response['Version'],
             'code_sha256': response['CodeSha256']
@@ -486,85 +486,85 @@ class LambdaMCPTools:
         else:
             raise ValueError('Se debe proporcionar zip_file o configuración S3')
 
-    def _update_function_code(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _update_function_code(self, **kwargs) -> Dict[str, Any]:
         """Actualiza el código de una función"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
 
-        if 'zip_file' in params:
+        if kwargs.get('zip_file'):
             import base64
-            lambda_params['ZipFile'] = base64.b64decode(params['zip_file'])
-        elif 's3_bucket' in params and 's3_key' in params:
-            lambda_params['S3Bucket'] = params['s3_bucket']
-            lambda_params['S3Key'] = params['s3_key']
-            if 's3_object_version' in params:
-                lambda_params['S3ObjectVersion'] = params['s3_object_version']
+            lambda_kwargs.get('ZipFile') = base64.b64decode(kwargs.get('zip_file'))
+        elif kwargs.get('s3_bucket') and kwargs.get('s3_key'):
+            lambda_kwargs.get('S3Bucket') = kwargs.get('s3_bucket')
+            lambda_kwargs.get('S3Key') = kwargs.get('s3_key')
+            if kwargs.get('s3_object_version'):
+                lambda_kwargs.get('S3ObjectVersion') = kwargs.get('s3_object_version')
 
-        if 'architectures' in params:
-            lambda_params['Architectures'] = params['architectures']
+        if kwargs.get('architectures'):
+            lambda_kwargs.get('Architectures') = kwargs.get('architectures')
 
         response = client.update_function_code(**lambda_params)
 
         return {
-            'message': f'Código de función {params["function_name"]} actualizado',
-            'function_name': params['function_name'],
+            'message': f'Código de función {kwargs.get('function_name')} actualizado',
+            'function_name': kwargs.get('function_name'),
             'version': response['Version'],
             'code_sha256': response['CodeSha256'],
             'last_modified': response['LastModified']
         }
 
-    def _update_function_configuration(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _update_function_configuration(self, **kwargs) -> Dict[str, Any]:
         """Actualiza la configuración de una función"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
 
-        if 'description' in params:
-            lambda_params['Description'] = params['description']
-        if 'role' in params:
-            lambda_params['Role'] = params['role']
-        if 'handler' in params:
-            lambda_params['Handler'] = params['handler']
-        if 'timeout' in params:
-            lambda_params['Timeout'] = params['timeout']
-        if 'memory_size' in params:
-            lambda_params['MemorySize'] = params['memory_size']
-        if 'environment' in params:
-            lambda_params['Environment'] = {'Variables': params['environment']}
-        if 'vpc_config' in params:
-            lambda_params['VpcConfig'] = {
-                'SubnetIds': params['vpc_config'].get('subnet_ids', []),
-                'SecurityGroupIds': params['vpc_config'].get('security_group_ids', [])
+        if kwargs.get('description'):
+            lambda_kwargs.get('Description') = kwargs.get('description')
+        if kwargs.get('role'):
+            lambda_kwargs.get('Role') = kwargs.get('role')
+        if kwargs.get('handler'):
+            lambda_kwargs.get('Handler') = kwargs.get('handler')
+        if kwargs.get('timeout'):
+            lambda_kwargs.get('Timeout') = kwargs.get('timeout')
+        if kwargs.get('memory_size'):
+            lambda_kwargs.get('MemorySize') = kwargs.get('memory_size')
+        if kwargs.get('environment'):
+            lambda_kwargs.get('Environment') = {'Variables': kwargs.get('environment')}
+        if kwargs.get('vpc_config'):
+            lambda_kwargs.get('VpcConfig') = {
+                'SubnetIds': kwargs.get('vpc_config').get('subnet_ids', []),
+                'SecurityGroupIds': kwargs.get('vpc_config').get('security_group_ids', [])
             }
 
         response = client.update_function_configuration(**lambda_params)
 
         return {
-            'message': f'Configuración de función {params["function_name"]} actualizada',
-            'function_name': params['function_name'],
+            'message': f'Configuración de función {kwargs.get('function_name')} actualizada',
+            'function_name': kwargs.get('function_name'),
             'version': response['Version'],
             'last_modified': response['LastModified']
         }
 
-    def _invoke_function(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _invoke_function(self, **kwargs) -> Dict[str, Any]:
         """Invoca una función Lambda"""
         client = self._get_client()
 
         lambda_params = {
-            'FunctionName': params['function_name'],
-            'InvocationType': params.get('invocation_type', 'RequestResponse')
+            'FunctionName': kwargs.get('function_name'),
+            'InvocationType': kwargs.get('invocation_type', 'RequestResponse')
         }
 
-        if 'payload' in params:
-            lambda_params['Payload'] = params['payload']
-        if 'qualifier' in params:
-            lambda_params['Qualifier'] = params['qualifier']
+        if kwargs.get('payload'):
+            lambda_kwargs.get('Payload') = kwargs.get('payload')
+        if kwargs.get('qualifier'):
+            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
 
         response = client.invoke(**lambda_params)
 
         result = {
-            'function_name': params['function_name'],
+            'function_name': kwargs.get('function_name'),
             'status_code': response['StatusCode'],
             'executed_version': response.get('ExecutedVersion'),
             'payload': response['Payload'].read().decode('utf-8') if response.get('Payload') else None
@@ -576,52 +576,52 @@ class LambdaMCPTools:
 
         return result
 
-    def _delete_function(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_function(self, **kwargs) -> Dict[str, Any]:
         """Elimina una función Lambda"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
-        if 'qualifier' in params:
-            lambda_params['Qualifier'] = params['qualifier']
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
+        if kwargs.get('qualifier'):
+            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
 
         client.delete_function(**lambda_params)
 
         return {
-            'message': f'Función Lambda {params["function_name"]} eliminada exitosamente',
-            'function_name': params['function_name']
+            'message': f'Función Lambda {kwargs.get('function_name')} eliminada exitosamente',
+            'function_name': kwargs.get('function_name')
         }
 
-    def _publish_version(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _publish_version(self, **kwargs) -> Dict[str, Any]:
         """Publica una nueva versión de función"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
 
-        if 'code_sha256' in params:
-            lambda_params['CodeSha256'] = params['code_sha256']
-        if 'description' in params:
-            lambda_params['Description'] = params['description']
+        if kwargs.get('code_sha256'):
+            lambda_kwargs.get('CodeSha256') = kwargs.get('code_sha256')
+        if kwargs.get('description'):
+            lambda_kwargs.get('Description') = kwargs.get('description')
 
         response = client.publish_version(**lambda_params)
 
         return {
-            'message': f'Versión {response["Version"]} publicada para función {params["function_name"]}',
-            'function_name': params['function_name'],
+            'message': f'Versión {response["Version"]} publicada para función {kwargs.get('function_name')}',
+            'function_name': kwargs.get('function_name'),
             'version': response['Version'],
             'code_sha256': response['CodeSha256'],
             'description': response.get('Description')
         }
 
-    def _list_versions_by_function(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_versions_by_function(self, **kwargs) -> Dict[str, Any]:
         """Lista versiones de una función"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
 
-        if 'marker' in params:
-            lambda_params['Marker'] = params['marker']
-        if 'max_items' in params:
-            lambda_params['MaxItems'] = params['max_items']
+        if kwargs.get('marker'):
+            lambda_kwargs.get('Marker') = kwargs.get('marker')
+        if kwargs.get('max_items'):
+            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_versions_by_function(**lambda_params)
 
@@ -635,47 +635,47 @@ class LambdaMCPTools:
             })
 
         return {
-            'function_name': params['function_name'],
+            'function_name': kwargs.get('function_name'),
             'versions': versions,
             'total_count': len(versions),
             'next_marker': response.get('NextMarker')
         }
 
-    def _create_alias(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_alias(self, **kwargs) -> Dict[str, Any]:
         """Crea un alias para una función"""
         client = self._get_client()
 
         lambda_params = {
-            'FunctionName': params['function_name'],
-            'Name': params['name'],
-            'FunctionVersion': params['function_version']
+            'FunctionName': kwargs.get('function_name'),
+            'Name': kwargs.get('name'),
+            'FunctionVersion': kwargs.get('function_version')
         }
 
-        if 'description' in params:
-            lambda_params['Description'] = params['description']
+        if kwargs.get('description'):
+            lambda_kwargs.get('Description') = kwargs.get('description')
 
         response = client.create_alias(**lambda_params)
 
         return {
-            'message': f'Alias {params["name"]} creado para función {params["function_name"]}',
-            'function_name': params['function_name'],
-            'alias_name': params['name'],
+            'message': f'Alias {kwargs.get('name')} creado para función {kwargs.get('function_name')}',
+            'function_name': kwargs.get('function_name'),
+            'alias_name': kwargs.get('name'),
             'alias_arn': response['AliasArn'],
             'function_version': response['FunctionVersion']
         }
 
-    def _list_aliases(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_aliases(self, **kwargs) -> Dict[str, Any]:
         """Lista aliases de una función"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
 
-        if 'function_version' in params:
-            lambda_params['FunctionVersion'] = params['function_version']
-        if 'marker' in params:
-            lambda_params['Marker'] = params['marker']
-        if 'max_items' in params:
-            lambda_params['MaxItems'] = params['max_items']
+        if kwargs.get('function_version'):
+            lambda_kwargs.get('FunctionVersion') = kwargs.get('function_version')
+        if kwargs.get('marker'):
+            lambda_kwargs.get('Marker') = kwargs.get('marker')
+        if kwargs.get('max_items'):
+            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_aliases(**lambda_params)
 
@@ -689,25 +689,25 @@ class LambdaMCPTools:
             })
 
         return {
-            'function_name': params['function_name'],
+            'function_name': kwargs.get('function_name'),
             'aliases': aliases,
             'total_count': len(aliases),
             'next_marker': response.get('NextMarker')
         }
 
-    def _list_event_source_mappings(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_event_source_mappings(self, **kwargs) -> Dict[str, Any]:
         """Lista mapeos de fuentes de eventos"""
         client = self._get_client()
 
         lambda_params = {}
-        if 'event_source_arn' in params:
-            lambda_params['EventSourceArn'] = params['event_source_arn']
-        if 'function_name' in params:
-            lambda_params['FunctionName'] = params['function_name']
-        if 'marker' in params:
-            lambda_params['Marker'] = params['marker']
-        if 'max_items' in params:
-            lambda_params['MaxItems'] = params['max_items']
+        if kwargs.get('event_source_arn'):
+            lambda_kwargs.get('EventSourceArn') = kwargs.get('event_source_arn')
+        if kwargs.get('function_name'):
+            lambda_kwargs.get('FunctionName') = kwargs.get('function_name')
+        if kwargs.get('marker'):
+            lambda_kwargs.get('Marker') = kwargs.get('marker')
+        if kwargs.get('max_items'):
+            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_event_source_mappings(**lambda_params)
 
@@ -731,52 +731,52 @@ class LambdaMCPTools:
             'next_marker': response.get('NextMarker')
         }
 
-    def _create_event_source_mapping(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_event_source_mapping(self, **kwargs) -> Dict[str, Any]:
         """Crea un mapeo de fuente de eventos"""
         client = self._get_client()
 
         lambda_params = {
-            'FunctionName': params['function_name'],
-            'EventSourceArn': params['event_source_arn']
+            'FunctionName': kwargs.get('function_name'),
+            'EventSourceArn': kwargs.get('event_source_arn')
         }
 
-        if 'enabled' in params:
-            lambda_params['Enabled'] = params['enabled']
-        if 'batch_size' in params:
-            lambda_params['BatchSize'] = params['batch_size']
-        if 'starting_position' in params:
-            lambda_params['StartingPosition'] = params['starting_position']
-        if 'starting_position_timestamp' in params:
-            lambda_params['StartingPositionTimestamp'] = params['starting_position_timestamp']
+        if kwargs.get('enabled'):
+            lambda_kwargs.get('Enabled') = kwargs.get('enabled')
+        if kwargs.get('batch_size'):
+            lambda_kwargs.get('BatchSize') = kwargs.get('batch_size')
+        if kwargs.get('starting_position'):
+            lambda_kwargs.get('StartingPosition') = kwargs.get('starting_position')
+        if kwargs.get('starting_position_timestamp'):
+            lambda_kwargs.get('StartingPositionTimestamp') = kwargs.get('starting_position_timestamp')
 
         response = client.create_event_source_mapping(**lambda_params)
 
         return {
-            'message': f'Mapeo de fuente de eventos creado para función {params["function_name"]}',
+            'message': f'Mapeo de fuente de eventos creado para función {kwargs.get('function_name')}',
             'uuid': response['UUID'],
             'function_arn': response['FunctionArn'],
             'event_source_arn': response['EventSourceArn'],
             'state': response['State']
         }
 
-    def _delete_event_source_mapping(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_event_source_mapping(self, **kwargs) -> Dict[str, Any]:
         """Elimina un mapeo de fuente de eventos"""
         client = self._get_client()
 
-        client.delete_event_source_mapping(UUID=params['uuid'])
+        client.delete_event_source_mapping(UUID=kwargs.get('uuid'))
 
         return {
-            'message': f'Mapeo de fuente de eventos {params["uuid"]} eliminado',
-            'uuid': params['uuid']
+            'message': f'Mapeo de fuente de eventos {kwargs.get('uuid')} eliminado',
+            'uuid': kwargs.get('uuid')
         }
 
-    def _get_function_configuration(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_function_configuration(self, **kwargs) -> Dict[str, Any]:
         """Obtiene la configuración de una función"""
         client = self._get_client()
 
-        lambda_params = {'FunctionName': params['function_name']}
-        if 'qualifier' in params:
-            lambda_params['Qualifier'] = params['qualifier']
+        lambda_params = {'FunctionName': kwargs.get('function_name')}
+        if kwargs.get('qualifier'):
+            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
 
         response = client.get_function_configuration(**lambda_params)
 
@@ -804,17 +804,17 @@ class LambdaMCPTools:
             }
         }
 
-    def _list_layers(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _list_layers(self, **kwargs) -> Dict[str, Any]:
         """Lista capas Lambda disponibles"""
         client = self._get_client()
 
         lambda_params = {}
-        if 'compatible_runtime' in params:
-            lambda_params['CompatibleRuntime'] = params['compatible_runtime']
-        if 'marker' in params:
-            lambda_params['Marker'] = params['marker']
-        if 'max_items' in params:
-            lambda_params['MaxItems'] = params['max_items']
+        if kwargs.get('compatible_runtime'):
+            lambda_kwargs.get('CompatibleRuntime') = kwargs.get('compatible_runtime')
+        if kwargs.get('marker'):
+            lambda_kwargs.get('Marker') = kwargs.get('marker')
+        if kwargs.get('max_items'):
+            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
 
         response = client.list_layers(**lambda_params)
 
@@ -842,25 +842,25 @@ class LambdaMCPTools:
             'next_marker': response.get('NextMarker')
         }
 
-    def _publish_layer_version(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _publish_layer_version(self, **kwargs) -> Dict[str, Any]:
         """Publica una nueva versión de capa"""
         client = self._get_client()
 
         lambda_params = {
-            'LayerName': params['layer_name'],
-            'Content': self._prepare_layer_content(params['content'])
+            'LayerName': kwargs.get('layer_name'),
+            'Content': self._prepare_layer_content(kwargs.get('content'))
         }
 
-        if 'compatible_runtimes' in params:
-            lambda_params['CompatibleRuntimes'] = params['compatible_runtimes']
-        if 'description' in params:
-            lambda_params['Description'] = params['description']
+        if kwargs.get('compatible_runtimes'):
+            lambda_kwargs.get('CompatibleRuntimes') = kwargs.get('compatible_runtimes')
+        if kwargs.get('description'):
+            lambda_kwargs.get('Description') = kwargs.get('description')
 
         response = client.publish_layer_version(**lambda_params)
 
         return {
-            'message': f'Versión de capa {params["layer_name"]} publicada',
-            'layer_name': params['layer_name'],
+            'message': f'Versión de capa {kwargs.get('layer_name')} publicada',
+            'layer_name': kwargs.get('layer_name'),
             'layer_arn': response['LayerArn'],
             'layer_version_arn': response['LayerVersionArn'],
             'version': response['Version'],

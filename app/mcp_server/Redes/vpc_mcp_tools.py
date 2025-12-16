@@ -379,35 +379,35 @@ class VPCMCPTools:
         """Ejecuta una herramienta específica de VPC"""
         try:
             if tool_name == 'vpc_describe_vpcs':
-                return self._describe_vpcs(parameters)
+                return self._describe_vpcs(**parameters)
             elif tool_name == 'vpc_create_vpc':
-                return self._create_vpc(parameters)
+                return self._create_vpc(**parameters)
             elif tool_name == 'vpc_delete_vpc':
-                return self._delete_vpc(parameters)
+                return self._delete_vpc(**parameters)
             elif tool_name == 'vpc_describe_subnets':
-                return self._describe_subnets(parameters)
+                return self._describe_subnets(**parameters)
             elif tool_name == 'vpc_create_subnet':
-                return self._create_subnet(parameters)
+                return self._create_subnet(**parameters)
             elif tool_name == 'vpc_delete_subnet':
-                return self._delete_subnet(parameters)
+                return self._delete_subnet(**parameters)
             elif tool_name == 'vpc_describe_security_groups':
-                return self._describe_security_groups(parameters)
+                return self._describe_security_groups(**parameters)
             elif tool_name == 'vpc_create_security_group':
-                return self._create_security_group(parameters)
+                return self._create_security_group(**parameters)
             elif tool_name == 'vpc_authorize_security_group_ingress':
-                return self._authorize_security_group_ingress(parameters)
+                return self._authorize_security_group_ingress(**parameters)
             elif tool_name == 'vpc_add_common_security_rules':
                 return self.add_common_security_rules(**parameters)
             elif tool_name == 'vpc_describe_route_tables':
-                return self._describe_route_tables(parameters)
+                return self._describe_route_tables(**parameters)
             elif tool_name == 'vpc_describe_internet_gateways':
-                return self._describe_internet_gateways(parameters)
+                return self._describe_internet_gateways(**parameters)
             elif tool_name == 'vpc_create_internet_gateway':
-                return self._create_internet_gateway(parameters)
+                return self._create_internet_gateway(**parameters)
             elif tool_name == 'vpc_attach_internet_gateway':
-                return self._attach_internet_gateway(parameters)
+                return self._attach_internet_gateway(**parameters)
             elif tool_name == 'vpc_describe_nat_gateways':
-                return self._describe_nat_gateways(parameters)
+                return self._describe_nat_gateways(**parameters)
             else:
                 return {'error': f'Herramienta VPC no encontrada: {tool_name}'}
 
@@ -484,32 +484,32 @@ class VPCMCPTools:
             'cidr_block': kwargs['cidr_block']
         }
 
-    def _delete_vpc(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_vpc(self, vpc_id, **kwargs) -> Dict[str, Any]:
         """Elimina una VPC"""
         client = self._get_client()
 
-        client.delete_vpc(VpcId=params['vpc_id'])
+        client.delete_vpc(VpcId=vpc_id)
 
         return {
-            'message': f'VPC {params["vpc_id"]} eliminada exitosamente',
-            'vpc_id': params['vpc_id']
+            'message': f'VPC {vpc_id} eliminada exitosamente',
+            'vpc_id': vpc_id
         }
 
-    def _describe_subnets(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_subnets(self, subnet_ids=None, vpc_id=None, filters=None, max_results=None, **kwargs) -> Dict[str, Any]:
         """Lista subnets"""
         client = self._get_client()
 
         subnet_params = {}
-        if 'subnet_ids' in params:
-            subnet_params['SubnetIds'] = params['subnet_ids']
-        if 'vpc_id' in params:
-            subnet_params['Filters'] = [{'Name': 'vpc-id', 'Values': [params['vpc_id']]}]
-        if 'filters' in params:
+        if subnet_ids:
+            subnet_params['SubnetIds'] = subnet_ids
+        if vpc_id:
+            subnet_params['Filters'] = [{'Name': 'vpc-id', 'Values': [vpc_id]}]
+        if filters:
             if 'Filters' not in subnet_params:
                 subnet_params['Filters'] = []
-            subnet_params['Filters'].extend(params['filters'])
-        if 'max_results' in params:
-            subnet_params['MaxResults'] = params['max_results']
+            subnet_params['Filters'].extend(filters)
+        if max_results:
+            subnet_params['MaxResults'] = max_results
 
         response = client.describe_subnets(**subnet_params)
 
@@ -575,30 +575,30 @@ class VPCMCPTools:
             'cidr_block': kwargs['cidr_block']
         }
 
-    def _delete_subnet(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _delete_subnet(self, subnet_id, **kwargs) -> Dict[str, Any]:
         """Elimina una subnet"""
         client = self._get_client()
 
-        client.delete_subnet(SubnetId=params['subnet_id'])
+        client.delete_subnet(SubnetId=subnet_id)
 
         return {
-            'message': f'Subnet {params["subnet_id"]} eliminada exitosamente',
-            'subnet_id': params['subnet_id']
+            'message': f'Subnet {subnet_id} eliminada exitosamente',
+            'subnet_id': subnet_id
         }
 
-    def _describe_security_groups(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_security_groups(self, group_ids=None, group_names=None, filters=None, max_results=None, **kwargs) -> Dict[str, Any]:
         """Lista security groups"""
         client = self._get_client()
 
         sg_params = {}
-        if 'group_ids' in params:
-            sg_params['GroupIds'] = params['group_ids']
-        if 'group_names' in params:
-            sg_params['GroupNames'] = params['group_names']
-        if 'filters' in params:
-            sg_params['Filters'] = params['filters']
-        if 'max_results' in params:
-            sg_params['MaxResults'] = params['max_results']
+        if group_ids:
+            sg_params['GroupIds'] = group_ids
+        if group_names:
+            sg_params['GroupNames'] = group_names
+        if filters:
+            sg_params['Filters'] = filters
+        if max_results:
+            sg_params['MaxResults'] = max_results
 
         response = client.describe_security_groups(**sg_params)
 
@@ -807,21 +807,21 @@ class VPCMCPTools:
                 'group_id': group_id
             }
 
-    def _describe_route_tables(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_route_tables(self, route_table_ids=None, vpc_id=None, filters=None, max_results=None, **kwargs) -> Dict[str, Any]:
         """Lista route tables"""
         client = self._get_client()
 
         rt_params = {}
-        if 'route_table_ids' in params:
-            rt_params['RouteTableIds'] = params['route_table_ids']
-        if 'vpc_id' in params:
-            rt_params['Filters'] = [{'Name': 'vpc-id', 'Values': [params['vpc_id']]}]
-        if 'filters' in params:
+        if route_table_ids:
+            rt_params['RouteTableIds'] = route_table_ids
+        if vpc_id:
+            rt_params['Filters'] = [{'Name': 'vpc-id', 'Values': [vpc_id]}]
+        if filters:
             if 'Filters' not in rt_params:
                 rt_params['Filters'] = []
-            rt_params['Filters'].extend(params['filters'])
-        if 'max_results' in params:
-            rt_params['MaxResults'] = params['max_results']
+            rt_params['Filters'].extend(filters)
+        if max_results:
+            rt_params['MaxResults'] = max_results
 
         response = client.describe_route_tables(**rt_params)
 
@@ -841,17 +841,17 @@ class VPCMCPTools:
             'total_count': len(route_tables)
         }
 
-    def _describe_internet_gateways(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_internet_gateways(self, internet_gateway_ids=None, filters=None, max_results=None, **kwargs) -> Dict[str, Any]:
         """Lista internet gateways"""
         client = self._get_client()
 
         igw_params = {}
-        if 'internet_gateway_ids' in params:
-            igw_params['InternetGatewayIds'] = params['internet_gateway_ids']
-        if 'filters' in params:
-            igw_params['Filters'] = params['filters']
-        if 'max_results' in params:
-            igw_params['MaxResults'] = params['max_results']
+        if internet_gateway_ids:
+            igw_params['InternetGatewayIds'] = internet_gateway_ids
+        if filters:
+            igw_params['Filters'] = filters
+        if max_results:
+            igw_params['MaxResults'] = max_results
 
         response = client.describe_internet_gateways(**igw_params)
 
@@ -868,7 +868,7 @@ class VPCMCPTools:
             'total_count': len(internet_gateways)
         }
 
-    def _create_internet_gateway(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_internet_gateway(self, tags=None, **kwargs) -> Dict[str, Any]:
         """Crea un internet gateway"""
         client = self._get_client()
 
@@ -877,10 +877,10 @@ class VPCMCPTools:
         igw_id = response['InternetGateway']['InternetGatewayId']
 
         # Agregar tags si se proporcionaron
-        if 'tags' in params:
+        if tags:
             client.create_tags(
                 Resources=[igw_id],
-                Tags=params['tags']
+                Tags=tags
             )
 
         return {
@@ -888,32 +888,32 @@ class VPCMCPTools:
             'internet_gateway_id': igw_id
         }
 
-    def _attach_internet_gateway(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _attach_internet_gateway(self, internet_gateway_id, vpc_id, **kwargs) -> Dict[str, Any]:
         """Asocia un internet gateway a una VPC"""
         client = self._get_client()
 
         client.attach_internet_gateway(
-            InternetGatewayId=params['internet_gateway_id'],
-            VpcId=params['vpc_id']
+            InternetGatewayId=internet_gateway_id,
+            VpcId=vpc_id
         )
 
         return {
-            'message': f'Internet gateway {params["internet_gateway_id"]} asociado a VPC {params["vpc_id"]}',
-            'internet_gateway_id': params['internet_gateway_id'],
-            'vpc_id': params['vpc_id']
+            'message': f'Internet gateway {internet_gateway_id} asociado a VPC {vpc_id}',
+            'internet_gateway_id': internet_gateway_id,
+            'vpc_id': vpc_id
         }
 
-    def _describe_nat_gateways(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _describe_nat_gateways(self, nat_gateway_ids=None, filter=None, max_results=None, **kwargs) -> Dict[str, Any]:
         """Lista NAT gateways"""
         client = self._get_client()
 
         nat_params = {}
-        if 'nat_gateway_ids' in params:
-            nat_params['NatGatewayIds'] = params['nat_gateway_ids']
-        if 'filter' in params:
-            nat_params['Filter'] = params['filter']
-        if 'max_results' in params:
-            nat_params['MaxResults'] = params['max_results']
+        if nat_gateway_ids:
+            nat_params['NatGatewayIds'] = nat_gateway_ids
+        if filter:
+            nat_params['Filter'] = filter
+        if max_results:
+            nat_params['MaxResults'] = max_results
 
         response = client.describe_nat_gateways(**nat_params)
 
