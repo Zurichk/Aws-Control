@@ -363,16 +363,16 @@ class CloudWatchMCPTools:
         }
 
         if kwargs.get('alarm_description'):
-            api_kwargs.get('AlarmDescription') = kwargs.get('alarm_description')
+            api_kwargs['AlarmDescription'] = kwargs.get('alarm_description')
         if kwargs.get('alarm_actions'):
-            api_kwargs.get('AlarmActions') = kwargs.get('alarm_actions')
+            api_kwargs['AlarmActions'] = kwargs.get('alarm_actions')
         if kwargs.get('ok_actions'):
-            api_kwargs.get('OKActions') = kwargs.get('ok_actions')
+            api_kwargs['OKActions'] = kwargs.get('ok_actions')
 
         client.put_metric_alarm(**api_params)
 
         return {
-            'message': f'Alarma métrica {kwargs.get('alarm_name')} creada exitosamente'
+            'message': f'Alarma métrica {kwargs.get("alarm_name")} creada exitosamente'
         }
 
     def _delete_alarms(self, **kwargs) -> Dict[str, Any]:
@@ -382,7 +382,7 @@ class CloudWatchMCPTools:
         client.delete_alarms(AlarmNames=kwargs.get('alarm_names'))
 
         return {
-            'message': f'Alarmas eliminadas exitosamente: {", ".join(kwargs.get('alarm_names'))}'
+            'message': f'Alarmas eliminadas exitosamente: {", ".join(kwargs.get("alarm_names"))}'
         }
 
     def _describe_alarms(self, **kwargs) -> Dict[str, Any]:
@@ -391,13 +391,13 @@ class CloudWatchMCPTools:
 
         api_params = {}
         if kwargs.get('alarm_names'):
-            api_kwargs.get('AlarmNames') = kwargs.get('alarm_names')
+            api_kwargs['AlarmNames'] = kwargs.get('alarm_names')
         if kwargs.get('alarm_name_prefix'):
-            api_kwargs.get('AlarmNamePrefix') = kwargs.get('alarm_name_prefix')
+            api_kwargs['AlarmNamePrefix'] = kwargs.get('alarm_name_prefix')
         if kwargs.get('state_value'):
-            api_kwargs.get('StateValue') = kwargs.get('state_value')
+            api_kwargs['StateValue'] = kwargs.get('state_value')
         if kwargs.get('max_records'):
-            api_kwargs.get('MaxRecords') = kwargs.get('max_records', 100)
+            api_kwargs['MaxRecords'] = kwargs.get('max_records', 100)
 
         response = client.describe_alarms(**api_params)
 
@@ -448,7 +448,7 @@ class CloudWatchMCPTools:
         )
 
         return {
-            'message': f'Datos métricos enviados exitosamente al namespace {kwargs.get('namespace')}',
+            'message': f'Datos métricos enviados exitosamente al namespace {kwargs.get("namespace")}',
             'metrics_count': len(metric_data)
         }
 
@@ -466,7 +466,7 @@ class CloudWatchMCPTools:
         }
 
         if kwargs.get('dimensions'):
-            api_kwargs.get('Dimensions') = [{'Name': d['name'], 'Value': d['value']} for d in kwargs.get('dimensions')]
+            api_kwargs['Dimensions'] = [{'Name': d['name'], 'Value': d['value']} for d in kwargs.get('dimensions')]
 
         response = client.get_metric_statistics(**api_params)
 
@@ -494,11 +494,11 @@ class CloudWatchMCPTools:
 
         api_params = {}
         if kwargs.get('namespace'):
-            api_kwargs.get('Namespace') = kwargs.get('namespace')
+            api_kwargs['Namespace'] = kwargs.get('namespace')
         if kwargs.get('metric_name'):
-            api_kwargs.get('MetricName') = kwargs.get('metric_name')
+            api_kwargs['MetricName'] = kwargs.get('metric_name')
         if kwargs.get('dimensions'):
-            api_kwargs.get('Dimensions') = [{'Name': d['name'], 'Value': d['value']} for d in kwargs.get('dimensions')]
+            api_kwargs['Dimensions'] = [{'Name': d['name'], 'Value': d['value']} for d in kwargs.get('dimensions')]
 
         response = client.list_metrics(**api_params)
 
@@ -524,14 +524,14 @@ class CloudWatchMCPTools:
         api_params = {'logGroupName': kwargs.get('log_group_name')}
 
         if kwargs.get('kms_key_id'):
-            api_kwargs.get('kmsKeyId') = kwargs.get('kms_key_id')
+            api_kwargs['kmsKeyId'] = kwargs.get('kms_key_id')
         if kwargs.get('tags'):
-            api_kwargs.get('tags') = kwargs.get('tags')
+            api_kwargs['tags'] = kwargs.get('tags')
 
         client.create_log_group(**api_params)
 
         return {
-            'message': f'Grupo de logs {kwargs.get('log_group_name')} creado exitosamente'
+            'message': f'Grupo de logs {kwargs.get("log_group_name")} creado exitosamente'
         }
 
     def _delete_log_group(self, **kwargs) -> Dict[str, Any]:
@@ -541,7 +541,7 @@ class CloudWatchMCPTools:
         client.delete_log_group(logGroupName=kwargs.get('log_group_name'))
 
         return {
-            'message': f'Grupo de logs {kwargs.get('log_group_name')} eliminado exitosamente'
+            'message': f'Grupo de logs {kwargs.get("log_group_name")} eliminado exitosamente'
         }
 
     def _describe_log_groups(self, **kwargs) -> Dict[str, Any]:
@@ -550,9 +550,9 @@ class CloudWatchMCPTools:
 
         api_params = {}
         if kwargs.get('log_group_name_prefix'):
-            api_kwargs.get('logGroupNamePrefix') = kwargs.get('log_group_name_prefix')
+            api_kwargs['logGroupNamePrefix'] = kwargs.get('log_group_name_prefix')
         if kwargs.get('max_results'):
-            api_kwargs.get('maxResults') = kwargs.get('max_results', 50)
+            api_kwargs['maxResults'] = kwargs.get('max_results', 50)
 
         response = client.describe_log_groups(**api_params)
 
@@ -582,7 +582,7 @@ class CloudWatchMCPTools:
         )
 
         return {
-            'message': f'Stream de logs {kwargs.get('log_stream_name')} creado en grupo {kwargs.get('log_group_name')}'
+            'message': f'Stream de logs {kwargs.get("log_stream_name")} creado en grupo {kwargs.get("log_group_name")}'
         }
 
     def _put_log_events(self, **kwargs) -> Dict[str, Any]:
@@ -598,7 +598,7 @@ class CloudWatchMCPTools:
         }
 
         if kwargs.get('sequence_token'):
-            api_kwargs.get('sequenceToken') = kwargs.get('sequence_token')
+            api_kwargs['sequenceToken'] = kwargs.get('sequence_token')
 
         response = client.put_log_events(**api_params)
 
@@ -617,13 +617,13 @@ class CloudWatchMCPTools:
         }
 
         if kwargs.get('start_time'):
-            api_kwargs.get('startTime') = kwargs.get('start_time')
+            api_kwargs['startTime'] = kwargs.get('start_time')
         if kwargs.get('end_time'):
-            api_kwargs.get('endTime') = kwargs.get('end_time')
+            api_kwargs['endTime'] = kwargs.get('end_time')
         if kwargs.get('start_from_head'):
-            api_kwargs.get('startFromHead') = kwargs.get('start_from_head', True)
+            api_kwargs['startFromHead'] = kwargs.get('start_from_head', True)
         if kwargs.get('limit'):
-            api_kwargs.get('limit') = kwargs.get('limit', 100)
+            api_kwargs['limit'] = kwargs.get('limit', 100)
 
         response = client.get_log_events(**api_params)
 
@@ -652,7 +652,7 @@ class CloudWatchMCPTools:
         )
 
         return {
-            'message': f'Dashboard {kwargs.get('dashboard_name')} creado/actualizado exitosamente'
+            'message': f'Dashboard {kwargs.get("dashboard_name")} creado/actualizado exitosamente'
         }
 
     def _get_dashboard(self, **kwargs) -> Dict[str, Any]:
@@ -673,9 +673,9 @@ class CloudWatchMCPTools:
 
         api_params = {}
         if kwargs.get('dashboard_name_prefix'):
-            api_kwargs.get('DashboardNamePrefix') = kwargs.get('dashboard_name_prefix')
+            api_kwargs['DashboardNamePrefix'] = kwargs.get('dashboard_name_prefix')
         if kwargs.get('max_records'):
-            api_kwargs.get('MaxRecords') = kwargs.get('max_records', 100)
+            api_kwargs['MaxRecords'] = kwargs.get('max_records', 100)
 
         response = client.list_dashboards(**api_params)
 
@@ -700,7 +700,7 @@ class CloudWatchMCPTools:
         client.delete_dashboards(DashboardNames=[kwargs.get('dashboard_name')])
 
         return {
-            'message': f'Dashboard {kwargs.get('dashboard_name')} eliminado exitosamente'
+            'message': f'Dashboard {kwargs.get("dashboard_name")} eliminado exitosamente'
         }
 
 

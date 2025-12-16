@@ -449,9 +449,9 @@ class APIGatewayMCPTools:
 
         api_params = {}
         if kwargs.get('limit'):
-            api_kwargs.get('limit') = kwargs.get('limit')
+            api_kwargs['limit'] = kwargs.get('limit')
         if kwargs.get('position'):
-            api_kwargs.get('position') = kwargs.get('position')
+            api_kwargs['position'] = kwargs.get('position')
 
         response = client.get_rest_apis(**api_params)
 
@@ -502,18 +502,18 @@ class APIGatewayMCPTools:
         }
 
         if kwargs.get('description'):
-            api_kwargs.get('description') = kwargs.get('description')
+            api_kwargs['description'] = kwargs.get('description')
         if kwargs.get('endpoint_configuration'):
-            api_kwargs.get('endpointConfiguration') = kwargs.get('endpoint_configuration')
+            api_kwargs['endpointConfiguration'] = kwargs.get('endpoint_configuration')
         if kwargs.get('api_key_source_type'):
-            api_kwargs.get('apiKeySourceType') = kwargs.get('api_key_source_type')
+            api_kwargs['apiKeySourceType'] = kwargs.get('api_key_source_type')
         if kwargs.get('binary_media_types'):
-            api_kwargs.get('binaryMediaTypes') = kwargs.get('binary_media_types')
+            api_kwargs['binaryMediaTypes'] = kwargs.get('binary_media_types')
 
         response = client.create_rest_api(**api_params)
 
         return {
-            'message': f'API REST {kwargs.get('name')} creada exitosamente',
+            'message': f'API REST {kwargs.get("name")} creada exitosamente',
             'api_id': response.get('id'),
             'api_name': response.get('name')
         }
@@ -525,7 +525,7 @@ class APIGatewayMCPTools:
         client.delete_rest_api(restApiId=kwargs.get('rest_api_id'))
 
         return {
-            'message': f'API REST {kwargs.get('rest_api_id')} eliminada exitosamente'
+            'message': f'API REST {kwargs.get("rest_api_id")} eliminada exitosamente'
         }
 
     def _get_resources(self, **kwargs) -> Dict[str, Any]:
@@ -534,9 +534,9 @@ class APIGatewayMCPTools:
 
         api_params = {'restApiId': kwargs.get('rest_api_id')}
         if kwargs.get('limit'):
-            api_kwargs.get('limit') = kwargs.get('limit')
+            api_kwargs['limit'] = kwargs.get('limit')
         if kwargs.get('position'):
-            api_kwargs.get('position') = kwargs.get('position')
+            api_kwargs['position'] = kwargs.get('position')
 
         response = client.get_resources(**api_params)
 
@@ -567,7 +567,7 @@ class APIGatewayMCPTools:
         )
 
         return {
-            'message': f'Recurso {kwargs.get('path_part')} creado en API {kwargs.get('rest_api_id')}',
+            'message': f'Recurso {kwargs.get("path_part")} creado en API {kwargs.get("rest_api_id")}',
             'resource_id': response.get('id'),
             'path': response.get('path')
         }
@@ -582,7 +582,7 @@ class APIGatewayMCPTools:
         )
 
         return {
-            'message': f'Recurso {kwargs.get('resource_id')} eliminado de API {kwargs.get('rest_api_id')}'
+            'message': f'Recurso {kwargs.get("resource_id")} eliminado de API {kwargs.get("rest_api_id")}'
         }
 
     def _get_method(self, **kwargs) -> Dict[str, Any]:
@@ -595,7 +595,7 @@ class APIGatewayMCPTools:
             'httpMethod': kwargs.get('method')
         }
         if kwargs.get('position'):
-            api_kwargs.get('position') = kwargs.get('position')
+            api_kwargs['position'] = kwargs.get('position')
 
         response = client.get_method(**api_params)
 
@@ -621,20 +621,20 @@ class APIGatewayMCPTools:
         }
 
         if kwargs.get('authorization_type'):
-            api_kwargs.get('authorizationType') = kwargs.get('authorization_type')
+            api_kwargs['authorizationType'] = kwargs.get('authorization_type')
         if kwargs.get('api_key_required'):
-            api_kwargs.get('apiKeyRequired') = kwargs.get('api_key_required')
+            api_kwargs['apiKeyRequired'] = kwargs.get('api_key_required')
         if kwargs.get('operation_name'):
-            api_kwargs.get('operationName') = kwargs.get('operation_name')
+            api_kwargs['operationName'] = kwargs.get('operation_name')
         if kwargs.get('request_parameters'):
-            api_kwargs.get('requestParameters') = kwargs.get('request_parameters')
+            api_kwargs['requestParameters'] = kwargs.get('request_parameters')
         if kwargs.get('request_models'):
-            api_kwargs.get('requestModels') = kwargs.get('request_models')
+            api_kwargs['requestModels'] = kwargs.get('request_models')
 
         response = client.put_method(**api_params)
 
         return {
-            'message': f'Método {kwargs.get('method')} configurado en recurso {kwargs.get('resource_id')}',
+            'message': f'Método {kwargs.get("method")} configurado en recurso {kwargs.get("resource_id")}',
             'method': response.get('httpMethod')
         }
 
@@ -650,24 +650,24 @@ class APIGatewayMCPTools:
         }
 
         if kwargs.get('integration_method'):
-            api_kwargs.get('integrationHttpMethod') = kwargs.get('integration_method')
+            api_kwargs['integrationHttpMethod'] = kwargs.get('integration_method')
         if kwargs.get('uri'):
-            api_kwargs.get('uri') = kwargs.get('uri')
+            api_kwargs['uri'] = kwargs.get('uri')
         if kwargs.get('credentials'):
-            api_kwargs.get('credentials') = kwargs.get('credentials')
+            api_kwargs['credentials'] = kwargs.get('credentials')
         if kwargs.get('request_parameters'):
-            api_kwargs.get('requestParameters') = kwargs.get('request_parameters')
+            api_kwargs['requestParameters'] = kwargs.get('request_parameters')
         if kwargs.get('request_templates'):
-            api_kwargs.get('requestTemplates') = kwargs.get('request_templates')
+            api_kwargs['requestTemplates'] = kwargs.get('request_templates')
         if kwargs.get('passthrough_behavior'):
-            api_kwargs.get('passthroughBehavior') = kwargs.get('passthrough_behavior')
+            api_kwargs['passthroughBehavior'] = kwargs.get('passthrough_behavior')
         if kwargs.get('content_handling'):
-            api_kwargs.get('contentHandling') = kwargs.get('content_handling')
+            api_kwargs['contentHandling'] = kwargs.get('content_handling')
 
         response = client.put_integration(**api_params)
 
         return {
-            'message': f'Integración configurada para método {kwargs.get('method')} en recurso {kwargs.get('resource_id')}',
+            'message': f'Integración configurada para método {kwargs.get("method")} en recurso {kwargs.get("resource_id")}',
             'integration_type': response.get('type'),
             'uri': response.get('uri')
         }
@@ -684,14 +684,14 @@ class APIGatewayMCPTools:
         }
 
         if kwargs.get('response_parameters'):
-            api_kwargs.get('responseParameters') = kwargs.get('response_parameters')
+            api_kwargs['responseParameters'] = kwargs.get('response_parameters')
         if kwargs.get('response_models'):
-            api_kwargs.get('responseModels') = kwargs.get('response_models')
+            api_kwargs['responseModels'] = kwargs.get('response_models')
 
         response = client.put_method_response(**api_params)
 
         return {
-            'message': f'Respuesta de método {kwargs.get('status_code')} configurada',
+            'message': f'Respuesta de método {kwargs.get("status_code")} configurada',
             'status_code': response.get('statusCode')
         }
 
@@ -707,16 +707,16 @@ class APIGatewayMCPTools:
         }
 
         if kwargs.get('response_parameters'):
-            api_kwargs.get('responseParameters') = kwargs.get('response_parameters')
+            api_kwargs['responseParameters'] = kwargs.get('response_parameters')
         if kwargs.get('response_templates'):
-            api_kwargs.get('responseTemplates') = kwargs.get('response_templates')
+            api_kwargs['responseTemplates'] = kwargs.get('response_templates')
         if kwargs.get('content_handling'):
-            api_kwargs.get('contentHandling') = kwargs.get('content_handling')
+            api_kwargs['contentHandling'] = kwargs.get('content_handling')
 
         response = client.put_integration_response(**api_params)
 
         return {
-            'message': f'Respuesta de integración {kwargs.get('status_code')} configurada',
+            'message': f'Respuesta de integración {kwargs.get("status_code")} configurada',
             'status_code': response.get('statusCode')
         }
 
@@ -730,22 +730,22 @@ class APIGatewayMCPTools:
         }
 
         if kwargs.get('stage_description'):
-            api_kwargs.get('stageDescription') = kwargs.get('stage_description')
+            api_kwargs['stageDescription'] = kwargs.get('stage_description')
         if kwargs.get('description'):
-            api_kwargs.get('description') = kwargs.get('description')
+            api_kwargs['description'] = kwargs.get('description')
         if kwargs.get('cache_cluster_enabled'):
-            api_kwargs.get('cacheClusterEnabled') = kwargs.get('cache_cluster_enabled')
+            api_kwargs['cacheClusterEnabled'] = kwargs.get('cache_cluster_enabled')
         if kwargs.get('cache_cluster_size'):
-            api_kwargs.get('cacheClusterSize') = kwargs.get('cache_cluster_size')
+            api_kwargs['cacheClusterSize'] = kwargs.get('cache_cluster_size')
         if kwargs.get('variables'):
-            api_kwargs.get('variables') = kwargs.get('variables')
+            api_kwargs['variables'] = kwargs.get('variables')
         if kwargs.get('canary_settings'):
-            api_kwargs.get('canarySettings') = kwargs.get('canary_settings')
+            api_kwargs['canarySettings'] = kwargs.get('canary_settings')
 
         response = client.create_deployment(**api_params)
 
         return {
-            'message': f'Deployment creado para API {kwargs.get('rest_api_id')} en stage {kwargs.get('stage_name')}',
+            'message': f'Deployment creado para API {kwargs.get("rest_api_id")} en stage {kwargs.get("stage_name")}',
             'deployment_id': response.get('id'),
             'description': response.get('description')
         }
@@ -756,7 +756,7 @@ class APIGatewayMCPTools:
 
         api_params = {'restApiId': kwargs.get('rest_api_id')}
         if kwargs.get('deployment_id'):
-            api_kwargs.get('deploymentId') = kwargs.get('deployment_id')
+            api_kwargs['deploymentId'] = kwargs.get('deployment_id')
 
         response = client.get_stages(**api_params)
 
@@ -785,13 +785,13 @@ class APIGatewayMCPTools:
 
         api_params = {}
         if kwargs.get('limit'):
-            api_kwargs.get('limit') = kwargs.get('limit')
+            api_kwargs['limit'] = kwargs.get('limit')
         if kwargs.get('position'):
-            api_kwargs.get('position') = kwargs.get('position')
+            api_kwargs['position'] = kwargs.get('position')
         if kwargs.get('name_query'):
-            api_kwargs.get('nameQuery') = kwargs.get('name_query')
+            api_kwargs['nameQuery'] = kwargs.get('name_query')
         if kwargs.get('customer_id'):
-            api_kwargs.get('customerId') = kwargs.get('customer_id')
+            api_kwargs['customerId'] = kwargs.get('customer_id')
 
         response = client.get_api_keys(**api_params)
 
@@ -822,24 +822,24 @@ class APIGatewayMCPTools:
         api_params = {'name': kwargs.get('name')}
 
         if kwargs.get('description'):
-            api_kwargs.get('description') = kwargs.get('description')
+            api_kwargs['description'] = kwargs.get('description')
         if kwargs.get('enabled'):
-            api_kwargs.get('enabled') = kwargs.get('enabled')
+            api_kwargs['enabled'] = kwargs.get('enabled')
         if kwargs.get('generate_distinct_id'):
-            api_kwargs.get('generateDistinctId') = kwargs.get('generate_distinct_id')
+            api_kwargs['generateDistinctId'] = kwargs.get('generate_distinct_id')
         if kwargs.get('value'):
-            api_kwargs.get('value') = kwargs.get('value')
+            api_kwargs['value'] = kwargs.get('value')
         if kwargs.get('stage_keys'):
-            api_kwargs.get('stageKeys') = kwargs.get('stage_keys')
+            api_kwargs['stageKeys'] = kwargs.get('stage_keys')
         if kwargs.get('customer_id'):
-            api_kwargs.get('customerId') = kwargs.get('customer_id')
+            api_kwargs['customerId'] = kwargs.get('customer_id')
         if kwargs.get('tags'):
-            api_kwargs.get('tags') = kwargs.get('tags')
+            api_kwargs['tags'] = kwargs.get('tags')
 
         response = client.create_api_key(**api_params)
 
         return {
-            'message': f'API key {kwargs.get('name')} creada exitosamente',
+            'message': f'API key {kwargs.get("name")} creada exitosamente',
             'api_key_id': response.get('id'),
             'api_key_value': response.get('value')
         }
@@ -850,9 +850,9 @@ class APIGatewayMCPTools:
 
         api_params = {}
         if kwargs.get('limit'):
-            api_kwargs.get('limit') = kwargs.get('limit')
+            api_kwargs['limit'] = kwargs.get('limit')
         if kwargs.get('position'):
-            api_kwargs.get('position') = kwargs.get('position')
+            api_kwargs['position'] = kwargs.get('position')
 
         response = client.get_usage_plans(**api_params)
 
@@ -880,18 +880,18 @@ class APIGatewayMCPTools:
         api_params = {'name': kwargs.get('name')}
 
         if kwargs.get('description'):
-            api_kwargs.get('description') = kwargs.get('description')
+            api_kwargs['description'] = kwargs.get('description')
         if kwargs.get('api_stages'):
-            api_kwargs.get('apiStages') = kwargs.get('api_stages')
+            api_kwargs['apiStages'] = kwargs.get('api_stages')
         if kwargs.get('throttle'):
-            api_kwargs.get('throttle') = kwargs.get('throttle')
+            api_kwargs['throttle'] = kwargs.get('throttle')
         if kwargs.get('quota'):
-            api_kwargs.get('quota') = kwargs.get('quota')
+            api_kwargs['quota'] = kwargs.get('quota')
 
         response = client.create_usage_plan(**api_params)
 
         return {
-            'message': f'Plan de uso {kwargs.get('name')} creado exitosamente',
+            'message': f'Plan de uso {kwargs.get("name")} creado exitosamente',
             'usage_plan_id': response.get('id'),
             'usage_plan_name': response.get('name')
         }
@@ -903,30 +903,30 @@ class APIGatewayMCPTools:
         api_params = {'domainName': kwargs.get('domain_name')}
 
         if kwargs.get('certificate_name'):
-            api_kwargs.get('certificateName') = kwargs.get('certificate_name')
+            api_kwargs['certificateName'] = kwargs.get('certificate_name')
         if kwargs.get('certificate_body'):
-            api_kwargs.get('certificateBody') = kwargs.get('certificate_body')
+            api_kwargs['certificateBody'] = kwargs.get('certificate_body')
         if kwargs.get('certificate_private_key'):
-            api_kwargs.get('certificatePrivateKey') = kwargs.get('certificate_private_key')
+            api_kwargs['certificatePrivateKey'] = kwargs.get('certificate_private_key')
         if kwargs.get('certificate_chain'):
-            api_kwargs.get('certificateChain') = kwargs.get('certificate_chain')
+            api_kwargs['certificateChain'] = kwargs.get('certificate_chain')
         if kwargs.get('certificate_arn'):
-            api_kwargs.get('certificateArn') = kwargs.get('certificate_arn')
+            api_kwargs['certificateArn'] = kwargs.get('certificate_arn')
         if kwargs.get('regional_certificate_name'):
-            api_kwargs.get('regionalCertificateName') = kwargs.get('regional_certificate_name')
+            api_kwargs['regionalCertificateName'] = kwargs.get('regional_certificate_name')
         if kwargs.get('regional_certificate_arn'):
-            api_kwargs.get('regionalCertificateArn') = kwargs.get('regional_certificate_arn')
+            api_kwargs['regionalCertificateArn'] = kwargs.get('regional_certificate_arn')
         if kwargs.get('endpoint_configuration'):
-            api_kwargs.get('endpointConfiguration') = kwargs.get('endpoint_configuration')
+            api_kwargs['endpointConfiguration'] = kwargs.get('endpoint_configuration')
         if kwargs.get('tags'):
-            api_kwargs.get('tags') = kwargs.get('tags')
+            api_kwargs['tags'] = kwargs.get('tags')
         if kwargs.get('security_policy'):
-            api_kwargs.get('securityPolicy') = kwargs.get('security_policy')
+            api_kwargs['securityPolicy'] = kwargs.get('security_policy')
 
         response = client.create_domain_name(**api_params)
 
         return {
-            'message': f'Dominio personalizado {kwargs.get('domain_name')} creado exitosamente',
+            'message': f'Dominio personalizado {kwargs.get("domain_name")} creado exitosamente',
             'domain_name': response.get('domainName'),
             'certificate_name': response.get('certificateName'),
             'certificate_arn': response.get('certificateArn'),
@@ -944,14 +944,14 @@ class APIGatewayMCPTools:
         }
 
         if kwargs.get('base_path'):
-            api_kwargs.get('basePath') = kwargs.get('base_path')
+            api_kwargs['basePath'] = kwargs.get('base_path')
         if kwargs.get('stage'):
-            api_kwargs.get('stage') = kwargs.get('stage')
+            api_kwargs['stage'] = kwargs.get('stage')
 
         response = client.create_base_path_mapping(**api_params)
 
         return {
-            'message': f'Mapeo de ruta base creado para dominio {kwargs.get('domain_name')}',
+            'message': f'Mapeo de ruta base creado para dominio {kwargs.get("domain_name")}',
             'base_path': response.get('basePath'),
             'rest_api_id': response.get('restApiId'),
             'stage': response.get('stage')

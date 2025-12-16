@@ -319,9 +319,9 @@ class IAMMCPTools:
 
         iam_params = {}
         if kwargs.get('path_prefix'):
-            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+            iam_kwargs['PathPrefix'] = kwargs.get('path_prefix')
         if kwargs.get('max_items'):
-            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
+            iam_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_users(**iam_params)
 
@@ -352,9 +352,9 @@ class IAMMCPTools:
         }
 
         if kwargs.get('path'):
-            iam_kwargs.get('Path') = kwargs.get('path')
+            iam_kwargs['Path'] = kwargs.get('path')
         if kwargs.get('permissions_boundary'):
-            iam_kwargs.get('PermissionsBoundary') = kwargs.get('permissions_boundary')
+            iam_kwargs['PermissionsBoundary'] = kwargs.get('permissions_boundary')
 
         response = client.create_user(**iam_params)
 
@@ -368,7 +368,7 @@ class IAMMCPTools:
             )
 
         return {
-            'message': f'Usuario IAM {kwargs.get('user_name')} creado exitosamente',
+            'message': f'Usuario IAM {kwargs.get("user_name")} creado exitosamente',
             'user_name': kwargs.get('user_name'),
             'user_arn': user_arn
         }
@@ -380,7 +380,7 @@ class IAMMCPTools:
         client.delete_user(UserName=kwargs.get('user_name'))
 
         return {
-            'message': f'Usuario IAM {kwargs.get('user_name')} eliminado exitosamente',
+            'message': f'Usuario IAM {kwargs.get("user_name")} eliminado exitosamente',
             'user_name': kwargs.get('user_name')
         }
 
@@ -391,7 +391,7 @@ class IAMMCPTools:
         response = client.create_access_key(UserName=kwargs.get('user_name'))
 
         return {
-            'message': f'Access key creada para usuario {kwargs.get('user_name')}',
+            'message': f'Access key creada para usuario {kwargs.get("user_name")}',
             'user_name': kwargs.get('user_name'),
             'access_key_id': response['AccessKey']['AccessKeyId'],
             'secret_access_key': response['AccessKey']['SecretAccessKey'],
@@ -409,7 +409,7 @@ class IAMMCPTools:
         )
 
         return {
-            'message': f'Access key {kwargs.get('access_key_id')} eliminada del usuario {kwargs.get('user_name')}',
+            'message': f'Access key {kwargs.get("access_key_id")} eliminada del usuario {kwargs.get("user_name")}',
             'user_name': kwargs.get('user_name'),
             'access_key_id': kwargs.get('access_key_id')
         }
@@ -420,9 +420,9 @@ class IAMMCPTools:
 
         iam_params = {}
         if kwargs.get('path_prefix'):
-            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+            iam_kwargs['PathPrefix'] = kwargs.get('path_prefix')
         if kwargs.get('max_items'):
-            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
+            iam_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_groups(**iam_params)
 
@@ -451,12 +451,12 @@ class IAMMCPTools:
         }
 
         if kwargs.get('path'):
-            iam_kwargs.get('Path') = kwargs.get('path')
+            iam_kwargs['Path'] = kwargs.get('path')
 
         response = client.create_group(**iam_params)
 
         return {
-            'message': f'Grupo IAM {kwargs.get('group_name')} creado exitosamente',
+            'message': f'Grupo IAM {kwargs.get("group_name")} creado exitosamente',
             'group_name': kwargs.get('group_name'),
             'group_arn': response['Group']['Arn']
         }
@@ -471,7 +471,7 @@ class IAMMCPTools:
         )
 
         return {
-            'message': f'Usuario {kwargs.get('user_name')} agregado al grupo {kwargs.get('group_name')}',
+            'message': f'Usuario {kwargs.get("user_name")} agregado al grupo {kwargs.get("group_name")}',
             'group_name': kwargs.get('group_name'),
             'user_name': kwargs.get('user_name')
         }
@@ -486,7 +486,7 @@ class IAMMCPTools:
         )
 
         return {
-            'message': f'Usuario {kwargs.get('user_name')} removido del grupo {kwargs.get('group_name')}',
+            'message': f'Usuario {kwargs.get("user_name")} removido del grupo {kwargs.get("group_name")}',
             'group_name': kwargs.get('group_name'),
             'user_name': kwargs.get('user_name')
         }
@@ -497,9 +497,9 @@ class IAMMCPTools:
 
         iam_params = {}
         if kwargs.get('path_prefix'):
-            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+            iam_kwargs['PathPrefix'] = kwargs.get('path_prefix')
         if kwargs.get('max_items'):
-            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
+            iam_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_roles(**iam_params)
 
@@ -532,13 +532,13 @@ class IAMMCPTools:
         }
 
         if kwargs.get('path'):
-            iam_kwargs.get('Path') = kwargs.get('path')
+            iam_kwargs['Path'] = kwargs.get('path')
         if kwargs.get('description'):
-            iam_kwargs.get('Description') = kwargs.get('description')
+            iam_kwargs['Description'] = kwargs.get('description')
         if kwargs.get('max_session_duration'):
-            iam_kwargs.get('MaxSessionDuration') = kwargs.get('max_session_duration')
+            iam_kwargs['MaxSessionDuration'] = kwargs.get('max_session_duration')
         if kwargs.get('permissions_boundary'):
-            iam_kwargs.get('PermissionsBoundary') = kwargs.get('permissions_boundary')
+            iam_kwargs['PermissionsBoundary'] = kwargs.get('permissions_boundary')
 
         response = client.create_role(**iam_params)
 
@@ -552,7 +552,7 @@ class IAMMCPTools:
             )
 
         return {
-            'message': f'Rol IAM {kwargs.get('role_name')} creado exitosamente',
+            'message': f'Rol IAM {kwargs.get("role_name")} creado exitosamente',
             'role_name': kwargs.get('role_name'),
             'role_arn': role_arn
         }
@@ -564,7 +564,7 @@ class IAMMCPTools:
         client.delete_role(RoleName=kwargs.get('role_name'))
 
         return {
-            'message': f'Rol IAM {kwargs.get('role_name')} eliminado exitosamente',
+            'message': f'Rol IAM {kwargs.get("role_name")} eliminado exitosamente',
             'role_name': kwargs.get('role_name')
         }
 
@@ -578,7 +578,7 @@ class IAMMCPTools:
         )
 
         return {
-            'message': f'Política {kwargs.get('policy_arn')} asociada al rol {kwargs.get('role_name')}',
+            'message': f'Política {kwargs.get("policy_arn")} asociada al rol {kwargs.get("role_name")}',
             'role_name': kwargs.get('role_name'),
             'policy_arn': kwargs.get('policy_arn')
         }
@@ -593,7 +593,7 @@ class IAMMCPTools:
         )
 
         return {
-            'message': f'Política {kwargs.get('policy_arn')} desasociada del rol {kwargs.get('role_name')}',
+            'message': f'Política {kwargs.get("policy_arn")} desasociada del rol {kwargs.get("role_name")}',
             'role_name': kwargs.get('role_name'),
             'policy_arn': kwargs.get('policy_arn')
         }
@@ -604,15 +604,15 @@ class IAMMCPTools:
 
         iam_params = {}
         if kwargs.get('scope'):
-            iam_kwargs.get('Scope') = kwargs.get('scope')
+            iam_kwargs['Scope'] = kwargs.get('scope')
         if kwargs.get('only_attached'):
-            iam_kwargs.get('OnlyAttached') = kwargs.get('only_attached')
+            iam_kwargs['OnlyAttached'] = kwargs.get('only_attached')
         if kwargs.get('path_prefix'):
-            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+            iam_kwargs['PathPrefix'] = kwargs.get('path_prefix')
         if kwargs.get('policy_usage_filter'):
-            iam_kwargs.get('PolicyUsageFilter') = kwargs.get('policy_usage_filter')
+            iam_kwargs['PolicyUsageFilter'] = kwargs.get('policy_usage_filter')
         if kwargs.get('max_items'):
-            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
+            iam_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_policies(**iam_params)
 
@@ -648,9 +648,9 @@ class IAMMCPTools:
         }
 
         if kwargs.get('path'):
-            iam_kwargs.get('Path') = kwargs.get('path')
+            iam_kwargs['Path'] = kwargs.get('path')
         if kwargs.get('description'):
-            iam_kwargs.get('Description') = kwargs.get('description')
+            iam_kwargs['Description'] = kwargs.get('description')
 
         response = client.create_policy(**iam_params)
 
@@ -664,7 +664,7 @@ class IAMMCPTools:
             )
 
         return {
-            'message': f'Política IAM {kwargs.get('policy_name')} creada exitosamente',
+            'message': f'Política IAM {kwargs.get("policy_name")} creada exitosamente',
             'policy_name': kwargs.get('policy_name'),
             'policy_arn': policy_arn
         }
@@ -699,7 +699,7 @@ class IAMMCPTools:
         }
 
         if kwargs.get('max_items'):
-            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
+            iam_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_access_keys(**iam_params)
 
@@ -727,9 +727,9 @@ class IAMMCPTools:
         }
 
         if kwargs.get('path_prefix'):
-            iam_kwargs.get('PathPrefix') = kwargs.get('path_prefix')
+            iam_kwargs['PathPrefix'] = kwargs.get('path_prefix')
         if kwargs.get('max_items'):
-            iam_kwargs.get('MaxItems') = kwargs.get('max_items')
+            iam_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_attached_role_policies(**iam_params)
 

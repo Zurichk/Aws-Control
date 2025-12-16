@@ -353,11 +353,11 @@ class LambdaMCPTools:
 
         lambda_params = {}
         if kwargs.get('function_version'):
-            lambda_kwargs.get('FunctionVersion') = kwargs.get('function_version')
+            lambda_kwargs['FunctionVersion'] = kwargs.get('function_version')
         if kwargs.get('marker'):
-            lambda_kwargs.get('Marker') = kwargs.get('marker')
+            lambda_kwargs['Marker'] = kwargs.get('marker')
         if kwargs.get('max_items'):
-            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
+            lambda_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_functions(**lambda_params)
 
@@ -395,7 +395,7 @@ class LambdaMCPTools:
 
         lambda_params = {'FunctionName': kwargs.get('function_name')}
         if kwargs.get('qualifier'):
-            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
+            lambda_kwargs['Qualifier'] = kwargs.get('qualifier')
 
         response = client.get_function(**lambda_params)
 
@@ -445,25 +445,25 @@ class LambdaMCPTools:
         }
 
         if kwargs.get('description'):
-            lambda_kwargs.get('Description') = kwargs.get('description')
+            lambda_kwargs['Description'] = kwargs.get('description')
         if kwargs.get('timeout'):
-            lambda_kwargs.get('Timeout') = kwargs.get('timeout')
+            lambda_kwargs['Timeout'] = kwargs.get('timeout')
         if kwargs.get('memory_size'):
-            lambda_kwargs.get('MemorySize') = kwargs.get('memory_size')
+            lambda_kwargs['MemorySize'] = kwargs.get('memory_size')
         if kwargs.get('environment'):
-            lambda_kwargs.get('Environment') = {'Variables': kwargs.get('environment')}
+            lambda_kwargs['Environment'] = {'Variables': kwargs.get('environment')}
         if kwargs.get('vpc_config'):
-            lambda_kwargs.get('VpcConfig') = {
+            lambda_kwargs['VpcConfig'] = {
                 'SubnetIds': kwargs.get('vpc_config').get('subnet_ids', []),
                 'SecurityGroupIds': kwargs.get('vpc_config').get('security_group_ids', [])
             }
         if kwargs.get('tags'):
-            lambda_kwargs.get('Tags') = kwargs.get('tags')
+            lambda_kwargs['Tags'] = kwargs.get('tags')
 
         response = client.create_function(**lambda_params)
 
         return {
-            'message': f'Función Lambda {kwargs.get('function_name')} creada exitosamente',
+            'message': f'Función Lambda {kwargs.get("function_name")} creada exitosamente',
             'function_name': kwargs.get('function_name'),
             'function_arn': response['FunctionArn'],
             'version': response['Version'],
@@ -494,20 +494,20 @@ class LambdaMCPTools:
 
         if kwargs.get('zip_file'):
             import base64
-            lambda_kwargs.get('ZipFile') = base64.b64decode(kwargs.get('zip_file'))
+            lambda_kwargs['ZipFile'] = base64.b64decode(kwargs.get('zip_file'))
         elif kwargs.get('s3_bucket') and kwargs.get('s3_key'):
-            lambda_kwargs.get('S3Bucket') = kwargs.get('s3_bucket')
-            lambda_kwargs.get('S3Key') = kwargs.get('s3_key')
+            lambda_kwargs['S3Bucket'] = kwargs.get('s3_bucket')
+            lambda_kwargs['S3Key'] = kwargs.get('s3_key')
             if kwargs.get('s3_object_version'):
-                lambda_kwargs.get('S3ObjectVersion') = kwargs.get('s3_object_version')
+                lambda_kwargs['S3ObjectVersion'] = kwargs.get('s3_object_version')
 
         if kwargs.get('architectures'):
-            lambda_kwargs.get('Architectures') = kwargs.get('architectures')
+            lambda_kwargs['Architectures'] = kwargs.get('architectures')
 
         response = client.update_function_code(**lambda_params)
 
         return {
-            'message': f'Código de función {kwargs.get('function_name')} actualizado',
+            'message': f'Código de función {kwargs.get("function_name")} actualizado',
             'function_name': kwargs.get('function_name'),
             'version': response['Version'],
             'code_sha256': response['CodeSha256'],
@@ -521,19 +521,19 @@ class LambdaMCPTools:
         lambda_params = {'FunctionName': kwargs.get('function_name')}
 
         if kwargs.get('description'):
-            lambda_kwargs.get('Description') = kwargs.get('description')
+            lambda_kwargs['Description'] = kwargs.get('description')
         if kwargs.get('role'):
-            lambda_kwargs.get('Role') = kwargs.get('role')
+            lambda_kwargs['Role'] = kwargs.get('role')
         if kwargs.get('handler'):
-            lambda_kwargs.get('Handler') = kwargs.get('handler')
+            lambda_kwargs['Handler'] = kwargs.get('handler')
         if kwargs.get('timeout'):
-            lambda_kwargs.get('Timeout') = kwargs.get('timeout')
+            lambda_kwargs['Timeout'] = kwargs.get('timeout')
         if kwargs.get('memory_size'):
-            lambda_kwargs.get('MemorySize') = kwargs.get('memory_size')
+            lambda_kwargs['MemorySize'] = kwargs.get('memory_size')
         if kwargs.get('environment'):
-            lambda_kwargs.get('Environment') = {'Variables': kwargs.get('environment')}
+            lambda_kwargs['Environment'] = {'Variables': kwargs.get('environment')}
         if kwargs.get('vpc_config'):
-            lambda_kwargs.get('VpcConfig') = {
+            lambda_kwargs['VpcConfig'] = {
                 'SubnetIds': kwargs.get('vpc_config').get('subnet_ids', []),
                 'SecurityGroupIds': kwargs.get('vpc_config').get('security_group_ids', [])
             }
@@ -541,7 +541,7 @@ class LambdaMCPTools:
         response = client.update_function_configuration(**lambda_params)
 
         return {
-            'message': f'Configuración de función {kwargs.get('function_name')} actualizada',
+            'message': f'Configuración de función {kwargs.get("function_name")} actualizada',
             'function_name': kwargs.get('function_name'),
             'version': response['Version'],
             'last_modified': response['LastModified']
@@ -557,9 +557,9 @@ class LambdaMCPTools:
         }
 
         if kwargs.get('payload'):
-            lambda_kwargs.get('Payload') = kwargs.get('payload')
+            lambda_kwargs['Payload'] = kwargs.get('payload')
         if kwargs.get('qualifier'):
-            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
+            lambda_kwargs['Qualifier'] = kwargs.get('qualifier')
 
         response = client.invoke(**lambda_params)
 
@@ -582,12 +582,12 @@ class LambdaMCPTools:
 
         lambda_params = {'FunctionName': kwargs.get('function_name')}
         if kwargs.get('qualifier'):
-            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
+            lambda_kwargs['Qualifier'] = kwargs.get('qualifier')
 
         client.delete_function(**lambda_params)
 
         return {
-            'message': f'Función Lambda {kwargs.get('function_name')} eliminada exitosamente',
+            'message': f'Función Lambda {kwargs.get("function_name")} eliminada exitosamente',
             'function_name': kwargs.get('function_name')
         }
 
@@ -598,14 +598,14 @@ class LambdaMCPTools:
         lambda_params = {'FunctionName': kwargs.get('function_name')}
 
         if kwargs.get('code_sha256'):
-            lambda_kwargs.get('CodeSha256') = kwargs.get('code_sha256')
+            lambda_kwargs['CodeSha256'] = kwargs.get('code_sha256')
         if kwargs.get('description'):
-            lambda_kwargs.get('Description') = kwargs.get('description')
+            lambda_kwargs['Description'] = kwargs.get('description')
 
         response = client.publish_version(**lambda_params)
 
         return {
-            'message': f'Versión {response["Version"]} publicada para función {kwargs.get('function_name')}',
+            'message': f'Versión {response["Version"]} publicada para función {kwargs.get("function_name")}',
             'function_name': kwargs.get('function_name'),
             'version': response['Version'],
             'code_sha256': response['CodeSha256'],
@@ -619,9 +619,9 @@ class LambdaMCPTools:
         lambda_params = {'FunctionName': kwargs.get('function_name')}
 
         if kwargs.get('marker'):
-            lambda_kwargs.get('Marker') = kwargs.get('marker')
+            lambda_kwargs['Marker'] = kwargs.get('marker')
         if kwargs.get('max_items'):
-            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
+            lambda_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_versions_by_function(**lambda_params)
 
@@ -652,12 +652,12 @@ class LambdaMCPTools:
         }
 
         if kwargs.get('description'):
-            lambda_kwargs.get('Description') = kwargs.get('description')
+            lambda_kwargs['Description'] = kwargs.get('description')
 
         response = client.create_alias(**lambda_params)
 
         return {
-            'message': f'Alias {kwargs.get('name')} creado para función {kwargs.get('function_name')}',
+            'message': f'Alias {kwargs.get("name")} creado para función {kwargs.get("function_name")}',
             'function_name': kwargs.get('function_name'),
             'alias_name': kwargs.get('name'),
             'alias_arn': response['AliasArn'],
@@ -671,11 +671,11 @@ class LambdaMCPTools:
         lambda_params = {'FunctionName': kwargs.get('function_name')}
 
         if kwargs.get('function_version'):
-            lambda_kwargs.get('FunctionVersion') = kwargs.get('function_version')
+            lambda_kwargs['FunctionVersion'] = kwargs.get('function_version')
         if kwargs.get('marker'):
-            lambda_kwargs.get('Marker') = kwargs.get('marker')
+            lambda_kwargs['Marker'] = kwargs.get('marker')
         if kwargs.get('max_items'):
-            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
+            lambda_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_aliases(**lambda_params)
 
@@ -701,13 +701,13 @@ class LambdaMCPTools:
 
         lambda_params = {}
         if kwargs.get('event_source_arn'):
-            lambda_kwargs.get('EventSourceArn') = kwargs.get('event_source_arn')
+            lambda_kwargs['EventSourceArn'] = kwargs.get('event_source_arn')
         if kwargs.get('function_name'):
-            lambda_kwargs.get('FunctionName') = kwargs.get('function_name')
+            lambda_kwargs['FunctionName'] = kwargs.get('function_name')
         if kwargs.get('marker'):
-            lambda_kwargs.get('Marker') = kwargs.get('marker')
+            lambda_kwargs['Marker'] = kwargs.get('marker')
         if kwargs.get('max_items'):
-            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
+            lambda_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_event_source_mappings(**lambda_params)
 
@@ -741,18 +741,18 @@ class LambdaMCPTools:
         }
 
         if kwargs.get('enabled'):
-            lambda_kwargs.get('Enabled') = kwargs.get('enabled')
+            lambda_kwargs['Enabled'] = kwargs.get('enabled')
         if kwargs.get('batch_size'):
-            lambda_kwargs.get('BatchSize') = kwargs.get('batch_size')
+            lambda_kwargs['BatchSize'] = kwargs.get('batch_size')
         if kwargs.get('starting_position'):
-            lambda_kwargs.get('StartingPosition') = kwargs.get('starting_position')
+            lambda_kwargs['StartingPosition'] = kwargs.get('starting_position')
         if kwargs.get('starting_position_timestamp'):
-            lambda_kwargs.get('StartingPositionTimestamp') = kwargs.get('starting_position_timestamp')
+            lambda_kwargs['StartingPositionTimestamp'] = kwargs.get('starting_position_timestamp')
 
         response = client.create_event_source_mapping(**lambda_params)
 
         return {
-            'message': f'Mapeo de fuente de eventos creado para función {kwargs.get('function_name')}',
+            'message': f'Mapeo de fuente de eventos creado para función {kwargs.get("function_name")}',
             'uuid': response['UUID'],
             'function_arn': response['FunctionArn'],
             'event_source_arn': response['EventSourceArn'],
@@ -766,7 +766,7 @@ class LambdaMCPTools:
         client.delete_event_source_mapping(UUID=kwargs.get('uuid'))
 
         return {
-            'message': f'Mapeo de fuente de eventos {kwargs.get('uuid')} eliminado',
+            'message': f'Mapeo de fuente de eventos {kwargs.get("uuid")} eliminado',
             'uuid': kwargs.get('uuid')
         }
 
@@ -776,7 +776,7 @@ class LambdaMCPTools:
 
         lambda_params = {'FunctionName': kwargs.get('function_name')}
         if kwargs.get('qualifier'):
-            lambda_kwargs.get('Qualifier') = kwargs.get('qualifier')
+            lambda_kwargs['Qualifier'] = kwargs.get('qualifier')
 
         response = client.get_function_configuration(**lambda_params)
 
@@ -810,11 +810,11 @@ class LambdaMCPTools:
 
         lambda_params = {}
         if kwargs.get('compatible_runtime'):
-            lambda_kwargs.get('CompatibleRuntime') = kwargs.get('compatible_runtime')
+            lambda_kwargs['CompatibleRuntime'] = kwargs.get('compatible_runtime')
         if kwargs.get('marker'):
-            lambda_kwargs.get('Marker') = kwargs.get('marker')
+            lambda_kwargs['Marker'] = kwargs.get('marker')
         if kwargs.get('max_items'):
-            lambda_kwargs.get('MaxItems') = kwargs.get('max_items')
+            lambda_kwargs['MaxItems'] = kwargs.get('max_items')
 
         response = client.list_layers(**lambda_params)
 
@@ -852,14 +852,14 @@ class LambdaMCPTools:
         }
 
         if kwargs.get('compatible_runtimes'):
-            lambda_kwargs.get('CompatibleRuntimes') = kwargs.get('compatible_runtimes')
+            lambda_kwargs['CompatibleRuntimes'] = kwargs.get('compatible_runtimes')
         if kwargs.get('description'):
-            lambda_kwargs.get('Description') = kwargs.get('description')
+            lambda_kwargs['Description'] = kwargs.get('description')
 
         response = client.publish_layer_version(**lambda_params)
 
         return {
-            'message': f'Versión de capa {kwargs.get('layer_name')} publicada',
+            'message': f'Versión de capa {kwargs.get("layer_name")} publicada',
             'layer_name': kwargs.get('layer_name'),
             'layer_arn': response['LayerArn'],
             'layer_version_arn': response['LayerVersionArn'],

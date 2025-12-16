@@ -436,9 +436,9 @@ class CloudFormationMCPTools:
 
         cf_params = {}
         if kwargs.get('stack_status_filter'):
-            cf_kwargs.get('StackStatusFilter') = kwargs.get('stack_status_filter')
+            cf_kwargs['StackStatusFilter'] = kwargs.get('stack_status_filter')
         if kwargs.get('next_token'):
-            cf_kwargs.get('NextToken') = kwargs.get('next_token')
+            cf_kwargs['NextToken'] = kwargs.get('next_token')
 
         response = client.list_stacks(**cf_params)
 
@@ -470,9 +470,9 @@ class CloudFormationMCPTools:
 
         cf_params = {}
         if kwargs.get('stack_name'):
-            cf_kwargs.get('StackName') = kwargs.get('stack_name')
+            cf_kwargs['StackName'] = kwargs.get('stack_name')
         if kwargs.get('next_token'):
-            cf_kwargs.get('NextToken') = kwargs.get('next_token')
+            cf_kwargs['NextToken'] = kwargs.get('next_token')
 
         response = client.describe_stacks(**cf_params)
 
@@ -513,26 +513,26 @@ class CloudFormationMCPTools:
         cf_params = {'StackName': kwargs.get('stack_name')}
 
         if kwargs.get('template_body'):
-            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+            cf_kwargs['TemplateBody'] = kwargs.get('template_body')
         if kwargs.get('template_url'):
-            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
+            cf_kwargs['TemplateURL'] = kwargs.get('template_url')
         if kwargs.get('parameters'):
-            cf_kwargs.get('Parameters') = kwargs.get('parameters')
+            cf_kwargs['Parameters'] = kwargs.get('parameters')
         if kwargs.get('capabilities'):
-            cf_kwargs.get('Capabilities') = kwargs.get('capabilities')
+            cf_kwargs['Capabilities'] = kwargs.get('capabilities')
         if kwargs.get('tags'):
-            cf_kwargs.get('Tags') = kwargs.get('tags')
+            cf_kwargs['Tags'] = kwargs.get('tags')
         if kwargs.get('notification_arns'):
-            cf_kwargs.get('NotificationARNs') = kwargs.get('notification_arns')
+            cf_kwargs['NotificationARNs'] = kwargs.get('notification_arns')
         if kwargs.get('timeout_in_minutes'):
-            cf_kwargs.get('TimeoutInMinutes') = kwargs.get('timeout_in_minutes')
+            cf_kwargs['TimeoutInMinutes'] = kwargs.get('timeout_in_minutes')
         if kwargs.get('on_failure'):
-            cf_kwargs.get('OnFailure') = kwargs.get('on_failure')
+            cf_kwargs['OnFailure'] = kwargs.get('on_failure')
 
         response = client.create_stack(**cf_params)
 
         return {
-            'message': f'Stack CloudFormation {kwargs.get('stack_name')} creado exitosamente',
+            'message': f'Stack CloudFormation {kwargs.get("stack_name")} creado exitosamente',
             'stack_id': response.get('StackId')
         }
 
@@ -543,22 +543,22 @@ class CloudFormationMCPTools:
         cf_params = {'StackName': kwargs.get('stack_name')}
 
         if kwargs.get('template_body'):
-            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+            cf_kwargs['TemplateBody'] = kwargs.get('template_body')
         if kwargs.get('template_url'):
-            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
+            cf_kwargs['TemplateURL'] = kwargs.get('template_url')
         if kwargs.get('parameters'):
-            cf_kwargs.get('Parameters') = kwargs.get('parameters')
+            cf_kwargs['Parameters'] = kwargs.get('parameters')
         if kwargs.get('capabilities'):
-            cf_kwargs.get('Capabilities') = kwargs.get('capabilities')
+            cf_kwargs['Capabilities'] = kwargs.get('capabilities')
         if kwargs.get('tags'):
-            cf_kwargs.get('Tags') = kwargs.get('tags')
+            cf_kwargs['Tags'] = kwargs.get('tags')
         if kwargs.get('notification_arns'):
-            cf_kwargs.get('NotificationARNs') = kwargs.get('notification_arns')
+            cf_kwargs['NotificationARNs'] = kwargs.get('notification_arns')
 
         response = client.update_stack(**cf_params)
 
         return {
-            'message': f'Stack CloudFormation {kwargs.get('stack_name')} actualizado exitosamente',
+            'message': f'Stack CloudFormation {kwargs.get("stack_name")} actualizado exitosamente',
             'stack_id': response.get('StackId')
         }
 
@@ -569,16 +569,16 @@ class CloudFormationMCPTools:
         cf_params = {'StackName': kwargs.get('stack_name')}
 
         if kwargs.get('retain_resources'):
-            cf_kwargs.get('RetainResources') = kwargs.get('retain_resources')
+            cf_kwargs['RetainResources'] = kwargs.get('retain_resources')
         if kwargs.get('role_arn'):
-            cf_kwargs.get('RoleARN') = kwargs.get('role_arn')
+            cf_kwargs['RoleARN'] = kwargs.get('role_arn')
         if kwargs.get('client_request_token'):
-            cf_kwargs.get('ClientRequestToken') = kwargs.get('client_request_token')
+            cf_kwargs['ClientRequestToken'] = kwargs.get('client_request_token')
 
         client.delete_stack(**cf_params)
 
         return {
-            'message': f'Stack CloudFormation {kwargs.get('stack_name')} eliminado exitosamente'
+            'message': f'Stack CloudFormation {kwargs.get("stack_name")} eliminado exitosamente'
         }
 
     def _create_change_set(self, **kwargs) -> Dict[str, Any]:
@@ -591,22 +591,22 @@ class CloudFormationMCPTools:
         }
 
         if kwargs.get('template_body'):
-            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+            cf_kwargs['TemplateBody'] = kwargs.get('template_body')
         if kwargs.get('template_url'):
-            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
+            cf_kwargs['TemplateURL'] = kwargs.get('template_url')
         if kwargs.get('parameters'):
-            cf_kwargs.get('Parameters') = kwargs.get('parameters')
+            cf_kwargs['Parameters'] = kwargs.get('parameters')
         if kwargs.get('capabilities'):
-            cf_kwargs.get('Capabilities') = kwargs.get('capabilities')
+            cf_kwargs['Capabilities'] = kwargs.get('capabilities')
         if kwargs.get('tags'):
-            cf_kwargs.get('Tags') = kwargs.get('tags')
+            cf_kwargs['Tags'] = kwargs.get('tags')
         if kwargs.get('change_set_type'):
-            cf_kwargs.get('ChangeSetType') = kwargs.get('change_set_type')
+            cf_kwargs['ChangeSetType'] = kwargs.get('change_set_type')
 
         response = client.create_change_set(**cf_params)
 
         return {
-            'message': f'Change set {kwargs.get('change_set_name')} creado para stack {kwargs.get('stack_name')}',
+            'message': f'Change set {kwargs.get("change_set_name")} creado para stack {kwargs.get("stack_name")}',
             'change_set_id': response.get('Id'),
             'stack_id': response.get('StackId')
         }
@@ -658,12 +658,12 @@ class CloudFormationMCPTools:
         }
 
         if kwargs.get('client_request_token'):
-            cf_kwargs.get('ClientRequestToken') = kwargs.get('client_request_token')
+            cf_kwargs['ClientRequestToken'] = kwargs.get('client_request_token')
 
         client.execute_change_set(**cf_params)
 
         return {
-            'message': f'Change set {kwargs.get('change_set_name')} ejecutado para stack {kwargs.get('stack_name')}'
+            'message': f'Change set {kwargs.get("change_set_name")} ejecutado para stack {kwargs.get("stack_name")}'
         }
 
     def _delete_change_set(self, **kwargs) -> Dict[str, Any]:
@@ -676,7 +676,7 @@ class CloudFormationMCPTools:
         )
 
         return {
-            'message': f'Change set {kwargs.get('change_set_name')} eliminado del stack {kwargs.get('stack_name')}'
+            'message': f'Change set {kwargs.get("change_set_name")} eliminado del stack {kwargs.get("stack_name")}'
         }
 
     def _list_stack_resources(self, **kwargs) -> Dict[str, Any]:
@@ -685,7 +685,7 @@ class CloudFormationMCPTools:
 
         cf_params = {'StackName': kwargs.get('stack_name')}
         if kwargs.get('next_token'):
-            cf_kwargs.get('NextToken') = kwargs.get('next_token')
+            cf_kwargs['NextToken'] = kwargs.get('next_token')
 
         response = client.list_stack_resources(**cf_params)
 
@@ -716,9 +716,9 @@ class CloudFormationMCPTools:
         cf_params = {'StackName': kwargs.get('stack_name')}
 
         if kwargs.get('logical_resource_id'):
-            cf_kwargs.get('LogicalResourceId') = kwargs.get('logical_resource_id')
+            cf_kwargs['LogicalResourceId'] = kwargs.get('logical_resource_id')
         if kwargs.get('physical_resource_id'):
-            cf_kwargs.get('PhysicalResourceId') = kwargs.get('physical_resource_id')
+            cf_kwargs['PhysicalResourceId'] = kwargs.get('physical_resource_id')
 
         response = client.describe_stack_resources(**cf_params)
 
@@ -750,7 +750,7 @@ class CloudFormationMCPTools:
 
         cf_params = {'StackName': kwargs.get('stack_name')}
         if kwargs.get('change_set_name'):
-            cf_kwargs.get('ChangeSetName') = kwargs.get('change_set_name')
+            cf_kwargs['ChangeSetName'] = kwargs.get('change_set_name')
 
         response = client.get_template(**cf_params)
 
@@ -766,9 +766,9 @@ class CloudFormationMCPTools:
 
         cf_params = {}
         if kwargs.get('template_body'):
-            cf_kwargs.get('TemplateBody') = kwargs.get('template_body')
+            cf_kwargs['TemplateBody'] = kwargs.get('template_body')
         if kwargs.get('template_url'):
-            cf_kwargs.get('TemplateURL') = kwargs.get('template_url')
+            cf_kwargs['TemplateURL'] = kwargs.get('template_url')
 
         response = client.validate_template(**cf_params)
 
@@ -785,7 +785,7 @@ class CloudFormationMCPTools:
 
         cf_params = {}
         if kwargs.get('next_token'):
-            cf_kwargs.get('NextToken') = kwargs.get('next_token')
+            cf_kwargs['NextToken'] = kwargs.get('next_token')
 
         response = client.list_exports(**cf_params)
 
@@ -810,7 +810,7 @@ class CloudFormationMCPTools:
 
         cf_params = {'ExportName': kwargs.get('export_name')}
         if kwargs.get('next_token'):
-            cf_kwargs.get('NextToken') = kwargs.get('next_token')
+            cf_kwargs['NextToken'] = kwargs.get('next_token')
 
         response = client.list_imports(**cf_params)
 
@@ -827,7 +827,7 @@ class CloudFormationMCPTools:
 
         cf_params = {'StackName': kwargs.get('stack_name')}
         if kwargs.get('next_token'):
-            cf_kwargs.get('NextToken') = kwargs.get('next_token')
+            cf_kwargs['NextToken'] = kwargs.get('next_token')
 
         response = client.describe_stack_events(**cf_params)
 
@@ -865,14 +865,14 @@ class CloudFormationMCPTools:
         cf_params = {'StackName': kwargs.get('stack_name')}
 
         if kwargs.get('stack_policy_body'):
-            cf_kwargs.get('StackPolicyBody') = kwargs.get('stack_policy_body')
+            cf_kwargs['StackPolicyBody'] = kwargs.get('stack_policy_body')
         if kwargs.get('stack_policy_url'):
-            cf_kwargs.get('StackPolicyURL') = kwargs.get('stack_policy_url')
+            cf_kwargs['StackPolicyURL'] = kwargs.get('stack_policy_url')
 
         client.set_stack_policy(**cf_params)
 
         return {
-            'message': f'Política del stack {kwargs.get('stack_name')} establecida exitosamente'
+            'message': f'Política del stack {kwargs.get("stack_name")} establecida exitosamente'
         }
 
     def _get_stack_policy(self, **kwargs) -> Dict[str, Any]:
