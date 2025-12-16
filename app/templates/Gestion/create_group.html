@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Grupo de Auto Scaling - AWS Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-plus-circle"></i> Crear Grupo de Auto Scaling</h2>
+                        <p class="mb-0">Configure un nuevo grupo de Auto Scaling</p>
+                    </div>
+                    <a href="{{ url_for('autoscaling_bp.groups') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Grupos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('autoscaling_bp.create_group') }}">
+                        <div class="row">
+                            <!-- Nombre del Grupo -->
+                            <div class="col-md-6 mb-3">
+                                <label for="group_name" class="form-label">
+                                    <i class="fas fa-tag"></i> Nombre del Grupo *
+                                </label>
+                                <input type="text" class="form-control" id="group_name" name="group_name" required
+                                       placeholder="mi-grupo-autoscaling">
+                                <small class="form-text text-muted">Nombre único para identificar el grupo</small>
+                            </div>
+
+                            <!-- Launch Template -->
+                            <div class="col-md-6 mb-3">
+                                <label for="launch_template_name" class="form-label">
+                                    <i class="fas fa-rocket"></i> Launch Template
+                                </label>
+                                <select class="form-select" id="launch_template_name" name="launch_template_name">
+                                    <option value="">Seleccione un Launch Template</option>
+                                    {% for template in launch_templates %}
+                                        <option value="{{ template.LaunchTemplateName }}">
+                                            {{ template.LaunchTemplateName }} ({{ template.LaunchTemplateId }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-text text-muted">Template para crear las instancias EC2</small>
+                            </div>
+
+                            <!-- Tamaño Mínimo -->
+                            <div class="col-md-4 mb-3">
+                                <label for="min_size" class="form-label">
+                                    <i class="fas fa-arrow-down"></i> Tamaño Mínimo *
+                                </label>
+                                <input type="number" class="form-control" id="min_size" name="min_size" 
+                                       value="1" min="0" required>
+                                <small class="form-text text-muted">Mínimo de instancias</small>
+                            </div>
+
+                            <!-- Capacidad Deseada -->
+                            <div class="col-md-4 mb-3">
+                                <label for="desired_capacity" class="form-label">
+                                    <i class="fas fa-equals"></i> Capacidad Deseada *
+                                </label>
+                                <input type="number" class="form-control" id="desired_capacity" name="desired_capacity" 
+                                       value="1" min="0" required>
+                                <small class="form-text text-muted">Capacidad inicial</small>
+                            </div>
+
+                            <!-- Tamaño Máximo -->
+                            <div class="col-md-4 mb-3">
+                                <label for="max_size" class="form-label">
+                                    <i class="fas fa-arrow-up"></i> Tamaño Máximo *
+                                </label>
+                                <input type="number" class="form-control" id="max_size" name="max_size" 
+                                       value="3" min="1" required>
+                                <small class="form-text text-muted">Máximo de instancias</small>
+                            </div>
+
+                            <!-- Availability Zones -->
+                            <div class="col-12 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-globe"></i> Zonas de Disponibilidad *
+                                </label>
+                                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    {% if availability_zones %}
+                                        {% for az in availability_zones %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="availability_zones" value="{{ az }}" 
+                                                       id="az_{{ loop.index }}">
+                                                <label class="form-check-label" for="az_{{ loop.index }}">
+                                                    {{ az }}
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-info-circle"></i> No hay zonas de disponibilidad disponibles
+                                        </p>
+                                    {% endif %}
+                                </div>
+                                <small class="form-text text-muted">Seleccione al menos una zona de disponibilidad</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('autoscaling_bp.groups') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Crear Grupo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validar que min_size <= desired_capacity <= max_size
+document.querySelector('form').addEventListener('submit', function(e) {
+    const minSize = parseInt(document.getElementById('min_size').value);
+    const desiredCapacity = parseInt(document.getElementById('desired_capacity').value);
+    const maxSize = parseInt(document.getElementById('max_size').value);
+    
+    if (minSize > desiredCapacity) {
+        e.preventDefault();
+        alert('La capacidad deseada no puede ser menor que el tamaño mínimo');
+        return false;
+    }
+    
+    if (desiredCapacity > maxSize) {
+        e.preventDefault();
+        alert('La capacidad deseada no puede ser mayor que el tamaño máximo');
+        return false;
+    }
+    
+    if (minSize > maxSize) {
+        e.preventDefault();
+        alert('El tamaño mínimo no puede ser mayor que el tamaño máximo');
+        return false;
+    }
+    
+    // Validar que se seleccionó al menos una zona
+    const selectedZones = document.querySelectorAll('input[name="availability_zones"]:checked');
+    if (selectedZones.length === 0) {
+        e.preventDefault();
+        alert('Debe seleccionar al menos una zona de disponibilidad');
+        return false;
+    }
+});
+
+// Actualizar dinámicamente los límites
+document.getElementById('min_size').addEventListener('change', function() {
+    const minSize = parseInt(this.value);
+    document.getElementById('desired_capacity').min = minSize;
+    document.getElementById('max_size').min = minSize;
+});
+
+document.getElementById('max_size').addEventListener('change', function() {
+    const maxSize = parseInt(this.value);
+    document.getElementById('desired_capacity').max = maxSize;
+    document.getElementById('min_size').max = maxSize;
+});
+</script>
+{% endblock %}

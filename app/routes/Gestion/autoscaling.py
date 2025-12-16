@@ -23,10 +23,10 @@ def groups():
                 'launch_template': group.get('LaunchTemplate', {}).get('LaunchTemplateName', 'N/A'),
                 'availability_zones': group.get('AvailabilityZones', [])
             })
-        return render_template('Gestion/autoscaling_service/groups.html', groups=groups)
+        return render_template('Gestion/groups.html', groups=groups)
     except Exception as e:
         flash(f'Error obteniendo grupos de Auto Scaling: {str(e)}', 'error')
-        return render_template('Gestion/autoscaling_service/groups.html', groups=[])
+        return render_template('Gestion/groups.html', groups=[])
 
 @bp.route('/update-group/<group_name>', methods=['GET', 'POST'])
 def update_group(group_name):
@@ -61,7 +61,7 @@ def update_group(group_name):
             return redirect(url_for('autoscaling_bp.groups'))
 
         group = response['AutoScalingGroups'][0]
-        return render_template('Gestion/autoscaling_service/update_group.html',
+        return render_template('Gestion/update_group.html',
                              group_name=group_name,
                              current_min=group['MinSize'],
                              current_max=group['MaxSize'],
@@ -100,10 +100,10 @@ def policies():
                 'scaling_adjustment': policy.get('ScalingAdjustment', 'N/A'),
                 'cooldown': policy.get('Cooldown', 'N/A')
             })
-        return render_template('Gestion/autoscaling_service/policies.html', policies=policies)
+        return render_template('Gestion/policies.html', policies=policies)
     except Exception as e:
         flash(f'Error obteniendo políticas de escalado: {str(e)}', 'error')
-        return render_template('Gestion/autoscaling_service/policies.html', policies=[])
+        return render_template('Gestion/policies.html', policies=[])
 
 @bp.route('/create-policy', methods=['GET', 'POST'])
 def create_policy():
@@ -137,10 +137,10 @@ def create_policy():
         autoscaling_client = get_aws_client('autoscaling')
         response = autoscaling_client.describe_auto_scaling_groups()
         groups = [group['AutoScalingGroupName'] for group in response['AutoScalingGroups']]
-        return render_template('Gestion/autoscaling_service/create_policy.html', groups=groups)
+        return render_template('Gestion/create_policy.html', groups=groups)
     except Exception as e:
         flash(f'Error obteniendo grupos de Auto Scaling: {str(e)}', 'error')
-        return render_template('Gestion/autoscaling_service/create_policy.html', groups=[])
+        return render_template('Gestion/create_policy.html', groups=[])
 
 @bp.route('/delete-policy/<group_name>/<policy_name>', methods=['POST'])
 def delete_policy(group_name, policy_name):
@@ -207,12 +207,12 @@ def create_group():
         az_response = ec2_client.describe_availability_zones()
         availability_zones = [az['ZoneName'] for az in az_response.get('AvailabilityZones', [])]
 
-        return render_template('Gestion/autoscaling_service/create_group.html',
+        return render_template('Gestion/create_group.html',
                              launch_templates=launch_templates,
                              availability_zones=availability_zones)
 
     except Exception as e:
         flash(f'Error cargando formulario: {str(e)}', 'error')
-        return render_template('Gestion/autoscaling_service/create_group.html',
+        return render_template('Gestion/create_group.html',
                              launch_templates=[],
                              availability_zones=[])
