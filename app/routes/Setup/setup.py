@@ -35,7 +35,8 @@ def aws_credentials():
                 flash('Access Key ID y Secret Access Key son requeridos', 'error')
                 return render_template('Setup/aws_credentials.html')
 
-            # Guardar en sesión
+            # Guardar en sesión y marcarla como permanente
+            session.permanent = True
             session['aws_access_key_id'] = access_key
             session['aws_secret_access_key'] = secret_key
             session['aws_session_token'] = session_token if session_token else None
@@ -148,6 +149,7 @@ def ai_provider():
                 })
 
             # Guardar en sesión solo las keys proporcionadas o actualizadas
+            session.permanent = True
             session['ai_provider'] = provider
             if gemini_key:
                 session['gemini_api_key'] = gemini_key

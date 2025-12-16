@@ -39,12 +39,23 @@ def create_app():
     
     # Security configurations
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-    # Solo HTTPS en producción (Coolify/VPS), permitir HTTP en desarrollo local
-    is_production = os.environ.get('FLASK_ENV') != 'development'
-    app.config['SESSION_COOKIE_SECURE'] = is_production
+    
+    # Configuración de sesiones para Coolify con proxy reverso
+    # NOTA: Coolify maneja HTTPS en el proxy, pero Flask ve HTTP
+    # Por eso SESSION_COOKIE_SECURE debe ser False en Coolify
+    is_development = os.environ.get('FLASK_ENV') == 'development'
+    is_coolify = os.environ.get('DEPLOYED_ON_COOLIFY', 'false').lower() == 'true'
+    
+    # Solo requerir HTTPS si NO es desarrollo y NO está en Coolify
+    # (Coolify termina SSL en el proxy, Flask ve HTTP internamente)
+    app.config['SESSION_COOKIE_SECURE'] = not is_development and not is_coolify
     app.config['SESSION_COOKIE_HTTPONLY'] = True  # No accesible desde JavaScript
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Protección CSRF
     app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora de sesión
+    
+    # Confiar en X-Forwarded-* headers de proxies (Coolify, nginx, etc.)
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     # Configure logging
     logging.basicConfig(

@@ -2,6 +2,27 @@
 
 Panel de control web completo para gestionar servicios de AWS con integración de IA Assistant.
 
+---
+
+## 🎯 Inicio Rápido para Coolify
+
+**¿Desplegando en Coolify? Solo necesitas 3 variables de entorno:**
+
+```env
+SECRET_KEY=genera_con_python_generate_secret_key.py
+DEPLOYED_ON_COOLIFY=true
+FLASK_PORT=5041
+```
+
+**Las credenciales AWS y API keys de IA** las introduces después desde la interfaz web:
+- 🔧 `Setup` → `AWS Credentials`
+- 🤖 `Setup` → `AI Provider`
+
+📖 **[Guía completa de despliegue en Coolify](app/docs/DEPLOY_COOLIFY.md)**
+🔧 **[Solución de problemas de sesiones](SOLUCION_COOLIFY.md)**
+
+---
+
 ## 🔒 Seguridad
 
 > **⚠️ IMPORTANTE**: Este proyecto maneja credenciales sensibles (AWS, API keys de IA).
@@ -9,6 +30,7 @@ Panel de control web completo para gestionar servicios de AWS con integración d
 > - **NUNCA** subas tu archivo `.env` a repositorios públicos
 > - Usa HTTPS en producción
 > - Configura las API keys desde la interfaz web en lugar de variables de entorno
+> - Genera un `SECRET_KEY` único: `python generate_secret_key.py`
 
 ## 🚀 Características
 
